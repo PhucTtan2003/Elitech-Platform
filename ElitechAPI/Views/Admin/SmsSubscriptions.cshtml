@@ -1,0 +1,1002 @@
+﻿@{
+    ViewData["Title"] = "SMS Subscriptions";
+    Layout = "_Layout";
+}
+
+<style>
+    :root {
+        --o: #F58220;
+        --o2: #E36F15;
+        --o3: #CC6200;
+        --b: #0D47A1;
+        --b2: #1E88E5;
+        --ink: #0b1220;
+        --mut: #64748b;
+        --bg0: #f7fafc;
+        --bg1: #eef3fb;
+        --glass: rgba(255,255,255,.72);
+        --glass2: rgba(255,255,255,.90);
+        --stroke: rgba(148,163,184,.22);
+        --shadow: 0 22px 70px rgba(2,6,23,.14);
+        --shadow2: 0 12px 34px rgba(2,6,23,.10);
+        --r: 26px;
+        --r2: 18px;
+        --ok: #10B981;
+        --warn: #F59E0B;
+        --crit: #EF4444;
+        --info: #2563eb;
+        --ring: rgba(245,130,32,.20);
+        --ringB: rgba(37,99,235,.16);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(1000px 560px at 10% 0%, rgba(245,130,32,.16), transparent 62%), radial-gradient(900px 520px at 92% 8%, rgba(59,130,246,.12), transparent 56%), radial-gradient(900px 520px at 50% 110%, rgba(16,185,129,.10), transparent 58%), linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 70%, var(--bg1) 100%);
+        overflow-x: hidden;
+    }
+
+    .sms-wrap {
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 16px 16px 26px;
+        position: relative;
+    }
+
+        .sms-wrap::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
+            mix-blend-mode: soft-light;
+            opacity: .55;
+            z-index: -1;
+        }
+
+    .sms-head {
+        border-radius: 30px;
+        border: 1px solid var(--stroke);
+        background: radial-gradient(120% 160% at 12% 8%, rgba(245,130,32,.26), transparent 56%), radial-gradient(120% 160% at 92% 18%, rgba(59,130,246,.14), transparent 52%), linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.42));
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+        overflow: hidden;
+        position: relative;
+        padding: 18px 20px;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+        .sms-head::after {
+            content: "";
+            position: absolute;
+            inset: -60% -45%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.20), transparent);
+            transform: rotate(18deg);
+            animation: smsShine 7.6s linear infinite;
+            opacity: .55;
+            pointer-events: none;
+        }
+
+    @@keyframes smsShine {
+        0% {
+            transform: translateX(-18%) rotate(18deg);
+        }
+
+        100% {
+            transform: translateX(18%) rotate(18deg);
+        }
+    }
+
+    .sms-left {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex: 1 1 560px;
+        min-width: 320px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .sms-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.55), transparent 45%), linear-gradient(135deg, var(--o), var(--o2));
+        border: 1px solid rgba(255,255,255,.18);
+        box-shadow: 0 18px 52px rgba(245,130,32,.26);
+        overflow: hidden;
+        flex: 0 0 auto;
+        font-size: 26px;
+    }
+
+    .sms-title {
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+    }
+
+    .sms-sub {
+        margin: 6px 0 0;
+        color: var(--mut);
+        font-weight: 850;
+        font-size: .96rem;
+        line-height: 1.35rem;
+    }
+
+    .sms-right {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+        margin-left: auto;
+        flex: 0 1 620px;
+        min-width: 280px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .sms-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .sms-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,.26);
+        background: rgba(255,255,255,.72);
+        box-shadow: 0 10px 24px rgba(15,23,42,.08);
+        font-weight: 950;
+        font-size: .78rem;
+        color: #334155;
+        backdrop-filter: blur(10px);
+        white-space: nowrap;
+    }
+
+    .sms-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        box-shadow: 0 0 0 3px rgba(148,163,184,.14);
+    }
+
+        .sms-dot.ok {
+            background: var(--ok);
+            box-shadow: 0 0 0 3px rgba(16,185,129,.14);
+        }
+
+        .sms-dot.warn {
+            background: var(--warn);
+            box-shadow: 0 0 0 3px rgba(245,158,11,.14);
+        }
+
+        .sms-dot.crit {
+            background: var(--crit);
+            box-shadow: 0 0 0 3px rgba(239,68,68,.14);
+        }
+
+    .sms-admin {
+        color: var(--mut);
+        font-weight: 850;
+        font-size: .86rem;
+        text-align: right;
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+        font-weight: 900;
+    }
+
+    .muted {
+        color: var(--mut);
+        font-weight: 850;
+        font-size: .86rem;
+    }
+
+    .sms-card {
+        margin-top: 14px;
+        background: var(--glass2);
+        border: 1px solid rgba(226,232,240,.95);
+        border-radius: var(--r);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        backdrop-filter: blur(14px);
+        position: relative;
+    }
+
+        .sms-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(245,130,32,.88), rgba(59,130,246,.55), rgba(16,185,129,.45));
+            opacity: .9;
+        }
+
+    .sms-toolbar {
+        display: flex;
+        gap: 10px;
+        padding: 14px;
+        border-bottom: 1px solid rgba(231,235,243,.92);
+        flex-wrap: wrap;
+        align-items: center;
+        background: rgba(255,255,255,.55);
+    }
+
+    .sms-input {
+        flex: 1 1 420px;
+        min-width: 240px;
+        height: 44px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.26);
+        background: rgba(255,255,255,.92);
+        padding: 0 12px;
+        font-weight: 950;
+        color: #0f172a;
+        box-shadow: inset 0 0 0 1px rgba(226,232,240,.75);
+        outline: none;
+    }
+
+        .sms-input:focus {
+            border-color: rgba(245,130,32,.55);
+            box-shadow: 0 0 0 5px var(--ring);
+        }
+
+    .sms-btn {
+        height: 44px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.26);
+        background: rgba(255,255,255,.92);
+        padding: 0 14px;
+        font-weight: 1000;
+        color: #0f172a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 12px 28px rgba(2,6,23,.08);
+        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, opacity .12s ease;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .sms-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 44px rgba(2,6,23,.12);
+            border-color: rgba(245,130,32,.22);
+        }
+
+        .sms-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sms-btn.primary {
+            border: 0;
+            color: #111;
+            background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.35), transparent 45%), linear-gradient(180deg, var(--o), var(--o2));
+            box-shadow: 0 16px 44px rgba(245,130,32,.22);
+        }
+
+        .sms-btn.danger {
+            border: 0;
+            color: #fff;
+            background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.20), transparent 45%), linear-gradient(180deg, #ef4444, #dc2626);
+            box-shadow: 0 16px 44px rgba(239,68,68,.20);
+        }
+
+        .sms-btn.dark {
+            border: 0;
+            color: #fff;
+            background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.18), transparent 45%), linear-gradient(180deg, #1f2937, #0f172a);
+            box-shadow: 0 16px 44px rgba(15,23,42,.18);
+        }
+
+        .sms-btn.success {
+            border: 0;
+            color: #fff;
+            background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.20), transparent 45%), linear-gradient(180deg, #22c55e, #16a34a);
+            box-shadow: 0 16px 44px rgba(34,197,94,.18);
+        }
+
+        .sms-btn.mini {
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 14px;
+            font-size: .78rem;
+            box-shadow: 0 10px 22px rgba(2,6,23,.06);
+        }
+
+    #hint {
+        margin-left: auto;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.78);
+        border: 1px solid rgba(148,163,184,.25);
+        box-shadow: 0 10px 22px rgba(2,6,23,.06);
+        white-space: nowrap;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: rgba(255,255,255,.92);
+        backdrop-filter: blur(10px);
+    }
+
+    th, td {
+        padding: 12px 12px;
+        border-bottom: 1px solid rgba(226,232,240,.95);
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    th {
+        text-align: left;
+        font-size: .76rem;
+        color: rgba(100,116,139,1);
+        font-weight: 1000;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    td {
+        font-weight: 900;
+        color: #0f172a;
+        font-size: .9rem;
+    }
+
+    tbody tr {
+        transition: background .12s ease, transform .12s ease;
+    }
+
+        tbody tr:hover {
+            background: rgba(248,250,252,.78);
+        }
+
+    .row-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        min-width: 540px;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 1000;
+        font-size: .78rem;
+        border: 1px solid rgba(226,232,240,.95);
+        background: rgba(255,255,255,.92);
+        box-shadow: 0 10px 22px rgba(2,6,23,.06);
+        white-space: nowrap;
+    }
+
+    .b-active {
+        border-color: rgba(16,185,129,.35);
+        color: #065f46;
+        background: #ecfdf5;
+    }
+
+    .b-exp {
+        border-color: rgba(245,158,11,.35);
+        color: #92400e;
+        background: #fffbeb;
+    }
+
+    .b-off {
+        border-color: rgba(148,163,184,.55);
+        color: #334155;
+        background: #f8fafc;
+    }
+
+    .b-lock {
+        border-color: rgba(239,68,68,.35);
+        color: #991b1b;
+        background: #fef2f2;
+    }
+
+    #expModal {
+        backdrop-filter: blur(10px);
+    }
+
+        #expModal > div {
+            border-radius: 20px !important;
+        }
+
+    .sms-toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 99999;
+        display: none;
+        max-width: 520px;
+        padding: 13px 16px;
+        border-radius: 16px;
+        color: #fff;
+        font-weight: 950;
+        background: #0f172a;
+        box-shadow: 0 22px 70px rgba(2,6,23,.28);
+    }
+
+        .sms-toast.bad {
+            background: #dc2626;
+        }
+
+    @@media (max-width: 980px) {
+        .sms-right {
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .sms-badges {
+            justify-content: flex-start;
+        }
+
+        .sms-admin {
+            text-align: left;
+        }
+
+        #hint {
+            margin-left: 0;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .sms-wrap {
+            padding: 14px 12px 22px;
+        }
+
+        .sms-btn {
+            width: 100%;
+        }
+
+            .sms-btn.mini {
+                width: auto;
+            }
+
+        .sms-input {
+            width: 100%;
+            min-width: unset;
+            flex: 1 1 100%;
+        }
+
+        #hint {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .sms-head::after {
+            animation: none !important;
+        }
+
+        .sms-btn, tbody tr {
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="sms-wrap">
+
+    <div class="sms-head">
+        <div class="sms-left">
+            <div class="sms-icon"><i class="bi bi-chat-dots-fill"></i></div>
+            <div>
+                <h1 class="sms-title">SMS Subscriptions</h1>
+                <div class="sms-sub">
+                    Danh sách user đăng ký dịch vụ SMS • gia hạn / giảm ngày • stop tức thời • khóa SMS định kỳ nhiệt độ
+                </div>
+            </div>
+        </div>
+
+        <div class="sms-right">
+            <div class="sms-badges">
+                <span class="sms-badge"><span class="sms-dot ok"></span> Live admin</span>
+                <span class="sms-badge"><span class="sms-dot warn"></span> On / Stop / Adjust / Expiry</span>
+                <span class="sms-badge"><span class="sms-dot crit"></span> Lock / Unlock định kỳ</span>
+            </div>
+            <div class="sms-admin">Admin panel • Elitech</div>
+        </div>
+    </div>
+
+    <div class="sms-card">
+        <div class="sms-toolbar">
+            <input id="q" class="sms-input" placeholder="Tìm username / phone..." />
+
+            <button class="sms-btn primary" id="btnReload" type="button">
+                <i class="bi bi-arrow-repeat"></i> Reload
+            </button>
+
+            <span id="hint" class="muted"></span>
+
+            <form id="af" method="post" style="display:none;">
+                @Html.AntiForgeryToken()
+            </form>
+        </div>
+
+        <div style="overflow:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Phone</th>
+                        <th>Verify</th>
+                        <th>SMS Status</th>
+                        <th>Định kỳ</th>
+                        <th>Expires (UTC)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tb">
+                    <tr><td colspan="7" class="muted">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="expModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.35);z-index:9999;padding:14px;">
+        <div style="width:420px;max-width:100%;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,240,.95);border-radius:18px;box-shadow:0 22px 70px rgba(2,6,23,.25);overflow:hidden;">
+            <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:#0f172a;color:#fff;">
+                <div style="font-weight:1000;letter-spacing:-.01em;">
+                    <i class="bi bi-calendar2-week me-1"></i> Set SMS Expiry
+                </div>
+                <button type="button" id="expClose" style="border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer;">×</button>
+            </div>
+
+            <div style="padding:14px;">
+                <div class="muted" style="margin-bottom:8px;">
+                    Username: <span class="mono" id="expUser"></span>
+                </div>
+
+                <label class="muted" style="display:block;margin-bottom:6px;">Chọn ngày hết hạn</label>
+                <input id="expDate" type="date" class="sms-input" style="min-width:unset;width:100%;" />
+
+                <div id="expMsg" class="muted" style="margin-top:10px;"></div>
+
+                <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="sms-btn" id="expCancel">Hủy</button>
+                    <button type="button" class="sms-btn primary" id="expSave">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="smsToast" class="sms-toast"></div>
+
+<script>
+    (function () {
+        const tb = document.getElementById('tb');
+        const q = document.getElementById('q');
+        const hint = document.getElementById('hint');
+        const btnReload = document.getElementById('btnReload');
+        const smsToast = document.getElementById('smsToast');
+
+        const expModal = document.getElementById('expModal');
+        const expClose = document.getElementById('expClose');
+        const expCancel = document.getElementById('expCancel');
+        const expSave = document.getElementById('expSave');
+        const expUser = document.getElementById('expUser');
+        const expDate = document.getElementById('expDate');
+        const expMsg = document.getElementById('expMsg');
+
+        let lastData = [];
+        let expUsername = "";
+        let toastTimer = null;
+
+        function token() {
+            const el = document.querySelector('#af input[name="__RequestVerificationToken"]');
+            return el ? el.value : "";
+        }
+
+        function esc(v) {
+            return String(v ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function showToast(message, bad) {
+            if (!smsToast) return;
+
+            smsToast.textContent = message || "";
+            smsToast.classList.toggle("bad", !!bad);
+            smsToast.style.display = "block";
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                smsToast.style.display = "none";
+            }, 2800);
+        }
+
+        function fmtUtc(s) {
+            if (!s) return '';
+
+            const raw = String(s);
+            const d = new Date(raw);
+
+            if (!Number.isNaN(d.getTime())) {
+                return d.toISOString().replace('T', ' ').replace('Z', '').substring(0, 19);
+            }
+
+            return raw.replace('T', ' ').replace('Z', '');
+        }
+
+        function badge(status) {
+            const s = String(status || "OFF").toUpperCase();
+
+            if (s === 'ACTIVE') return `<span class="badge b-active">🟢 ACTIVE</span>`;
+            if (s === 'EXPIRED') return `<span class="badge b-exp">🟠 EXPIRED</span>`;
+
+            return `<span class="badge b-off">⚪ OFF</span>`;
+        }
+
+        function periodicBadge(x) {
+            const smsActive = String(x.status || "").toUpperCase() === "ACTIVE" && !!x.smsSubActive;
+            const allowed = !!x.smsSelfRegisterAllowed;
+            const alertEnabled = !!x.smsAlertEnabled;
+
+            if (smsActive && allowed && alertEnabled) {
+                return `<span class="badge b-active">🟢 Được gửi</span>`;
+            }
+
+            if (!allowed) {
+                return `<span class="badge b-lock">🔒 Admin khóa</span>`;
+            }
+
+            if (!smsActive) {
+                return `<span class="badge b-off">⚪ Chưa bật / hết hạn</span>`;
+            }
+
+            return `<span class="badge b-lock">🔒 Tạm khóa</span>`;
+        }
+
+        function yn(v) {
+            return v ? '✅' : '—';
+        }
+
+        async function post(url, body) {
+            const anti = token();
+            const data = new URLSearchParams();
+
+            Object.keys(body || {}).forEach(k => data.append(k, body[k]));
+            data.append("__RequestVerificationToken", anti);
+
+            const res = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "RequestVerificationToken": anti
+                },
+                body: data
+            });
+
+            const text = await res.text();
+
+            let json = null;
+            try {
+                json = text ? JSON.parse(text) : {};
+            } catch {
+                json = null;
+            }
+
+            if (!res.ok) {
+                throw new Error(json?.reason || json?.message || text || `HTTP ${res.status}`);
+            }
+
+            if (!json) {
+                throw new Error(text || "Response is not JSON");
+            }
+
+            return json;
+        }
+
+        function openExpiry(username, currentExpiresUtc) {
+            expUsername = username || "";
+
+            if (expUser) expUser.textContent = expUsername;
+            if (expMsg) expMsg.textContent = "";
+
+            if (expDate) {
+                if (currentExpiresUtc) {
+                    const s = String(currentExpiresUtc);
+                    expDate.value = s.includes('T') ? s.split('T')[0] : s.substring(0, 10);
+                } else {
+                    expDate.value = "";
+                }
+            }
+
+            if (expModal) expModal.style.display = "flex";
+        }
+
+        function closeExpiry() {
+            if (expModal) expModal.style.display = "none";
+            expUsername = "";
+        }
+
+        if (expClose) expClose.addEventListener('click', closeExpiry);
+        if (expCancel) expCancel.addEventListener('click', closeExpiry);
+        if (expModal) expModal.addEventListener('click', (e) => {
+            if (e.target === expModal) closeExpiry();
+        });
+
+        if (expSave) {
+            expSave.addEventListener('click', async () => {
+                const date = (expDate && expDate.value ? expDate.value : "").trim();
+
+                if (!date) {
+                    if (expMsg) expMsg.textContent = "Vui lòng chọn ngày.";
+                    return;
+                }
+
+                try {
+                    expSave.disabled = true;
+                    if (expMsg) expMsg.textContent = "Đang lưu...";
+
+                    const r = await post('/Admin/Sms/SetExpiry', {
+                        username: expUsername,
+                        expiryDate: date
+                    });
+
+                    if (!r.ok) {
+                        if (expMsg) expMsg.textContent = r.reason || "Set expiry failed";
+                        return;
+                    }
+
+                    closeExpiry();
+                    showToast(`Đã set expiry cho ${expUsername}`);
+                    await load();
+                } catch (err) {
+                    if (expMsg) expMsg.textContent = err.message || "Set expiry failed";
+                    showToast(err.message || "Set expiry failed", true);
+                } finally {
+                    expSave.disabled = false;
+                }
+            });
+        }
+
+        async function load() {
+            hint.textContent = 'Đang tải...';
+
+            try {
+                const res = await fetch('/Admin/SmsSubscriptions/List', {
+                    credentials: "same-origin"
+                });
+
+                const json = await res.json().catch(() => ({ ok: false }));
+
+                if (!json.ok) {
+                    tb.innerHTML = `<tr><td colspan="7" class="muted">Load failed</td></tr>`;
+                    hint.textContent = 'Load failed';
+                    showToast("Load danh sách thất bại", true);
+                    return;
+                }
+
+                lastData = Array.isArray(json.data) ? json.data : [];
+                render();
+            } catch (err) {
+                tb.innerHTML = `<tr><td colspan="7" class="muted">Load failed</td></tr>`;
+                hint.textContent = 'Load failed';
+                showToast(err.message || "Load failed", true);
+            }
+        }
+
+        function render() {
+            const text = (q.value || '').trim().toLowerCase();
+
+            const rows = lastData.filter(x => {
+                if (!text) return true;
+
+                return String(x.username || '').toLowerCase().includes(text)
+                    || String(x.phone || '').toLowerCase().includes(text)
+                    || String(x.userId || '').toLowerCase().includes(text);
+            });
+
+            if (rows.length === 0) {
+                tb.innerHTML = `<tr><td colspan="7" class="muted">Không có dữ liệu</td></tr>`;
+                hint.textContent = '0 users';
+                return;
+            }
+
+            tb.innerHTML = rows.map(x => {
+                const usernameRaw = String(x.username || "");
+                const username = esc(usernameRaw);
+                const exp = fmtUtc(x.smsSubExpiresAtUtc);
+
+                const lockButton = x.smsSelfRegisterAllowed
+                    ? `<button class="sms-btn dark mini" data-act="lock" data-u="${username}">🔒 Lock định kỳ</button>`
+                    : `<button class="sms-btn success mini" data-act="unlock" data-u="${username}">🔓 Unlock định kỳ</button>`;
+
+                return `
+                        <tr>
+                            <td>
+                                <div>
+                                    <span class="mono">${username}</span>
+                                    ${x.userId ? `<div class="muted">${esc(x.userId)}</div>` : ``}
+                                </div>
+                            </td>
+                            <td>${x.phone ? `<span class="mono">${esc(x.phone)}</span>` : `<span class="muted">—</span>`}</td>
+                            <td>${yn(x.phoneVerified)}</td>
+                            <td>${badge(x.status)}</td>
+                            <td>${periodicBadge(x)}</td>
+                            <td>${exp ? `<span class="mono">${esc(exp)}</span>` : `<span class="muted">—</span>`}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="sms-btn mini" data-act="on" data-u="${username}">On</button>
+                                    <button class="sms-btn mini" data-act="add" data-d="7" data-u="${username}">+7</button>
+                                    <button class="sms-btn mini" data-act="add" data-d="30" data-u="${username}">+30</button>
+                                    <button class="sms-btn mini" data-act="add" data-d="-7" data-u="${username}">-7</button>
+                                    <button class="sms-btn mini" data-act="add" data-d="-30" data-u="${username}">-30</button>
+                                    <button class="sms-btn mini" data-act="openExpiry" data-u="${username}">Set expiry</button>
+                                    <button class="sms-btn danger mini" data-act="stop" data-u="${username}">Stop</button>
+                                    ${lockButton}
+                                    <button class="sms-btn danger mini" data-act="clear" data-u="${username}">❌ Clear</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+            }).join('');
+
+            hint.textContent = `${rows.length} users`;
+        }
+
+        async function call(url, body) {
+            try {
+                const r = await post(url, body);
+
+                if (!r || r.ok === false) {
+                    showToast(r?.reason || "Request failed", true);
+                    return false;
+                }
+
+                return true;
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || "Lỗi hệ thống", true);
+                return false;
+            }
+        }
+
+        tb.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-act]');
+            if (!btn) return;
+
+            const act = btn.getAttribute('data-act');
+            const username = btn.getAttribute('data-u');
+
+            if (!username) return;
+
+            btn.disabled = true;
+
+            try {
+                if (act === 'stop') {
+                    if (!confirm(`Stop SMS của ${username}? User sẽ không gửi SMS định kỳ được nữa.`)) return;
+
+                    if (await call('/Admin/Sms/Stop', { username })) {
+                        showToast(`Đã stop SMS của ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+
+                if (act === 'on') {
+                    if (await call('/Admin/Sms/On', { username })) {
+                        showToast(`Đã bật SMS cho ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+
+                if (act === 'start30') {
+                    if (await call('/Admin/Sms/Start30', { username })) {
+                        showToast(`Đã bật 30 ngày cho ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+
+                if (act === 'add') {
+                    const addDays = btn.getAttribute('data-d');
+
+                    if (await call('/Admin/Sms/AdjustDays', { username, addDays })) {
+                        showToast(`Đã cập nhật ${addDays} ngày cho ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+
+                if (act === 'openExpiry') {
+                    const row = lastData.find(x => String(x.username || "") === username);
+                    openExpiry(username, row ? row.smsSubExpiresAtUtc : null);
+                    return;
+                }
+
+                if (act === 'lock') {
+                    if (!confirm(`Khóa SMS định kỳ của ${username}?`)) return;
+
+                    if (await call('/Admin/Sms/SetSelfRegisterAllowed', {
+                        username,
+                        allowed: "false"
+                    })) {
+                        showToast(`Đã khóa SMS định kỳ của ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+
+                if (act === 'unlock') {
+                    if (await call('/Admin/Sms/SetSelfRegisterAllowed', {
+                        username,
+                        allowed: "true"
+                    })) {
+                        showToast(`Đã mở SMS định kỳ cho ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+
+                if (act === 'clear') {
+                    if (!confirm(`XÓA hoàn toàn SMS của ${username}?`)) return;
+
+                    if (await call('/Admin/Sms/Clear', { username })) {
+                        showToast(`Đã xóa SMS của ${username}`);
+                        await load();
+                    }
+
+                    return;
+                }
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        btnReload.addEventListener('click', load);
+        q.addEventListener('input', render);
+
+        load();
+    })();
+</script>

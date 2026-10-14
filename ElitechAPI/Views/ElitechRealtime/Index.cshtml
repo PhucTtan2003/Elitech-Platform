@@ -1,0 +1,1219 @@
+﻿@{
+    ViewData["Title"] = "📡 Elitech Realtime Monitor";
+    var deviceGuids = (ViewBag.DeviceGuids as string) ?? "";
+}
+
+<style>
+    :root {
+        --rt-bg: #f5f5f7;
+        --rt-ink: #0f172a;
+        --rt-muted: #64748b;
+        --rt-muted2: #94a3b8;
+        --rt-line: rgba(148, 163, 184, .22);
+        --rt-line2: rgba(255, 255, 255, .14);
+        --rt-dark: #05070d;
+        --rt-dark2: #10131c;
+        --rt-dark3: #1d1f29;
+        --rt-orange: #f58220;
+        --rt-orange2: #ffb25b;
+        --rt-blue: #2563eb;
+        --rt-sky: #38bdf8;
+        --rt-ok: #22c55e;
+        --rt-warn: #f59e0b;
+        --rt-bad: #ef4444;
+        --rt-card: rgba(255, 255, 255, .86);
+        --rt-shadow: 0 22px 70px rgba(15, 23, 42, .12);
+        --rt-shadow2: 0 12px 34px rgba(15, 23, 42, .08);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        background: radial-gradient(900px 420px at 10% -5%, rgba(245,130,32,.16), transparent 58%), radial-gradient(920px 460px at 90% 0%, rgba(37,99,235,.15), transparent 62%), linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 40%, #eef3fb 100%) !important;
+        color: var(--rt-ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .muted {
+        color: var(--rt-muted);
+    }
+
+    .hide {
+        display: none !important;
+    }
+
+    .rtx {
+        position: relative;
+        max-width: 1640px;
+        margin: 0 auto;
+        padding: 22px 18px 34px;
+    }
+
+    .rtx-hero {
+        position: relative;
+        min-height: 430px;
+        overflow: hidden;
+        border-radius: 38px;
+        padding: 38px;
+        color: #fff;
+        background: radial-gradient(800px 360px at 82% 0%, rgba(245,130,32,.36), transparent 52%), radial-gradient(760px 420px at 6% 4%, rgba(56,189,248,.22), transparent 58%), linear-gradient(135deg, #05070d 0%, #10131c 45%, #071226 100%);
+        border: 1px solid rgba(255,255,255,.12);
+        box-shadow: 0 34px 100px rgba(5,7,13,.34);
+    }
+
+        .rtx-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.055) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: .36;
+            pointer-events: none;
+            mask-image: linear-gradient(90deg, #000, transparent 88%);
+        }
+
+        .rtx-hero::after {
+            content: "";
+            position: absolute;
+            right: -170px;
+            top: -190px;
+            width: 520px;
+            height: 520px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.18);
+            box-shadow: inset 0 0 0 28px rgba(255,255,255,.035), inset 0 0 0 72px rgba(255,255,255,.02), 0 0 80px rgba(245,130,32,.18);
+            pointer-events: none;
+        }
+
+    .rtx-hero-grid {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(360px, .72fr);
+        gap: 28px;
+        align-items: center;
+    }
+
+    .rtx-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.16);
+        color: rgba(255,255,255,.88);
+        font-size: .76rem;
+        font-weight: 1000;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+        .rtx-kicker i {
+            color: var(--rt-orange2);
+        }
+
+    .rtx-title {
+        margin: 20px 0 0;
+        max-width: 850px;
+        font-size: clamp(3rem, 5vw, 5.8rem);
+        line-height: .92;
+        letter-spacing: -.075em;
+        font-weight: 1000;
+    }
+
+        .rtx-title span {
+            background: linear-gradient(90deg, #fff 0%, #dbeafe 34%, #ffb25b 76%, #f58220 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    .rtx-sub {
+        margin-top: 18px;
+        max-width: 790px;
+        color: rgba(226,232,240,.82);
+        font-size: 1rem;
+        line-height: 1.7;
+        font-weight: 720;
+    }
+
+    .rtx-live-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.16);
+        color: rgba(255,255,255,.86);
+        font-size: .82rem;
+        font-weight: 1000;
+        white-space: nowrap;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #94a3b8;
+        box-shadow: 0 0 0 6px rgba(148,163,184,.13);
+    }
+
+        .dot.ok {
+            background: var(--rt-ok);
+            box-shadow: 0 0 0 6px rgba(34,197,94,.16);
+        }
+
+        .dot.warn {
+            background: var(--rt-warn);
+            box-shadow: 0 0 0 6px rgba(245,158,11,.14);
+        }
+
+        .dot.bad {
+            background: var(--rt-bad);
+            box-shadow: 0 0 0 6px rgba(239,68,68,.14);
+        }
+
+    .rtx-console {
+        position: relative;
+        overflow: hidden;
+        border-radius: 34px;
+        padding: 22px;
+        min-height: 350px;
+        background: radial-gradient(280px 160px at 82% 0%, rgba(245,130,32,.28), transparent 65%), linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.06));
+        border: 1px solid rgba(255,255,255,.18);
+        box-shadow: 0 24px 70px rgba(0,0,0,.30);
+    }
+
+        .rtx-console::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.05) 1px, transparent 1px);
+            background-size: 34px 34px;
+            opacity: .34;
+            pointer-events: none;
+        }
+
+    .rtx-console-in {
+        position: relative;
+        z-index: 2;
+    }
+
+    .rtx-console-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .rtx-console-title {
+        color: #fff;
+        font-size: 1.35rem;
+        font-weight: 1000;
+        letter-spacing: -.045em;
+        line-height: 1.1;
+    }
+
+    .rtx-console-sub {
+        margin-top: 7px;
+        color: rgba(226,232,240,.70);
+        font-weight: 760;
+        font-size: .84rem;
+    }
+
+    .rtx-console-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border-radius: 999px;
+        color: #fff;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.15);
+        font-size: .78rem;
+        font-weight: 1000;
+        white-space: nowrap;
+    }
+
+    .rtx-bars {
+        height: 132px;
+        margin-top: 26px;
+        display: flex;
+        align-items: end;
+        gap: 11px;
+    }
+
+    .rtx-bar {
+        flex: 1;
+        min-width: 16px;
+        border-radius: 999px 999px 12px 12px;
+        background: linear-gradient(180deg, #dbeafe, rgba(37,99,235,.35));
+        box-shadow: 0 0 26px rgba(56,189,248,.16);
+    }
+
+        .rtx-bar:nth-child(3),
+        .rtx-bar:nth-child(6) {
+            background: linear-gradient(180deg, #ffb25b, rgba(245,130,32,.42));
+            box-shadow: 0 0 26px rgba(245,130,32,.18);
+        }
+
+    .rtx-console-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .rtx-mini {
+        min-height: 82px;
+        border-radius: 22px;
+        padding: 13px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.14);
+    }
+
+        .rtx-mini b {
+            display: block;
+            color: #fff;
+            font-size: 1.08rem;
+            line-height: 1;
+            font-weight: 1000;
+        }
+
+        .rtx-mini span {
+            display: block;
+            margin-top: 8px;
+            color: rgba(226,232,240,.72);
+            font-size: .74rem;
+            line-height: 1.26;
+            font-weight: 760;
+        }
+
+    .rtx-kpis {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .rtx-kpi {
+        position: relative;
+        overflow: hidden;
+        min-height: 142px;
+        border-radius: 28px;
+        padding: 20px;
+        background: rgba(255,255,255,.88);
+        border: 1px solid rgba(255,255,255,.75);
+        box-shadow: var(--rt-shadow2);
+    }
+
+        .rtx-kpi::after {
+            content: "";
+            position: absolute;
+            right: -70px;
+            bottom: -78px;
+            width: 160px;
+            height: 160px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(37,99,235,.17), transparent 70%);
+        }
+
+        .rtx-kpi.warn::after {
+            background: radial-gradient(circle, rgba(245,130,32,.21), transparent 70%);
+        }
+
+        .rtx-kpi.ok::after {
+            background: radial-gradient(circle, rgba(34,197,94,.18), transparent 70%);
+        }
+
+        .rtx-kpi.bad::after {
+            background: radial-gradient(circle, rgba(239,68,68,.18), transparent 70%);
+        }
+
+        .rtx-kpi .k {
+            position: relative;
+            z-index: 2;
+            color: var(--rt-muted);
+            font-size: .72rem;
+            font-weight: 1000;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .rtx-kpi .v {
+            position: relative;
+            z-index: 2;
+            margin-top: 12px;
+            color: var(--rt-ink);
+            font-size: 2.2rem;
+            line-height: 1;
+            font-weight: 1000;
+            letter-spacing: -.055em;
+        }
+
+        .rtx-kpi .s {
+            position: relative;
+            z-index: 2;
+            margin-top: 9px;
+            color: var(--rt-muted2);
+            font-size: .78rem;
+            font-weight: 800;
+        }
+
+    .panel {
+        margin-top: 18px;
+        overflow: hidden;
+        border-radius: 34px;
+        background: rgba(255,255,255,.88);
+        border: 1px solid rgba(255,255,255,.76);
+        box-shadow: var(--rt-shadow);
+    }
+
+    .panel-hd {
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: radial-gradient(500px 180px at 100% 0%, rgba(245,130,32,.16), transparent 58%), linear-gradient(180deg, rgba(255,255,255,.95), rgba(248,250,252,.88));
+        border-bottom: 1px solid rgba(226,232,240,.90);
+    }
+
+        .panel-hd b {
+            display: block;
+            color: var(--rt-ink);
+            font-size: 1.2rem;
+            line-height: 1.15;
+            font-weight: 1000;
+            letter-spacing: -.04em;
+        }
+
+    .sub {
+        margin-top: 6px;
+        color: var(--rt-muted);
+        font-size: .88rem;
+        line-height: 1.48;
+        font-weight: 760;
+    }
+
+    .meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        color: var(--rt-muted);
+        font-weight: 900;
+        font-size: .84rem;
+    }
+
+    .body {
+        padding: 20px;
+    }
+
+    .tools {
+        display: grid;
+        grid-template-columns: minmax(240px, 1.45fr) repeat(4, minmax(150px, .75fr)) auto auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .field {
+        display: grid;
+        gap: 7px;
+    }
+
+        .field label {
+            color: var(--rt-muted);
+            font-size: .70rem;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            font-weight: 1000;
+        }
+
+    .input,
+    .select,
+    .guidbox {
+        width: 100%;
+        border: 1px solid rgba(148,163,184,.28);
+        background: #fff;
+        border-radius: 18px;
+        min-height: 46px;
+        padding: 0 14px;
+        color: var(--rt-ink);
+        font-weight: 900;
+        outline: none;
+        box-shadow: 0 10px 22px rgba(15,23,42,.04);
+        transition: .16s ease;
+    }
+
+        .input:focus,
+        .select:focus,
+        .guidbox:focus {
+            border-color: rgba(245,130,32,.62);
+            box-shadow: 0 0 0 4px rgba(245,130,32,.12);
+        }
+
+    .guidbox {
+        height: 92px;
+        resize: vertical;
+        padding: 12px 14px;
+        line-height: 1.42;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: .78rem;
+    }
+
+    .btn {
+        min-height: 46px;
+        border: 1px solid rgba(148,163,184,.28);
+        background: #fff;
+        color: var(--rt-ink);
+        padding: 0 15px;
+        border-radius: 18px;
+        font-weight: 1000;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        white-space: nowrap;
+        transition: .16s ease;
+    }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(15,23,42,.10);
+        }
+
+        .btn.primary {
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--rt-orange), var(--rt-orange2));
+            color: #111827;
+        }
+
+        .btn.ghost {
+            border-color: rgba(245,130,32,.40);
+            color: #a94d0e;
+            background: rgba(255,255,255,.92);
+        }
+
+        .btn:disabled {
+            opacity: .52;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .guid-panel {
+        margin-top: 14px;
+        border-radius: 24px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: radial-gradient(420px 160px at 100% 0%, rgba(37,99,235,.07), transparent 60%), #f8fafc;
+        padding: 15px;
+    }
+
+        .guid-panel summary {
+            cursor: pointer;
+            color: #334155;
+            font-size: .9rem;
+            font-weight: 1000;
+        }
+
+    .viewbar {
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 6px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        border: 1px solid rgba(226,232,240,.95);
+    }
+
+    .tab {
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 0;
+        background: transparent;
+        color: #475569;
+        font-size: .84rem;
+        font-weight: 1000;
+        cursor: pointer;
+        transition: .14s ease;
+    }
+
+        .tab.active {
+            background: #fff;
+            color: #111827;
+            box-shadow: 0 10px 22px rgba(15,23,42,.08);
+        }
+
+    .content {
+        margin-top: 14px;
+    }
+
+    .empty {
+        padding: 28px !important;
+        border-radius: 24px;
+        background: #f8fafc;
+        border: 1px solid rgba(226,232,240,.95);
+        color: var(--rt-muted) !important;
+        font-weight: 900;
+        text-align: center;
+    }
+
+    .table-wrap {
+        overflow: auto;
+        border-radius: 26px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: #fff;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+    }
+
+    .table {
+        width: 100%;
+        min-width: 1120px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding: 14px 13px;
+            text-align: left;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: .68rem;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            font-weight: 1000;
+            border-bottom: 1px solid rgba(226,232,240,.95);
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 13px;
+            border-bottom: 1px solid rgba(226,232,240,.78);
+            color: var(--rt-ink);
+            font-size: .86rem;
+            font-weight: 850;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background: #fff7ed;
+        }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-weight: 1000;
+        font-size: .74rem;
+        border: 1px solid transparent;
+    }
+
+        .status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+
+        .status.ok {
+            color: #047857;
+            background: #ecfdf5;
+            border-color: rgba(16,185,129,.25);
+        }
+
+            .status.ok::before {
+                background: var(--rt-ok);
+            }
+
+        .status.warn {
+            color: #92400e;
+            background: #fffbeb;
+            border-color: rgba(245,158,11,.28);
+        }
+
+            .status.warn::before {
+                background: var(--rt-warn);
+            }
+
+        .status.alarm {
+            color: #991b1b;
+            background: #fef2f2;
+            border-color: rgba(239,68,68,.25);
+        }
+
+            .status.alarm::before {
+                background: var(--rt-bad);
+            }
+
+        .status.nodata {
+            color: #475569;
+            background: #f1f5f9;
+            border-color: rgba(148,163,184,.30);
+        }
+
+            .status.nodata::before {
+                background: #94a3b8;
+            }
+
+    .v-bad {
+        color: #b91c1c;
+    }
+
+    .v-good {
+        color: #047857;
+    }
+
+    .v-warn {
+        color: #92400e;
+    }
+
+    .compact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+    }
+
+    .compact-card {
+        border-radius: 26px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: #fff;
+        box-shadow: var(--rt-shadow2);
+        padding: 16px;
+        min-width: 0;
+        transition: .16s ease;
+    }
+
+        .compact-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 38px rgba(15,23,42,.12);
+        }
+
+    .cc-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .cc-name {
+        max-width: 165px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--rt-ink);
+        font-weight: 1000;
+        line-height: 1.16;
+    }
+
+    .cc-guid {
+        margin-top: 5px;
+        color: var(--rt-muted);
+        font-size: .72rem;
+        font-weight: 900;
+        overflow-wrap: anywhere;
+    }
+
+    .cc-values {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+    }
+
+    .tile {
+        border-radius: 18px;
+        border: 1px solid rgba(148,163,184,.18);
+        background: #f8fafc;
+        padding: 10px;
+    }
+
+        .tile .k {
+            color: var(--rt-muted);
+            font-size: .64rem;
+            text-transform: uppercase;
+            font-weight: 1000;
+            letter-spacing: .13em;
+        }
+
+        .tile .v {
+            margin-top: 6px;
+            color: var(--rt-ink);
+            font-size: .98rem;
+            line-height: 1.35;
+            font-weight: 1000;
+        }
+
+    .full-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 14px;
+    }
+
+    .full-card {
+        overflow: hidden;
+        border-radius: 28px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: #fff;
+        box-shadow: var(--rt-shadow2);
+        transition: .16s ease;
+    }
+
+        .full-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 38px rgba(15,23,42,.12);
+        }
+
+    .fc-head {
+        padding: 17px;
+        border-bottom: 1px solid rgba(226,232,240,.9);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        background: radial-gradient(340px 130px at 100% 0%, rgba(245,130,32,.09), transparent 60%), #fff;
+    }
+
+    .fc-name {
+        color: var(--rt-ink);
+        font-size: 1.04rem;
+        line-height: 1.16;
+        font-weight: 1000;
+    }
+
+    .fc-guid {
+        margin-top: 6px;
+        color: var(--rt-muted);
+        font-size: .76rem;
+        font-weight: 900;
+        overflow-wrap: anywhere;
+    }
+
+    .fc-body {
+        padding: 17px;
+        display: grid;
+        gap: 11px;
+    }
+
+    .sensor-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .sensor {
+        border-radius: 19px;
+        border: 1px solid rgba(148,163,184,.18);
+        background: #f8fafc;
+        padding: 12px;
+    }
+
+        .sensor .k {
+            color: var(--rt-muted);
+            font-size: .64rem;
+            text-transform: uppercase;
+            font-weight: 1000;
+            letter-spacing: .13em;
+        }
+
+        .sensor .v {
+            margin-top: 7px;
+            color: var(--rt-ink);
+            font-size: 1.05rem;
+            line-height: 1.32;
+            font-weight: 1000;
+        }
+
+    .fc-foot {
+        border-top: 1px solid rgba(226,232,240,.9);
+        padding: 12px 17px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--rt-muted);
+        font-size: .78rem;
+        font-weight: 900;
+        background: #fbfdff;
+    }
+
+    .pager {
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .pager-actions {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+    }
+
+    @@media (max-width: 1280px) {
+        .rtx-hero-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rtx-console {
+            max-width: 720px;
+        }
+
+        .rtx-kpis {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .tools {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 820px) {
+        .rtx {
+            padding: 14px 10px 26px;
+        }
+
+        .rtx-hero {
+            border-radius: 28px;
+            padding: 24px;
+            min-height: auto;
+        }
+
+        .rtx-title {
+            font-size: 2.75rem;
+        }
+
+        .rtx-console-grid,
+        .rtx-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .tools {
+            grid-template-columns: 1fr;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .panel-hd,
+        .body {
+            padding: 16px;
+        }
+
+        .compact-grid,
+        .full-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .rtx-console-grid,
+        .rtx-kpis,
+        .sensor-grid,
+        .cc-values {
+            grid-template-columns: 1fr;
+        }
+
+        .rtx-bars {
+            height: 100px;
+        }
+    }
+</style>
+
+<div class="rtx">
+    <section class="rtx-hero">
+        <div class="rtx-hero-grid">
+            <div>
+                <div class="rtx-kicker">
+                    <i class="bi bi-broadcast-pin"></i>
+                    Elitech Realtime Command
+                </div>
+
+                <h1 class="rtx-title">
+                    Theo dõi thiết bị <span>Realtime</span>
+                </h1>
+
+                <div class="rtx-sub">
+                    Dashboard realtime dành cho Admin: load nhanh danh sách thiết bị, lọc trạng thái,
+                    tìm theo tên/GUID, chuyển Table - Compact - Full Cards và xuất CSV khi cần đối soát dữ liệu.
+                </div>
+
+                <div class="rtx-live-row">
+                    <span class="pill"><span class="dot ok"></span> Live polling</span>
+                    <span class="pill"><span class="dot warn"></span> 200+ devices ready</span>
+                    <span class="pill"><i class="bi bi-clock-history"></i> <span id="lastUpdateTop">—</span></span>
+                </div>
+            </div>
+
+            <div class="rtx-console">
+                <div class="rtx-console-in">
+                    <div class="rtx-console-head">
+                        <div>
+                            <div class="rtx-console-title">Cloud Signal Deck</div>
+                            <div class="rtx-console-sub">Temperature • Humidity • Power • Signal</div>
+                        </div>
+                        <div class="rtx-console-badge"><span class="dot ok"></span> Online</div>
+                    </div>
+
+                    <div class="rtx-bars" aria-hidden="true">
+                        <div class="rtx-bar" style="height:43%;"></div>
+                        <div class="rtx-bar" style="height:72%;"></div>
+                        <div class="rtx-bar" style="height:58%;"></div>
+                        <div class="rtx-bar" style="height:91%;"></div>
+                        <div class="rtx-bar" style="height:65%;"></div>
+                        <div class="rtx-bar" style="height:80%;"></div>
+                        <div class="rtx-bar" style="height:50%;"></div>
+                    </div>
+
+                    <div class="rtx-console-grid">
+                        <div class="rtx-mini"><b>Table</b><span>View nhanh cho nhiều thiết bị</span></div>
+                        <div class="rtx-mini"><b>Cards</b><span>Xem thông số trực quan</span></div>
+                        <div class="rtx-mini"><b>Filter</b><span>Ưu tiên alarm và no data</span></div>
+                        <div class="rtx-mini"><b>CSV</b><span>Xuất dữ liệu kiểm tra</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rtx-kpis">
+        <div class="rtx-kpi"><div class="k">Tổng thiết bị</div><div class="v" id="kpiTotal">0</div><div class="s">sau khi load realtime</div></div>
+        <div class="rtx-kpi ok"><div class="k">OK</div><div class="v" id="kpiOk">0</div><div class="s">trong ngưỡng demo</div></div>
+        <div class="rtx-kpi warn"><div class="k">Alarm/Warn</div><div class="v" id="kpiAlarm">0</div><div class="s">vượt ngưỡng demo</div></div>
+        <div class="rtx-kpi bad"><div class="k">No data</div><div class="v" id="kpiNoData">0</div><div class="s">Elitech chưa trả data</div></div>
+        <div class="rtx-kpi"><div class="k">Đang hiển thị</div><div class="v" id="kpiFiltered">0</div><div class="s">sau lọc/tìm kiếm</div></div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-hd">
+            <div>
+                <b>Control Panel</b>
+                <div class="sub">Mặc định dùng danh sách thiết bị từ quyền user/admin. Chỉ nhập GUID khi cần override nhanh.</div>
+            </div>
+            <div class="meta">
+                <span>Interval: <span class="mono" id="tickSec">—</span></span>
+                <span>•</span>
+                <span>Page: <span class="mono" id="pageInfoTop">—</span></span>
+            </div>
+        </div>
+
+        <div class="body">
+            <form id="realtimeForm">
+                <div class="tools">
+                    <div class="field">
+                        <label>Tìm thiết bị</label>
+                        <input id="searchInput" type="search" class="input" placeholder="Tên, GUID, địa chỉ..." autocomplete="off" />
+                    </div>
+
+                    <div class="field">
+                        <label>Trạng thái</label>
+                        <select id="statusFilter" class="select">
+                            <option value="all">Tất cả</option>
+                            <option value="alarm">Alarm</option>
+                            <option value="warn">Warn</option>
+                            <option value="ok">OK</option>
+                            <option value="nodata">No data</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Sắp xếp</label>
+                        <select id="sortBy" class="select">
+                            <option value="status">Alarm trước</option>
+                            <option value="name">Tên A-Z</option>
+                            <option value="temp_desc">Nhiệt cao nhất</option>
+                            <option value="last_desc">Mới cập nhật</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Page size</label>
+                        <select id="pageSize" class="select">
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>View</label>
+                        <select id="viewMode" class="select">
+                            <option value="table">Table nhanh</option>
+                            <option value="compact">Compact card</option>
+                            <option value="full">Full card</option>
+                        </select>
+                    </div>
+
+                    <button class="btn primary" type="submit"><i class="bi bi-download"></i> Load</button>
+                    <button class="btn ghost" type="button" id="btnExport"><i class="bi bi-filetype-csv"></i> CSV</button>
+                </div>
+
+                <details class="guid-panel">
+                    <summary>GUID nguồn / override thủ công</summary>
+                    <div style="margin-top:12px;display:grid;gap:9px;">
+                        <textarea id="guidInput" name="deviceGuids" class="guidbox" placeholder="GUID1,GUID2,GUID3...">@deviceGuids</textarea>
+                        <div class="meta">Đang dùng <span class="mono" id="guidCount">0</span> GUID từ ViewBag/query. Để trống rồi Load sẽ gọi API realtime theo quyền user/admin.</div>
+                    </div>
+                </details>
+            </form>
+
+            <div class="viewbar">
+                <div class="tabs">
+                    <button class="tab active" type="button" data-mode="table"><i class="bi bi-table"></i> Table</button>
+                    <button class="tab" type="button" data-mode="compact"><i class="bi bi-grid-3x3-gap"></i> Compact</button>
+                    <button class="tab" type="button" data-mode="full"><i class="bi bi-card-list"></i> Full cards</button>
+                </div>
+                <div class="meta" id="resultMeta">Chưa có dữ liệu</div>
+            </div>
+
+            <div class="content">
+                <div id="tableView" class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Thiết bị</th>
+                                <th>GUID</th>
+                                <th>Temp</th>
+                                <th>Hum</th>
+                                <th>Power</th>
+                                <th>Signal</th>
+                                <th>Last session</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="9" class="empty">Chưa có dữ liệu…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="compactView" class="compact-grid hide"></div>
+                <div id="fullView" class="full-grid hide"></div>
+            </div>
+
+            <div class="pager">
+                <div class="meta" id="pageInfo">—</div>
+                <div class="pager-actions">
+                    <button class="btn" type="button" id="btnFirst">Đầu</button>
+                    <button class="btn" type="button" id="btnPrev">Trước</button>
+                    <button class="btn" type="button" id="btnNext">Sau</button>
+                    <button class="btn" type="button" id="btnLast">Cuối</button>
+                    <button class="btn ghost" type="button" id="btnRefresh"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    const initialDeviceGuids = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(deviceGuids));
+    const qs = new URLSearchParams(window.location.search);
+    const els = {
+        guidInput: document.getElementById("guidInput"), guidCount: document.getElementById("guidCount"), searchInput: document.getElementById("searchInput"), statusFilter: document.getElementById("statusFilter"), sortBy: document.getElementById("sortBy"), pageSize: document.getElementById("pageSize"), viewMode: document.getElementById("viewMode"), form: document.getElementById("realtimeForm"),
+        tableView: document.getElementById("tableView"), tableBody: document.getElementById("tableBody"), compactView: document.getElementById("compactView"), fullView: document.getElementById("fullView"),
+        kpiTotal: document.getElementById("kpiTotal"), kpiOk: document.getElementById("kpiOk"), kpiAlarm: document.getElementById("kpiAlarm"), kpiNoData: document.getElementById("kpiNoData"), kpiFiltered: document.getElementById("kpiFiltered"),
+        resultMeta: document.getElementById("resultMeta"), pageInfo: document.getElementById("pageInfo"), pageInfoTop: document.getElementById("pageInfoTop"), lastUpdateTop: document.getElementById("lastUpdateTop"), tickSec: document.getElementById("tickSec"),
+        btnExport: document.getElementById("btnExport"), btnRefresh: document.getElementById("btnRefresh"), btnFirst: document.getElementById("btnFirst"), btnPrev: document.getElementById("btnPrev"), btnNext: document.getElementById("btnNext"), btnLast: document.getElementById("btnLast")
+    };
+    const state = { rows: [], filtered: [], page: 1, pageSize: Number(localStorage.getItem("elitechRealtime.pageSize") || "25"), view: localStorage.getItem("elitechRealtime.view") || "table", lastRaw: null };
+
+    function esc(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function fmt(v) { const s = String(v ?? "").trim(); return s ? s : "—"; }
+    function asNumber(x) { if (x === 0) return 0; if (!x) return null; const m = String(x).match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; }
+    function splitGuidString(s) { return String(s || "").split(",").map(x => x.trim()).filter(Boolean); }
+    function normGuid(s) { return String(s || "").trim().toUpperCase(); }
+    function tsSecToLocal(sec) { if (!sec) return "—"; const n = Number(sec); if (!Number.isFinite(n) || n <= 0) return "—"; const d = new Date(n > 3000000000 ? n : n * 1000); return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString(); }
+    function mainTemp(r) { const a = [r.tmp1, r.tmp2, r.tmp3, r.tmp4].map(asNumber).filter(v => v !== null); return a.length ? a[0] : null; }
+    function mainHum(r) { const a = [r.hum1, r.hum2].map(asNumber).filter(v => v !== null); return a.length ? a[0] : null; }
+    function rowStatus(r) { if (r.__missingRealtime) return "nodata"; const t = [r.tmp1, r.tmp2, r.tmp3, r.tmp4].map(asNumber).filter(v => v !== null); const h = [r.hum1, r.hum2].map(asNumber).filter(v => v !== null); if (!t.length && !h.length) return "nodata"; if (r.alarmState || t.some(v => v < 2 || v > 8) || h.some(v => v < 30 || v > 70)) return "alarm"; if (r.warnState) return "warn"; return "ok"; }
+    function statusLabel(s) { return s === "alarm" ? "ALARM" : s === "warn" ? "WARN" : s === "nodata" ? "NO DATA" : "OK"; }
+    function statusScore(s) { return s === "alarm" ? 0 : s === "warn" ? 1 : s === "nodata" ? 2 : 3; }
+    function mergeMissingDevices(rows, requestedGuids, missingGuids) { rows = Array.isArray(rows) ? rows : []; const returned = new Set(rows.map(x => normGuid(x.deviceGuid)).filter(Boolean)); const missing = (Array.isArray(missingGuids) && missingGuids.length ? missingGuids : (requestedGuids || []).filter(g => !returned.has(normGuid(g)))); return [...rows, ...missing.filter(g => !returned.has(normGuid(g))).map(g => ({ deviceGuid: g, deviceName: "Thiết bị chưa có realtime", __missingRealtime: true }))]; }
+    function enrichRows(rows) { return (rows || []).map((x, i) => { const st = rowStatus(x); return { ...x, __idx: i, __status: st, __temp: mainTemp(x), __hum: mainHum(x), __name: fmt(x.deviceName) !== "—" ? fmt(x.deviceName) : "Device", __guid: fmt(x.deviceGuid) } }); }
+    function currentGuidString() { return (els.guidInput?.value || "").trim(); }
+    function updateGuidCount() { els.guidCount.textContent = String(splitGuidString(currentGuidString()).length); }
+    function getTotalPages() { return Math.max(1, Math.ceil(state.filtered.length / state.pageSize)); }
+    function getPageRows() { const start = (state.page - 1) * state.pageSize; return state.filtered.slice(start, start + state.pageSize); }
+
+    function tempHtml(r) { const vals = [r.tmp1, r.tmp2, r.tmp3, r.tmp4].map((raw, i) => ({ raw, v: asNumber(raw), label: `T${i + 1}` })).filter(x => x.v !== null); if (!vals.length) return `<span class="muted">—</span>`; return vals.map(x => `<span class="${x.v < 2 || x.v > 8 ? "v-bad" : "v-good"}">${x.label}: ${esc(fmt(x.raw))}</span>`).join(" · "); }
+    function humHtml(r) { const vals = [r.hum1, r.hum2].map((raw, i) => ({ raw, v: asNumber(raw), label: `H${i + 1}` })).filter(x => x.v !== null); if (!vals.length) return `<span class="muted">—</span>`; return vals.map(x => `<span class="${x.v < 30 || x.v > 70 ? "v-bad" : "v-good"}">${x.label}: ${esc(fmt(x.raw))}</span>`).join(" · "); }
+
+    function applyFilters() { const q = (els.searchInput.value || "").trim().toLowerCase(); const status = els.statusFilter.value || "all"; const sortBy = els.sortBy.value || "status"; let rows = [...state.rows]; if (q) { rows = rows.filter(x => [x.deviceName, x.deviceGuid, x.address, x.power, x.signal].map(v => String(v || "").toLowerCase()).join(" ").includes(q)); } if (status !== "all") rows = rows.filter(x => x.__status === status); rows.sort((a, b) => { if (sortBy === "name") return String(a.__name).localeCompare(String(b.__name)); if (sortBy === "temp_desc") return (b.__temp ?? -9999) - (a.__temp ?? -9999); if (sortBy === "last_desc") return Number(b.lastSessionTime || 0) - Number(a.lastSessionTime || 0); const s = statusScore(a.__status) - statusScore(b.__status); return s !== 0 ? s : String(a.__name).localeCompare(String(b.__name)); }); state.filtered = rows; const tp = getTotalPages(); if (state.page > tp) state.page = tp; if (state.page < 1) state.page = 1; renderAll(); }
+
+    function renderSummary() { const total = state.rows.length, ok = state.rows.filter(x => x.__status === "ok").length, alarm = state.rows.filter(x => x.__status === "alarm" || x.__status === "warn").length, nodata = state.rows.filter(x => x.__status === "nodata").length; els.kpiTotal.textContent = total; els.kpiOk.textContent = ok; els.kpiAlarm.textContent = alarm; els.kpiNoData.textContent = nodata; els.kpiFiltered.textContent = state.filtered.length; }
+    function renderPager() { const tp = getTotalPages(); const start = state.filtered.length ? ((state.page - 1) * state.pageSize + 1) : 0; const end = Math.min(state.page * state.pageSize, state.filtered.length); const text = `${start}-${end} / ${state.filtered.length} thiết bị • Trang ${state.page}/${tp}`; els.pageInfo.textContent = text; els.pageInfoTop.textContent = `${state.page}/${tp}`; els.resultMeta.textContent = `${state.filtered.length} kết quả sau lọc • tổng ${state.rows.length}`; els.btnFirst.disabled = state.page <= 1; els.btnPrev.disabled = state.page <= 1; els.btnNext.disabled = state.page >= tp; els.btnLast.disabled = state.page >= tp; }
+    function renderViewsVisibility() { els.tableView.classList.toggle("hide", state.view !== "table"); els.compactView.classList.toggle("hide", state.view !== "compact"); els.fullView.classList.toggle("hide", state.view !== "full"); document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === state.view)); if (els.viewMode.value !== state.view) els.viewMode.value = state.view; }
+
+    function renderTable(rows) { if (!rows.length) { els.tableBody.innerHTML = `<tr><td colspan="9" class="empty">Không có dữ liệu phù hợp.</td></tr>`; return; } els.tableBody.innerHTML = rows.map(x => `<tr><td><span class="status ${esc(x.__status)}">${statusLabel(x.__status)}</span></td><td>${esc(x.__name)}</td><td><span class="mono">${esc(x.__guid)}</span></td><td>${tempHtml(x)}</td><td>${humHtml(x)}</td><td><span class="mono">${esc(fmt(x.power))}</span></td><td><span class="mono">${esc(fmt(x.signal))}</span></td><td><span class="mono">${esc(tsSecToLocal(x.lastSessionTime))}</span></td><td>${esc(fmt(x.address))}</td></tr>`).join(""); }
+    function renderCompact(rows) { if (!rows.length) { els.compactView.innerHTML = `<div class="empty">Không có dữ liệu phù hợp.</div>`; return; } els.compactView.innerHTML = rows.map(x => `<article class="compact-card"><div class="cc-top"><div style="min-width:0"><div class="cc-name">${esc(x.__name)}</div><div class="cc-guid mono">${esc(x.__guid)}</div></div><span class="status ${esc(x.__status)}">${statusLabel(x.__status)}</span></div><div class="cc-values"><div class="tile"><div class="k">Temp</div><div class="v">${tempHtml(x)}</div></div><div class="tile"><div class="k">Hum</div><div class="v">${humHtml(x)}</div></div><div class="tile"><div class="k">Power</div><div class="v mono">${esc(fmt(x.power))}</div></div><div class="tile"><div class="k">Signal</div><div class="v mono">${esc(fmt(x.signal))}</div></div></div></article>`).join(""); }
+    function sensorTiles(r) { const temp = [r.tmp1, r.tmp2, r.tmp3, r.tmp4].map((raw, i) => ({ raw, v: asNumber(raw), label: `Nhiệt ${i + 1}`, unit: "°C", min: 2, max: 8 })).filter(x => x.v !== null); const hum = [r.hum1, r.hum2].map((raw, i) => ({ raw, v: asNumber(raw), label: `Ẩm ${i + 1}`, unit: "%RH", min: 30, max: 70 })).filter(x => x.v !== null); const tiles = [...temp, ...hum]; if (!tiles.length) return `<div class="empty" style="grid-column:1/-1">Không có sensor data.</div>`; return tiles.map(t => `<div class="sensor"><div class="k">${esc(t.label)}</div><div class="v ${t.v < t.min || t.v > t.max ? "v-bad" : "v-good"}">${esc(fmt(t.raw))} <span class="muted">${esc(t.unit)}</span></div></div>`).join(""); }
+    function renderFull(rows) { if (!rows.length) { els.fullView.innerHTML = `<div class="empty">Không có dữ liệu phù hợp.</div>`; return; } els.fullView.innerHTML = rows.map(x => `<article class="full-card"><div class="fc-head"><div><div class="fc-name">${esc(x.__name)}</div><div class="fc-guid mono">${esc(x.__guid)}</div></div><span class="status ${esc(x.__status)}">${statusLabel(x.__status)}</span></div><div class="fc-body"><div class="sensor-grid">${sensorTiles(x)}</div><div class="sensor-grid"><div class="sensor"><div class="k">Nguồn</div><div class="v mono">${esc(fmt(x.power))}</div></div><div class="sensor"><div class="k">Tín hiệu</div><div class="v mono">${esc(fmt(x.signal))}</div></div></div><div class="sensor"><div class="k">Địa chỉ</div><div class="v">${esc(fmt(x.address))}</div></div></div><div class="fc-foot"><span><i class="bi bi-clock"></i> <span class="mono">${esc(tsSecToLocal(x.lastSessionTime))}</span></span><span>GUID: <span class="mono">${esc(x.__guid)}</span></span></div></article>`).join(""); }
+    function renderAll() { renderViewsVisibility(); renderSummary(); renderPager(); const rows = getPageRows(); if (state.view === "table") renderTable(rows); else if (state.view === "compact") renderCompact(rows); else renderFull(rows); }
+    function setView(mode) { state.view = mode || "table"; localStorage.setItem("elitechRealtime.view", state.view); renderAll(); }
+
+    async function loadOnce() { const dg = currentGuidString(); updateGuidCount(); const url = dg ? `/api/elitech/realtime?deviceGuids=${encodeURIComponent(dg)}` : `/api/elitech/realtime`; els.resultMeta.textContent = "Đang tải realtime..."; try { const res = await fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } }); const text = await res.text(); let json = null; try { json = text ? JSON.parse(text) : {}; } catch { throw new Error(text || `HTTP ${res.status}`); } if (!res.ok) throw new Error(json.message || json.detail || text || `HTTP ${res.status}`); const requested = Array.isArray(json?.requestedDeviceGuids) ? json.requestedDeviceGuids : splitGuidString(dg); const missing = Array.isArray(json?.missingDeviceGuids) ? json.missingDeviceGuids : []; const rows = mergeMissingDevices(json?.data ?? [], requested, missing); state.lastRaw = json; state.rows = enrichRows(rows); state.page = 1; els.lastUpdateTop.textContent = new Date().toLocaleTimeString(); applyFilters(); console.log("REALTIME DEBUG", { requested, returned: json?.returnedDeviceGuids, missing, raw: json, rows: state.rows }); } catch (err) { state.rows = []; state.filtered = []; els.tableBody.innerHTML = `<tr><td colspan="9" class="empty">Không thể tải dữ liệu: ${esc(err.message || err)}</td></tr>`; els.compactView.innerHTML = `<div class="empty">Không thể tải dữ liệu.</div>`; els.fullView.innerHTML = `<div class="empty">Không thể tải dữ liệu.</div>`; renderSummary(); renderPager(); els.resultMeta.textContent = "Load thất bại"; } }
+    function toCsv(rows) { const header = ["status", "deviceName", "deviceGuid", "tmp1", "tmp2", "tmp3", "tmp4", "hum1", "hum2", "power", "signal", "address", "lastSessionTime"]; const lines = [header.join(",")]; (rows || []).forEach(x => { const vals = header.map(k => { let v = k === "status" ? x.__status : x?.[k]; if (k === "lastSessionTime") v = tsSecToLocal(v); const s = v == null ? "" : String(v); return `"${s.replaceAll('"', '""')}"`; }); lines.push(vals.join(",")); }); return lines.join("\n"); }
+    function exportCsv() { const csv = toCsv(state.filtered); const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = Object.assign(document.createElement("a"), { href: url, download: `elitech_realtime_${new Date().toISOString().slice(0, 10)}.csv` }); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1200); }
+    function debounce(fn, delay) { let t = null; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); }; }
+
+    els.pageSize.value = String(state.pageSize); els.viewMode.value = state.view; els.guidInput.value = qs.get("deviceGuids") ?? initialDeviceGuids ?? ""; updateGuidCount();
+    els.form.addEventListener("submit", e => { e.preventDefault(); loadOnce(); });
+    els.searchInput.addEventListener("input", debounce(() => { state.page = 1; applyFilters(); }, 180));
+    els.statusFilter.addEventListener("change", () => { state.page = 1; applyFilters(); });
+    els.sortBy.addEventListener("change", () => { state.page = 1; applyFilters(); });
+    els.pageSize.addEventListener("change", () => { state.pageSize = Number(els.pageSize.value || "25"); localStorage.setItem("elitechRealtime.pageSize", String(state.pageSize)); state.page = 1; applyFilters(); });
+    els.viewMode.addEventListener("change", () => setView(els.viewMode.value));
+    document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.mode)));
+    els.guidInput.addEventListener("input", updateGuidCount);
+    els.btnFirst.addEventListener("click", () => { state.page = 1; renderAll(); });
+    els.btnPrev.addEventListener("click", () => { state.page = Math.max(1, state.page - 1); renderAll(); });
+    els.btnNext.addEventListener("click", () => { state.page = Math.min(getTotalPages(), state.page + 1); renderAll(); });
+    els.btnLast.addEventListener("click", () => { state.page = getTotalPages(); renderAll(); });
+    els.btnRefresh.addEventListener("click", loadOnce); els.btnExport.addEventListener("click", exportCsv);
+    const INTERVAL_MS = 180000; els.tickSec.textContent = `${INTERVAL_MS / 1000}s`; renderViewsVisibility(); loadOnce(); const timer = setInterval(loadOnce, INTERVAL_MS); window.addEventListener("beforeunload", () => clearInterval(timer));
+</script>

@@ -1,0 +1,1274 @@
+﻿@{
+    ViewData["Title"] = "Lịch sử cảnh báo";
+    var isAdmin = (ViewBag.IsAdmin as bool?) == true;
+
+    var presetGuid = (ViewBag.DeviceGuid as string) ?? "";
+    var presetFrom = (ViewBag.From as string) ?? "";
+    var presetTo = (ViewBag.To as string) ?? "";
+}
+
+<style>
+    /* =========================================================
+           ALERT HISTORY - COMMAND CENTER FIXED
+           ✅ Không overlap / không lệch layout
+           ✅ Scope toàn bộ bằng .ahx-page để không phá layout chung
+           ========================================================= */
+
+    .ahx-page {
+        --ahx-orange: #f58220;
+        --ahx-orange-2: #ffb25b;
+        --ahx-blue: #0a84ff;
+        --ahx-blue-2: #38bdf8;
+        --ahx-green: #22c55e;
+        --ahx-red: #ef4444;
+        --ahx-yellow: #f59e0b;
+        --ahx-dark: #05070b;
+        --ahx-dark-2: #0d1424;
+        --ahx-text: #0f172a;
+        --ahx-muted: #64748b;
+        --ahx-soft: #eef3fb;
+        --ahx-card: rgba(255,255,255,.94);
+        --ahx-border: rgba(226,232,240,.92);
+        --ahx-border-dark: rgba(255,255,255,.14);
+        --ahx-shadow: 0 24px 70px rgba(15,23,42,.14);
+        --ahx-shadow-soft: 0 14px 34px rgba(15,23,42,.10);
+        min-height: calc(100vh - 72px);
+        padding: 24px 18px 46px;
+        color: var(--ahx-text);
+        background: linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.035) 1px, transparent 1px), radial-gradient(960px 520px at 12% 0%, rgba(245,130,32,.28), transparent 58%), radial-gradient(900px 520px at 88% 0%, rgba(10,132,255,.26), transparent 56%), linear-gradient(180deg, #070a10 0 430px, #eef3fb 430px 100%);
+        background-size: 72px 72px, 72px 72px, auto, auto, auto;
+        overflow-x: hidden;
+    }
+
+    .ahx-shell {
+        width: min(100%, 1460px);
+        margin: 0 auto;
+    }
+
+    .ahx-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 390px;
+        gap: 22px;
+        align-items: stretch;
+        margin-bottom: 18px;
+    }
+
+    .ahx-hero-main,
+    .ahx-access-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 34px;
+        border: 1px solid var(--ahx-border-dark);
+        background: radial-gradient(780px 300px at 88% 0%, rgba(245,130,32,.22), transparent 60%), radial-gradient(680px 320px at 0% 0%, rgba(10,132,255,.16), transparent 62%), linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.055));
+        box-shadow: 0 28px 90px rgba(2,6,23,.30);
+        color: #fff;
+    }
+
+        .ahx-hero-main::before,
+        .ahx-access-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,.052) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.052) 1px, transparent 1px);
+            background-size: 46px 46px;
+            opacity: .58;
+            pointer-events: none;
+        }
+
+    .ahx-hero-main {
+        min-height: 374px;
+        padding: clamp(28px, 4vw, 54px);
+    }
+
+    .ahx-hero-inner,
+    .ahx-access-inner {
+        position: relative;
+        z-index: 2;
+    }
+
+    .ahx-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        color: rgba(255,255,255,.88);
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.16);
+        font-size: .76rem;
+        font-weight: 1000;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+        .ahx-eyebrow i {
+            color: var(--ahx-orange-2);
+        }
+
+    .ahx-title {
+        max-width: 780px;
+        margin: 26px 0 0;
+        font-size: clamp(3.6rem, 7vw, 7.2rem);
+        line-height: .88;
+        font-weight: 1000;
+        letter-spacing: -.075em;
+        color: #fff;
+    }
+
+        .ahx-title span {
+            background: linear-gradient(90deg, #fff 0%, #dbeafe 40%, #ffb25b 72%, #f58220 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    .ahx-lead {
+        max-width: 780px;
+        margin: 24px 0 0;
+        color: rgba(226,232,240,.78);
+        font-size: 1.02rem;
+        line-height: 1.68;
+        font-weight: 760;
+    }
+
+    .ahx-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+    }
+
+    .ahx-btn {
+        min-height: 48px;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 0 18px;
+        color: #fff;
+        background: rgba(255,255,255,.10);
+        font-weight: 1000;
+        text-decoration: none !important;
+        cursor: pointer;
+        transition: .16s ease;
+        white-space: nowrap;
+    }
+
+        .ahx-btn:hover {
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+        .ahx-btn.primary {
+            border: 0;
+            color: #06111f;
+            background: linear-gradient(135deg, #0a84ff, #38bdf8);
+            color: #fff;
+            box-shadow: 0 18px 42px rgba(10,132,255,.28);
+        }
+
+        .ahx-btn.light {
+            color: #08111f;
+            background: #fff;
+            border: 0;
+        }
+
+    .ahx-access-card {
+        padding: 28px;
+    }
+
+    .ahx-access-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(255,255,255,.14);
+    }
+
+        .ahx-access-top h3 {
+            margin: 0;
+            font-size: 1.24rem;
+            font-weight: 1000;
+            letter-spacing: -.035em;
+        }
+
+        .ahx-access-top p {
+            margin: 5px 0 0;
+            color: rgba(226,232,240,.68);
+            font-weight: 820;
+        }
+
+    .ahx-alert-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 24px;
+        display: grid;
+        place-items: center;
+        color: #06111f;
+        background: linear-gradient(135deg, var(--ahx-orange), var(--ahx-orange-2));
+        box-shadow: 0 18px 38px rgba(245,130,32,.27);
+        font-size: 1.35rem;
+        flex: 0 0 auto;
+    }
+
+    .ahx-permission {
+        margin-top: 22px;
+        border-radius: 26px;
+        padding: 20px;
+        background: rgba(255,255,255,.09);
+        border: 1px solid rgba(255,255,255,.13);
+    }
+
+    .ahx-permission-label {
+        color: rgba(226,232,240,.62);
+        font-size: .72rem;
+        font-weight: 1000;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .ahx-permission-value {
+        margin-top: 10px;
+        color: #fff;
+        font-size: 1.45rem;
+        font-weight: 1000;
+        letter-spacing: -.055em;
+    }
+
+    .ahx-access-mini {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .ahx-mini-card {
+        border-radius: 22px;
+        padding: 18px;
+        background: rgba(255,255,255,.09);
+        border: 1px solid rgba(255,255,255,.13);
+    }
+
+        .ahx-mini-card i {
+            color: var(--ahx-orange-2);
+        }
+
+        .ahx-mini-card b {
+            display: block;
+            margin-top: 18px;
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 1000;
+        }
+
+        .ahx-mini-card span {
+            display: block;
+            margin-top: 4px;
+            color: rgba(226,232,240,.62);
+            font-size: .78rem;
+            font-weight: 850;
+        }
+
+    .ahx-workspace {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+    }
+
+    .ahx-filter-card,
+    .ahx-table-card,
+    .ahx-kpi {
+        background: var(--ahx-card);
+        border: 1px solid var(--ahx-border);
+        box-shadow: var(--ahx-shadow-soft);
+    }
+
+    .ahx-filter-card {
+        border-radius: 30px;
+        overflow: hidden;
+        position: sticky;
+        top: 96px;
+    }
+
+    .ahx-filter-head {
+        padding: 24px;
+        background: radial-gradient(420px 160px at 100% 0%, rgba(245,130,32,.16), transparent 64%), linear-gradient(180deg, #fff, #f8fafc);
+        border-bottom: 1px solid var(--ahx-border);
+    }
+
+    .ahx-section-kicker {
+        color: var(--ahx-orange);
+        font-size: .72rem;
+        font-weight: 1000;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .ahx-filter-title {
+        margin: 7px 0 0;
+        color: var(--ahx-text);
+        font-size: 1.42rem;
+        font-weight: 1000;
+        letter-spacing: -.045em;
+    }
+
+    .ahx-filter-desc {
+        margin: 8px 0 0;
+        color: var(--ahx-muted);
+        font-size: .88rem;
+        line-height: 1.55;
+        font-weight: 760;
+    }
+
+    .ahx-filter-body {
+        padding: 22px;
+        display: grid;
+        gap: 14px;
+    }
+
+    .ahx-field label {
+        display: block;
+        margin: 0 0 7px;
+        color: #64748b;
+        font-size: .72rem;
+        font-weight: 1000;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .ahx-input,
+    .ahx-select {
+        width: 100%;
+        min-height: 46px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.32);
+        background: rgba(255,255,255,.92);
+        color: var(--ahx-text);
+        padding: 0 13px;
+        outline: none;
+        font-weight: 850;
+        box-shadow: 0 8px 18px rgba(15,23,42,.055);
+    }
+
+        .ahx-input:focus,
+        .ahx-select:focus {
+            border-color: rgba(245,130,32,.58);
+            box-shadow: 0 0 0 4px rgba(245,130,32,.13);
+        }
+
+    .ahx-load-btn {
+        width: 100%;
+        min-height: 50px;
+        border: 0;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        color: #fff;
+        background: linear-gradient(135deg, #0a84ff, #38bdf8);
+        box-shadow: 0 16px 34px rgba(10,132,255,.23);
+        font-weight: 1000;
+        cursor: pointer;
+        transition: .16s ease;
+    }
+
+        .ahx-load-btn:hover {
+            transform: translateY(-2px);
+        }
+
+    .ahx-range-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .ahx-main-panel {
+        min-width: 0;
+    }
+
+    .ahx-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .ahx-kpi {
+        min-height: 126px;
+        border-radius: 26px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .ahx-kpi::after {
+            content: "";
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            right: -76px;
+            bottom: -86px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(10,132,255,.14), transparent 70%);
+        }
+
+        .ahx-kpi.orange::after {
+            background: radial-gradient(circle, rgba(245,130,32,.20), transparent 70%);
+        }
+
+        .ahx-kpi.green::after {
+            background: radial-gradient(circle, rgba(34,197,94,.17), transparent 70%);
+        }
+
+    .ahx-kpi-label {
+        position: relative;
+        z-index: 2;
+        color: #64748b;
+        font-size: .72rem;
+        font-weight: 1000;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .ahx-kpi-value {
+        position: relative;
+        z-index: 2;
+        margin-top: 10px;
+        color: var(--ahx-text);
+        font-size: 2.25rem;
+        line-height: 1;
+        font-weight: 1000;
+        letter-spacing: -.055em;
+    }
+
+    .ahx-kpi-sub {
+        position: relative;
+        z-index: 2;
+        margin-top: 8px;
+        color: #64748b;
+        font-size: .82rem;
+        line-height: 1.35;
+        font-weight: 760;
+    }
+
+    .ahx-table-card {
+        border-radius: 30px;
+        overflow: hidden;
+    }
+
+    .ahx-table-head {
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        background: radial-gradient(520px 170px at 100% 0%, rgba(10,132,255,.11), transparent 62%), linear-gradient(180deg, #fff, #f8fafc);
+        border-bottom: 1px solid var(--ahx-border);
+    }
+
+    .ahx-table-title {
+        margin: 0;
+        color: var(--ahx-text);
+        font-size: 1.35rem;
+        font-weight: 1000;
+        letter-spacing: -.045em;
+    }
+
+    .ahx-table-sub {
+        margin-top: 4px;
+        color: var(--ahx-muted);
+        font-size: .84rem;
+        font-weight: 760;
+    }
+
+    .ahx-search-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 330px;
+        padding: 0 14px;
+        min-height: 46px;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,.28);
+        background: rgba(255,255,255,.92);
+        box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+
+        .ahx-search-wrap i {
+            color: #64748b;
+        }
+
+        .ahx-search-wrap input {
+            width: 100%;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--ahx-text);
+            font-weight: 850;
+        }
+
+    .ahx-count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 0 13px;
+        border-radius: 999px;
+        color: #334155;
+        background: #fff;
+        border: 1px solid rgba(226,232,240,.95);
+        box-shadow: 0 10px 22px rgba(15,23,42,.06);
+        font-weight: 1000;
+        white-space: nowrap;
+    }
+
+    .ahx-table-scroll {
+        overflow: auto;
+        max-height: 62vh;
+        background: #fff;
+    }
+
+    table.ahx-table {
+        width: 100%;
+        min-width: 1040px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .ahx-table th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 14px 16px;
+        color: #64748b;
+        font-size: .72rem;
+        font-weight: 1000;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        text-align: left;
+        background: #f8fafc;
+        border-bottom: 1px solid rgba(226,232,240,.95);
+        white-space: nowrap;
+    }
+
+    .ahx-table td {
+        padding: 15px 16px;
+        border-bottom: 1px solid rgba(226,232,240,.82);
+        color: var(--ahx-text);
+        font-weight: 780;
+        vertical-align: middle;
+    }
+
+    .ahx-table tbody tr:hover td {
+        background: rgba(245,130,32,.055);
+    }
+
+    .ahx-time {
+        white-space: nowrap;
+        font-weight: 920;
+    }
+
+    .ahx-device-name {
+        font-weight: 1000;
+        color: var(--ahx-text);
+    }
+
+    .ahx-device-guid {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: .78rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        overflow-wrap: anywhere;
+    }
+
+    .ahx-reason {
+        max-width: 360px;
+        color: #334155;
+        font-size: .82rem;
+        line-height: 1.45;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        overflow-wrap: anywhere;
+    }
+
+    .ahx-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 31px;
+        padding: 0 11px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: .76rem;
+        font-weight: 1000;
+        white-space: nowrap;
+    }
+
+        .ahx-badge::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: currentColor;
+        }
+
+        .ahx-badge.alarm {
+            color: #b91c1c;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .ahx-badge.warn {
+            color: #b45309;
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .ahx-badge.ok {
+            color: #047857;
+            background: #ecfdf5;
+            border-color: #bbf7d0;
+        }
+
+    .ahx-measure-btn {
+        min-height: 39px;
+        border-radius: 14px;
+        border: 1px solid rgba(10,132,255,.22);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 12px;
+        color: #075eaa;
+        background: #eff6ff;
+        font-weight: 1000;
+        cursor: pointer;
+        transition: .15s ease;
+        white-space: nowrap;
+    }
+
+        .ahx-measure-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(10,132,255,.12);
+        }
+
+    .ahx-empty {
+        display: none;
+        padding: 34px 22px;
+        text-align: center;
+        color: #64748b;
+        font-weight: 850;
+        background: #fff;
+    }
+
+    .ahx-empty-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 22px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 12px;
+        color: #0a84ff;
+        background: #eff6ff;
+        font-size: 1.4rem;
+    }
+
+    .ahx-toast {
+        position: fixed;
+        right: 18px;
+        top: 92px;
+        z-index: 99999;
+        display: none;
+        max-width: 420px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(226,232,240,.95);
+        box-shadow: 0 18px 46px rgba(15,23,42,.18);
+        color: var(--ahx-text);
+        font-weight: 850;
+    }
+
+        .ahx-toast.show {
+            display: block;
+        }
+
+        .ahx-toast b {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: 1000;
+        }
+
+    @@media (max-width: 1180px) {
+        .ahx-hero,
+        .ahx-workspace {
+            grid-template-columns: 1fr;
+        }
+
+        .ahx-filter-card {
+            position: relative;
+            top: auto;
+        }
+
+        .ahx-access-mini,
+        .ahx-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .ahx-page {
+            padding: 14px 10px 32px;
+            background: linear-gradient(180deg, #070a10 0 560px, #eef3fb 560px 100%);
+        }
+
+        .ahx-hero-main,
+        .ahx-access-card,
+        .ahx-filter-card,
+        .ahx-table-card {
+            border-radius: 24px;
+        }
+
+        .ahx-title {
+            font-size: 3.6rem;
+        }
+
+        .ahx-actions,
+        .ahx-table-head {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .ahx-btn,
+        .ahx-search-wrap {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .ahx-range-row,
+        .ahx-access-mini,
+        .ahx-kpis {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        * {
+            transition: none !important;
+            animation: none !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+
+<div class="ahx-toast" id="ahxToast">
+    <b id="ahxToastTitle">Thông báo</b>
+    <span id="ahxToastMsg"></span>
+</div>
+
+<div class="ahx-page">
+    <div class="ahx-shell">
+
+        <section class="ahx-hero">
+            <div class="ahx-hero-main">
+                <div class="ahx-hero-inner">
+                    <div class="ahx-eyebrow">
+                        <i class="bi bi-shield-exclamation"></i>
+                        Alert History Command Center
+                    </div>
+
+                    <h1 class="ahx-title">
+                        Lịch sử<br /><span>cảnh báo.</span>
+                    </h1>
+
+                    <p class="ahx-lead">
+                        Xem cảnh báo theo thiết bị và khoảng thời gian. Nhấn <b>Xem dữ liệu đo</b>
+                        để mở lịch sử đo quanh thời điểm phát sinh cảnh báo.
+                    </p>
+
+                    <div class="ahx-actions">
+                        <button id="btnLoadTop" type="button" class="ahx-btn primary">
+                            <i class="bi bi-arrow-repeat"></i>
+                            Tải dữ liệu
+                        </button>
+                        <button id="btnToday" type="button" class="ahx-btn light">
+                            <i class="bi bi-calendar-check"></i>
+                            Hôm nay
+                        </button>
+                        <button id="btnLast24" type="button" class="ahx-btn">
+                            <i class="bi bi-clock-history"></i>
+                            24 giờ gần nhất
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="ahx-access-card">
+                <div class="ahx-access-inner">
+                    <div class="ahx-access-top">
+                        <div>
+                            <h3>Alert Access</h3>
+                            <p>Quyền truy cập hiện tại</p>
+                        </div>
+                        <div class="ahx-alert-icon">
+                            <i class="bi bi-bell-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="ahx-permission">
+                        <div class="ahx-permission-label">Permission mode</div>
+                        <div class="ahx-permission-value">@(isAdmin ? "Admin - xem tất cả" : "User - thiết bị được gán")</div>
+                    </div>
+
+                    <div class="ahx-access-mini">
+                        <div class="ahx-mini-card">
+                            <i class="bi bi-cpu-fill"></i>
+                            <b id="deviceCountTop">0</b>
+                            <span>Thiết bị khả dụng</span>
+                        </div>
+                        <div class="ahx-mini-card">
+                            <i class="bi bi-activity"></i>
+                            <b id="lastLoadTop">—</b>
+                            <span>Lần tải gần nhất</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="ahx-workspace">
+            <aside class="ahx-filter-card">
+                <div class="ahx-filter-head">
+                    <div class="ahx-section-kicker">Filters</div>
+                    <h2 class="ahx-filter-title">Bộ lọc cảnh báo</h2>
+                    <p class="ahx-filter-desc">
+                        Admin xem được toàn bộ thiết bị. User chỉ xem thiết bị đã được gán.
+                    </p>
+                </div>
+
+                <div class="ahx-filter-body">
+                    <div class="ahx-field">
+                        <label for="deviceSel">Thiết bị</label>
+                        <select id="deviceSel" class="ahx-select"></select>
+                    </div>
+
+                    <div class="ahx-range-row">
+                        <div class="ahx-field">
+                            <label for="fromDate">Từ ngày</label>
+                            <input id="fromDate" type="date" class="ahx-input" />
+                        </div>
+
+                        <div class="ahx-field">
+                            <label for="toDate">Đến ngày</label>
+                            <input id="toDate" type="date" class="ahx-input" />
+                        </div>
+                    </div>
+
+                    <button id="btnLoad" type="button" class="ahx-load-btn">
+                        <i class="bi bi-download"></i>
+                        Tải dữ liệu cảnh báo
+                    </button>
+                </div>
+            </aside>
+
+            <div class="ahx-main-panel">
+                <div class="ahx-kpis">
+                    <div class="ahx-kpi">
+                        <div class="ahx-kpi-label">Tổng dòng</div>
+                        <div class="ahx-kpi-value" id="kpiTotal">0</div>
+                        <div class="ahx-kpi-sub">Cảnh báo trong khoảng lọc</div>
+                    </div>
+
+                    <div class="ahx-kpi orange">
+                        <div class="ahx-kpi-label">Alarm</div>
+                        <div class="ahx-kpi-value" id="kpiAlarm">0</div>
+                        <div class="ahx-kpi-sub">Mức cảnh báo nghiêm trọng</div>
+                    </div>
+
+                    <div class="ahx-kpi">
+                        <div class="ahx-kpi-label">Warn</div>
+                        <div class="ahx-kpi-value" id="kpiWarn">0</div>
+                        <div class="ahx-kpi-sub">Cảnh báo cần theo dõi</div>
+                    </div>
+
+                    <div class="ahx-kpi green">
+                        <div class="ahx-kpi-label">Showing</div>
+                        <div class="ahx-kpi-value" id="kpiShowing">0</div>
+                        <div class="ahx-kpi-sub">Sau tìm kiếm nhanh</div>
+                    </div>
+                </div>
+
+                <div class="ahx-table-card">
+                    <div class="ahx-table-head">
+                        <div>
+                            <h2 class="ahx-table-title">Cảnh báo thiết bị</h2>
+                            <div class="ahx-table-sub">Dữ liệu từ AlertEvents theo bộ lọc hiện tại.</div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <div class="ahx-search-wrap">
+                                <i class="bi bi-search"></i>
+                                <input id="quickSearch" type="search" placeholder="Tìm alert..." autocomplete="off" />
+                            </div>
+                            <div class="ahx-count-pill">
+                                <i class="bi bi-table"></i>
+                                <span id="lblCount">0</span> dòng
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ahx-table-scroll">
+                        <table class="ahx-table">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:170px;">Thời gian</th>
+                                    <th style="min-width:250px;">Device</th>
+                                    <th>Tmp1</th>
+                                    <th>Hum1</th>
+                                    <th style="min-width:300px;">Reasons</th>
+                                    <th style="min-width:140px;">Level</th>
+                                    <th style="min-width:190px;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbAlerts">
+                                <tr>
+                                    <td colspan="7" style="padding:34px;text-align:center;color:#64748b;font-weight:900;">
+                                        Đang khởi tạo dữ liệu...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div id="emptyState" class="ahx-empty">
+                            <div class="ahx-empty-icon">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+                            Không có dữ liệu trong khoảng thời gian này.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    const IS_ADMIN = @Html.Raw(isAdmin.ToString().ToLower());
+    const PRESET_GUID = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(presetGuid));
+    const PRESET_FROM = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(presetFrom));
+    const PRESET_TO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(presetTo));
+
+    const state = {
+        rows: [],
+        filteredRows: []
+    };
+
+    const els = {
+        deviceSel: document.getElementById("deviceSel"),
+        fromDate: document.getElementById("fromDate"),
+        toDate: document.getElementById("toDate"),
+        btnLoad: document.getElementById("btnLoad"),
+        btnLoadTop: document.getElementById("btnLoadTop"),
+        btnToday: document.getElementById("btnToday"),
+        btnLast24: document.getElementById("btnLast24"),
+        tbAlerts: document.getElementById("tbAlerts"),
+        emptyState: document.getElementById("emptyState"),
+        lblCount: document.getElementById("lblCount"),
+        quickSearch: document.getElementById("quickSearch"),
+        kpiTotal: document.getElementById("kpiTotal"),
+        kpiAlarm: document.getElementById("kpiAlarm"),
+        kpiWarn: document.getElementById("kpiWarn"),
+        kpiShowing: document.getElementById("kpiShowing"),
+        deviceCountTop: document.getElementById("deviceCountTop"),
+        lastLoadTop: document.getElementById("lastLoadTop"),
+        toast: document.getElementById("ahxToast"),
+        toastTitle: document.getElementById("ahxToastTitle"),
+        toastMsg: document.getElementById("ahxToastMsg")
+    };
+
+    function ymd(d) {
+        const x = new Date(d);
+        const m = String(x.getMonth() + 1).padStart(2, "0");
+        const day = String(x.getDate()).padStart(2, "0");
+        return `${x.getFullYear()}-${m}-${day}`;
+    }
+
+    function esc(s) {
+        return (s ?? "").toString()
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function toIsoDayStartLocal(dateStr) {
+        if (!dateStr) return null;
+        return new Date(dateStr + "T00:00:00").toISOString();
+    }
+
+    function toIsoDayEndLocal(dateStr) {
+        if (!dateStr) return null;
+        return new Date(dateStr + "T23:59:59").toISOString();
+    }
+
+    function fmtUtcToLocal(iso) {
+        if (!iso) return "";
+        const d = new Date(iso);
+        return Number.isNaN(d.getTime()) ? "" : d.toLocaleString();
+    }
+
+    function levelClass(level) {
+        const s = (level || "").toString().toLowerCase();
+        if (s.includes("alarm") || s.includes("high") || s.includes("bad") || s.includes("error")) return "alarm";
+        if (s.includes("warn")) return "warn";
+        return "ok";
+    }
+
+    function toast(title, msg) {
+        if (!els.toast) return;
+        els.toastTitle.textContent = title || "Thông báo";
+        els.toastMsg.textContent = msg || "";
+        els.toast.classList.add("show");
+        clearTimeout(window.__ahxToastT);
+        window.__ahxToastT = setTimeout(() => els.toast.classList.remove("show"), 2600);
+    }
+
+    function setLoading(isLoading) {
+        const html = isLoading
+            ? '<i class="bi bi-arrow-repeat"></i> Đang tải...'
+            : '<i class="bi bi-download"></i> Tải dữ liệu cảnh báo';
+        els.btnLoad.disabled = isLoading;
+        els.btnLoad.innerHTML = html;
+        els.btnLoadTop.disabled = isLoading;
+        els.btnLoadTop.innerHTML = isLoading
+            ? '<i class="bi bi-arrow-repeat"></i> Đang tải...'
+            : '<i class="bi bi-arrow-repeat"></i> Tải dữ liệu';
+    }
+
+    function goToMeasureHistory(deviceGuid, occurredAtUtcIso) {
+        const center = new Date(occurredAtUtcIso);
+        const from = new Date(center.getTime() - 6 * 60 * 60 * 1000);
+        const to = new Date(center.getTime() + 6 * 60 * 60 * 1000);
+
+        const q = new URLSearchParams();
+        q.set("deviceGuid", deviceGuid);
+        q.set("from", from.toISOString());
+        q.set("to", to.toISOString());
+
+        window.location.href = "/ElitechHistoryPage/Index?" + q.toString();
+    }
+
+    async function loadDevices() {
+        const url = IS_ADMIN ? "/api/elitech/all-devices" : "/api/elitech/my-devices";
+        const res = await fetch(url, { cache: "no-store" });
+        const js = await res.json();
+
+        const data = js.data || [];
+        els.deviceSel.innerHTML = "";
+
+        if (!data.length) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "Không có thiết bị";
+            els.deviceSel.appendChild(opt);
+            els.deviceCountTop.textContent = "0";
+            return;
+        }
+
+        data.forEach(x => {
+            const opt = document.createElement("option");
+            opt.value = x.deviceGuid;
+            opt.textContent = `${x.deviceName || x.deviceGuid} (${x.deviceGuid})`;
+            els.deviceSel.appendChild(opt);
+        });
+
+        els.deviceCountTop.textContent = data.length.toString();
+
+        if (PRESET_GUID) {
+            const found = Array.from(els.deviceSel.options).some(o => o.value === PRESET_GUID);
+            if (found) els.deviceSel.value = PRESET_GUID;
+        }
+    }
+
+    function normalizeRow(e) {
+        return {
+            occurred: e.occurredAtUtc || e.OccurredAtUtc || "",
+            deviceName: e.deviceName || e.DeviceName || "",
+            deviceGuid: e.deviceGuid || e.DeviceGuid || "",
+            reasons: e.reasons || e.Reasons || "",
+            level: e.level || e.Level || "",
+            tmp1: e.tmp1 ?? e.Tmp1 ?? "",
+            hum1: e.hum1 ?? e.Hum1 ?? ""
+        };
+    }
+
+    function updateKpis() {
+        const rows = state.rows || [];
+        const filtered = state.filteredRows || [];
+        const alarm = rows.filter(x => levelClass(x.level) === "alarm").length;
+        const warn = rows.filter(x => levelClass(x.level) === "warn").length;
+
+        els.kpiTotal.textContent = rows.length.toString();
+        els.kpiAlarm.textContent = alarm.toString();
+        els.kpiWarn.textContent = warn.toString();
+        els.kpiShowing.textContent = filtered.length.toString();
+        els.lblCount.textContent = filtered.length.toString();
+    }
+
+    function renderRows(rows) {
+        els.tbAlerts.innerHTML = "";
+        els.emptyState.style.display = rows.length ? "none" : "block";
+
+        if (!rows.length) {
+            updateKpis();
+            return;
+        }
+
+        rows.forEach(e => {
+            const lvCls = levelClass(e.level);
+
+            els.tbAlerts.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td><div class="ahx-time">${esc(fmtUtcToLocal(e.occurred))}</div></td>
+                        <td>
+                            <div class="ahx-device-name">${esc(e.deviceName || "Thiết bị")}</div>
+                            <div class="ahx-device-guid">${esc(e.deviceGuid)}</div>
+                        </td>
+                        <td>${esc(e.tmp1)}</td>
+                        <td>${esc(e.hum1)}</td>
+                        <td><div class="ahx-reason">${esc(e.reasons)}</div></td>
+                        <td><span class="ahx-badge ${lvCls}">${esc(e.level || "OK")}</span></td>
+                        <td>
+                            <button class="ahx-measure-btn btnMeasure"
+                                    type="button"
+                                    data-guid="${esc(e.deviceGuid)}"
+                                    data-occur="${esc(e.occurred)}">
+                                <i class="bi bi-search"></i>
+                                Xem dữ liệu đo
+                            </button>
+                        </td>
+                    </tr>
+                `);
+        });
+
+        updateKpis();
+    }
+
+    function applySearch() {
+        const q = (els.quickSearch.value || "").trim().toLowerCase();
+        let rows = [...state.rows];
+
+        if (q) {
+            rows = rows.filter(x => [
+                x.occurred,
+                x.deviceName,
+                x.deviceGuid,
+                x.reasons,
+                x.level,
+                x.tmp1,
+                x.hum1
+            ].join(" ").toLowerCase().includes(q));
+        }
+
+        state.filteredRows = rows;
+        renderRows(rows);
+    }
+
+    async function loadAlertEvents() {
+        const guid = els.deviceSel.value;
+        const from = toIsoDayStartLocal(els.fromDate.value);
+        const to = toIsoDayEndLocal(els.toDate.value);
+
+        const q = new URLSearchParams();
+        if (guid) q.set("deviceGuid", guid);
+        if (from) q.set("from", from);
+        if (to) q.set("to", to);
+        q.set("page", "1");
+        q.set("pageSize", "200");
+
+        setLoading(true);
+        els.emptyState.style.display = "none";
+        els.tbAlerts.innerHTML = `<tr><td colspan="7" style="padding:34px;text-align:center;color:#64748b;font-weight:900;">Đang tải dữ liệu...</td></tr>`;
+
+        try {
+            const res = await fetch("/api/elitech/alert-events?" + q.toString(), { cache: "no-store" });
+            const js = await res.json();
+
+            const rows = (js.data || []).map(normalizeRow);
+            state.rows = rows;
+            els.quickSearch.value = "";
+            state.filteredRows = rows;
+
+            renderRows(rows);
+            els.lastLoadTop.textContent = new Date().toLocaleTimeString();
+            toast("Đã tải dữ liệu", `${rows.length} dòng cảnh báo.`);
+        } catch (err) {
+            state.rows = [];
+            state.filteredRows = [];
+            renderRows([]);
+            toast("Lỗi tải dữ liệu", err?.message || "Không gọi được API alert-events.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function setToday() {
+        const today = ymd(new Date());
+        els.fromDate.value = today;
+        els.toDate.value = today;
+        loadAlertEvents();
+    }
+
+    function setLast24() {
+        const now = new Date();
+        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        els.fromDate.value = ymd(yesterday);
+        els.toDate.value = ymd(now);
+        loadAlertEvents();
+    }
+
+    document.addEventListener("click", ev => {
+        const btn = ev.target.closest(".btnMeasure");
+        if (!btn) return;
+
+        const guid = btn.getAttribute("data-guid");
+        const occur = btn.getAttribute("data-occur");
+        goToMeasureHistory(guid, occur);
+    });
+
+    let searchT = null;
+    els.quickSearch.addEventListener("input", () => {
+        clearTimeout(searchT);
+        searchT = setTimeout(applySearch, 120);
+    });
+
+    els.btnLoad.addEventListener("click", loadAlertEvents);
+    els.btnLoadTop.addEventListener("click", loadAlertEvents);
+    els.btnToday.addEventListener("click", setToday);
+    els.btnLast24.addEventListener("click", setLast24);
+
+    (async function init() {
+        try {
+            await loadDevices();
+
+            if (PRESET_FROM) els.fromDate.value = PRESET_FROM.substring(0, 10);
+            if (PRESET_TO) els.toDate.value = PRESET_TO.substring(0, 10);
+
+            if (!els.toDate.value) els.toDate.value = ymd(new Date());
+            if (!els.fromDate.value) {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                els.fromDate.value = ymd(d);
+            }
+
+            await loadAlertEvents();
+        } catch (err) {
+            toast("Lỗi khởi tạo", err?.message || "Không tải được danh sách thiết bị.");
+        }
+    })();
+</script>

@@ -1,0 +1,1296 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Admin - Gán thiết bị cho User";
+}
+
+<style>
+    :root {
+        --asgn-bg: #f5f5f7;
+        --asgn-ink: #0b0f19;
+        --asgn-muted: #6b7280;
+        --asgn-soft: rgba(255,255,255,.76);
+        --asgn-line: rgba(228,231,236,.92);
+        --asgn-dark: #030712;
+        --asgn-dark-2: #101827;
+        --asgn-blue: #2997ff;
+        --asgn-sky: #5ac8fa;
+        --asgn-orange: #ff9f0a;
+        --asgn-green: #30d158;
+        --asgn-red: #ff453a;
+        --asgn-shadow: 0 28px 80px rgba(15,23,42,.14);
+        --asgn-shadow-soft: 0 16px 38px rgba(15,23,42,.10);
+        --asgn-radius: 30px;
+    }
+
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        background: radial-gradient(900px 520px at 10% -10%, rgba(41,151,255,.18), transparent 58%), radial-gradient(800px 460px at 95% 0%, rgba(255,159,10,.16), transparent 56%), linear-gradient(180deg, #f5f5f7 0%, #eef3fb 100%) !important;
+        color: var(--asgn-ink);
+    }
+
+    .asgn-page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 24px 18px 42px;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .asgn-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 38px;
+        border: 1px solid rgba(255,255,255,.76);
+        background: rgba(255,255,255,.74);
+        box-shadow: var(--asgn-shadow);
+    }
+
+        .asgn-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.36) 42%, rgba(255,255,255,.66));
+            z-index: 0;
+        }
+
+        .asgn-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    .asgn-hero {
+        position: relative;
+        min-height: 360px;
+        padding: 34px;
+        overflow: hidden;
+        color: #fff;
+        background: radial-gradient(760px 360px at 84% 0%, rgba(255,159,10,.28), transparent 58%), radial-gradient(720px 380px at 0% 0%, rgba(41,151,255,.30), transparent 58%), linear-gradient(135deg, #030712 0%, #101827 54%, #020617 100%);
+        border-radius: 38px 38px 28px 28px;
+    }
+
+        .asgn-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: .38;
+            background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: linear-gradient(90deg, #000, transparent 86%);
+            pointer-events: none;
+        }
+
+        .asgn-hero::after {
+            content: "";
+            position: absolute;
+            right: -150px;
+            top: -170px;
+            width: 500px;
+            height: 500px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            box-shadow: inset 0 0 0 34px rgba(255,255,255,.035), inset 0 0 0 74px rgba(255,255,255,.018), 0 0 90px rgba(41,151,255,.18);
+            pointer-events: none;
+        }
+
+    .asgn-heroGrid {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) 390px;
+        gap: 28px;
+        align-items: center;
+    }
+
+    .asgn-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 13px;
+        border-radius: 999px;
+        color: rgba(255,255,255,.88);
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.16);
+        font-size: .76rem;
+        font-weight: 950;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .asgn-kickerDot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--asgn-green);
+        box-shadow: 0 0 0 6px rgba(48,209,88,.16);
+    }
+
+    .asgn-h1 {
+        margin: 18px 0 0;
+        max-width: 760px;
+        color: #fff;
+        font-size: clamp(2.7rem, 5.4vw, 5.6rem);
+        line-height: .92;
+        letter-spacing: -.085em;
+        font-weight: 1000;
+    }
+
+        .asgn-h1 span {
+            color: transparent;
+            background: linear-gradient(90deg, #fff 0%, #dbeafe 38%, #ffb95c 78%, #ff9f0a 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+    .asgn-sub {
+        margin-top: 18px;
+        max-width: 690px;
+        color: rgba(235,241,248,.76);
+        font-size: 1.02rem;
+        line-height: 1.72;
+        font-weight: 650;
+    }
+
+    .asgn-heroActions,
+    .asgn-headActions,
+    .asgn-actions {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        flex-wrap: wrap;
+    }
+
+    .asgn-heroActions {
+        margin-top: 24px;
+    }
+
+    .asgn-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 999px;
+        padding: 11px 16px;
+        min-height: 42px;
+        color: #fff;
+        background: #111827;
+        font-weight: 950;
+        text-decoration: none;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 14px 32px rgba(15,23,42,.14);
+        transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .18s ease;
+    }
+
+        .asgn-btn:hover {
+            transform: translateY(-2px);
+            color: #fff;
+            box-shadow: 0 18px 42px rgba(15,23,42,.18);
+        }
+
+        .asgn-btn:disabled {
+            opacity: .48;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .asgn-btn.primary {
+            color: #06101f;
+            background: linear-gradient(135deg, #ff9f0a, #ffd08a);
+        }
+
+            .asgn-btn.primary:hover {
+                color: #06101f;
+            }
+
+        .asgn-btn.ghost {
+            color: #f8fafc;
+            background: rgba(255,255,255,.10);
+            border: 1px solid rgba(255,255,255,.16);
+            box-shadow: none;
+        }
+
+        .asgn-btn.light {
+            color: #0f172a;
+            background: rgba(255,255,255,.86);
+            border: 1px solid rgba(226,232,240,.92);
+        }
+
+            .asgn-btn.light:hover {
+                color: #0f172a;
+            }
+
+        .asgn-btn.danger {
+            background: rgba(255,69,58,.12);
+            color: #b42318;
+            border: 1px solid rgba(255,69,58,.24);
+            box-shadow: none;
+        }
+
+            .asgn-btn.danger:hover {
+                color: #b42318;
+            }
+
+        .asgn-btn.tiny {
+            min-height: 31px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            box-shadow: none;
+        }
+
+    .asgn-showcase {
+        position: relative;
+        min-height: 268px;
+        border-radius: 34px;
+        padding: 18px;
+        overflow: hidden;
+        background: linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.055));
+        border: 1px solid rgba(255,255,255,.18);
+        box-shadow: 0 26px 80px rgba(0,0,0,.25);
+    }
+
+        .asgn-showcase::before {
+            content: "";
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            right: -80px;
+            top: -120px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(255,159,10,.42), transparent 70%);
+        }
+
+    .asgn-showcaseTop {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .asgn-showcaseTitle {
+        color: #fff;
+        font-size: 1.12rem;
+        line-height: 1.2;
+        font-weight: 1000;
+        letter-spacing: -.04em;
+    }
+
+    .asgn-showcaseSub {
+        margin-top: 6px;
+        color: rgba(235,241,248,.66);
+        font-size: .82rem;
+        font-weight: 720;
+    }
+
+    .asgn-livePill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border-radius: 999px;
+        color: rgba(255,255,255,.88);
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.13);
+        font-size: .78rem;
+        font-weight: 950;
+    }
+
+        .asgn-livePill::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: var(--asgn-green);
+            box-shadow: 0 0 0 6px rgba(48,209,88,.15);
+        }
+
+    .asgn-signal {
+        position: relative;
+        z-index: 2;
+        height: 112px;
+        display: flex;
+        align-items: end;
+        gap: 10px;
+        margin-top: 24px;
+        padding: 16px;
+        border-radius: 25px;
+        background: rgba(0,0,0,.23);
+        border: 1px solid rgba(255,255,255,.10);
+    }
+
+        .asgn-signal span {
+            flex: 1;
+            min-width: 16px;
+            border-radius: 999px 999px 9px 9px;
+            background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(41,151,255,.38));
+            box-shadow: 0 0 26px rgba(41,151,255,.16);
+        }
+
+            .asgn-signal span:nth-child(3),
+            .asgn-signal span:nth-child(6) {
+                background: linear-gradient(180deg, #ffd08a, rgba(255,159,10,.56));
+            }
+
+    .asgn-showcaseGrid {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .asgn-miniStat {
+        padding: 12px;
+        border-radius: 20px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.12);
+    }
+
+        .asgn-miniStat b {
+            display: block;
+            color: #fff;
+            font-size: 1rem;
+            line-height: 1;
+            font-weight: 1000;
+        }
+
+        .asgn-miniStat span {
+            display: block;
+            margin-top: 6px;
+            color: rgba(235,241,248,.68);
+            font-size: .72rem;
+            line-height: 1.22;
+            font-weight: 780;
+        }
+
+    .asgn-banner {
+        margin: 18px 24px 0;
+        padding: 14px 15px;
+        border-radius: 20px;
+        font-weight: 850;
+        line-height: 1.45;
+        border: 1px solid rgba(226,232,240,.92);
+        background: rgba(255,255,255,.78);
+        color: #334155;
+        box-shadow: 0 12px 28px rgba(15,23,42,.06);
+    }
+
+        .asgn-banner.is-ok {
+            background: #ebfff3;
+            border-color: #b7f7ca;
+            color: #067647;
+        }
+
+        .asgn-banner.is-warn {
+            background: #fff8e7;
+            border-color: #ffe1a3;
+            color: #a15c07;
+        }
+
+        .asgn-banner.is-err {
+            background: #fff0ef;
+            border-color: #ffd0cc;
+            color: #b42318;
+        }
+
+    .asgn-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+        padding: 24px;
+    }
+
+    .asgn-box,
+    .asgn-tablePanel {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--asgn-radius);
+        padding: 22px;
+        background: rgba(255,255,255,.82);
+        border: 1px solid rgba(255,255,255,.86);
+        box-shadow: var(--asgn-shadow-soft);
+    }
+
+        .asgn-box::after,
+        .asgn-tablePanel::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -110px;
+            top: -130px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(41,151,255,.14), transparent 70%);
+            pointer-events: none;
+        }
+
+        .asgn-box:nth-child(2)::after {
+            background: radial-gradient(circle, rgba(255,159,10,.18), transparent 70%);
+        }
+
+    .asgn-boxHead,
+    .asgn-tableTop {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .asgn-boxTitle {
+        color: var(--asgn-ink);
+        font-size: 1.17rem;
+        line-height: 1.15;
+        letter-spacing: -.045em;
+        font-weight: 1000;
+    }
+
+    .asgn-pill,
+    .asgn-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        padding: 7px 11px;
+        background: rgba(41,151,255,.10);
+        color: #075985;
+        border: 1px solid rgba(41,151,255,.16);
+        font-size: .78rem;
+        font-weight: 1000;
+        white-space: nowrap;
+    }
+
+        .asgn-chip::before,
+        .asgn-pill::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--asgn-blue);
+        }
+
+    .asgn-field {
+        position: relative;
+        z-index: 1;
+        margin-top: 14px;
+    }
+
+    .asgn-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #334155;
+        font-size: .82rem;
+        font-weight: 1000;
+        letter-spacing: -.01em;
+    }
+
+    .asgn-input,
+    .asgn-select {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid rgba(203,213,225,.84);
+        border-radius: 19px;
+        padding: 13px 14px;
+        outline: none;
+        color: #0f172a;
+        background: rgba(255,255,255,.94);
+        font-weight: 820;
+        box-shadow: 0 12px 28px rgba(15,23,42,.055);
+        transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+
+        .asgn-input:focus,
+        .asgn-select:focus {
+            border-color: rgba(41,151,255,.72);
+            box-shadow: 0 0 0 5px rgba(41,151,255,.12), 0 14px 32px rgba(15,23,42,.08);
+        }
+
+    .asgn-mini {
+        position: relative;
+        z-index: 1;
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(248,250,252,.94), rgba(255,255,255,.94));
+        border: 1px dashed rgba(148,163,184,.46);
+    }
+
+    .asgn-miniRow {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .asgn-miniK {
+        color: #64748b;
+        font-size: .76rem;
+        font-weight: 1000;
+    }
+
+    .asgn-miniV {
+        color: #0f172a;
+        font-size: .78rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 850;
+    }
+
+    .asgn-actions {
+        position: relative;
+        z-index: 1;
+        margin-top: 18px;
+    }
+
+    .asgn-hint,
+    .asgn-footnote,
+    .asgn-mutedSmall {
+        color: var(--asgn-muted);
+        font-size: .82rem;
+        line-height: 1.5;
+        font-weight: 720;
+    }
+
+    .asgn-hint {
+        position: relative;
+        z-index: 1;
+        margin-top: 13px;
+    }
+
+    .asgn-mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .asgn-dot {
+        color: #94a3b8;
+        padding: 0 6px;
+    }
+
+    .asgn-tableWrap {
+        padding: 0 24px 24px;
+    }
+
+    .asgn-tablePanel {
+        padding: 22px;
+    }
+
+    .asgn-tableShell {
+        position: relative;
+        z-index: 1;
+        overflow: auto;
+        border-radius: 24px;
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(226,232,240,.94);
+        box-shadow: 0 14px 34px rgba(15,23,42,.065);
+    }
+
+    .asgn-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .asgn-table th,
+        .asgn-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(226,232,240,.86);
+            color: #0f172a;
+            vertical-align: middle;
+            background: rgba(255,255,255,.96);
+        }
+
+        .asgn-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            text-align: left;
+            color: #64748b;
+            background: #f8fafc;
+            font-size: .78rem;
+            font-weight: 1000;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+        }
+
+        .asgn-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .asgn-table tr:hover td {
+            background: rgba(41,151,255,.045);
+        }
+
+    .asgn-cellGuid {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .asgn-empty {
+        text-align: center;
+        color: #64748b !important;
+        font-weight: 900;
+        padding: 34px !important;
+    }
+
+    .asgn-footnote {
+        position: relative;
+        z-index: 1;
+        margin-top: 13px;
+        padding: 13px 15px;
+        border-radius: 18px;
+        background: rgba(248,250,252,.88);
+        border: 1px solid rgba(226,232,240,.88);
+    }
+
+    .asgn-floatingBack {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 20;
+        width: 56px;
+        height: 56px;
+        border-radius: 21px;
+        display: grid;
+        place-items: center;
+        color: #06101f;
+        text-decoration: none;
+        background: linear-gradient(135deg, #ff9f0a, #ffd08a);
+        box-shadow: 0 20px 50px rgba(15,23,42,.24);
+        transition: .18s ease;
+        font-weight: 1000;
+    }
+
+        .asgn-floatingBack:hover {
+            transform: translateY(-3px);
+            color: #06101f;
+        }
+
+    @@media (max-width: 1100px) {
+        .asgn-heroGrid {
+            grid-template-columns: 1fr;
+        }
+
+        .asgn-showcase {
+            max-width: 520px;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .asgn-page {
+            padding: 12px 10px 32px;
+        }
+
+        .asgn-card,
+        .asgn-hero {
+            border-radius: 28px;
+        }
+
+        .asgn-hero {
+            padding: 24px;
+            min-height: auto;
+        }
+
+        .asgn-h1 {
+            font-size: 3rem;
+        }
+
+        .asgn-grid {
+            grid-template-columns: 1fr;
+            padding: 16px;
+        }
+
+        .asgn-tableWrap {
+            padding: 0 16px 16px;
+        }
+
+        .asgn-box,
+        .asgn-tablePanel {
+            border-radius: 24px;
+            padding: 18px;
+        }
+
+        .asgn-miniRow {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .asgn-h1 {
+            font-size: 2.45rem;
+        }
+
+        .asgn-sub {
+            font-size: .94rem;
+        }
+
+        .asgn-showcaseGrid {
+            grid-template-columns: 1fr;
+        }
+
+        .asgn-signal {
+            gap: 7px;
+            padding: 12px;
+        }
+
+        .asgn-floatingBack {
+            right: 14px;
+            bottom: 14px;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        * {
+            transition: none !important;
+            animation: none !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+
+<div class="asgn-page">
+    <div class="asgn-card">
+        <section class="asgn-hero">
+            <div class="asgn-heroGrid">
+                <div>
+                    <div class="asgn-kicker">
+                        <span class="asgn-kickerDot"></span>
+                        Elitech Admin Access Control
+                    </div>
+
+                    <h1 class="asgn-h1">
+                        Gán thiết bị cho <span>User</span>
+                    </h1>
+
+                    <div class="asgn-sub" id="selectedUserText">
+                        Chọn user, bind thiết bị, kiểm soát quyền xem realtime/history theo từng GUID. Giao diện này dành cho Admin vận hành thiết bị Elitech.
+                    </div>
+
+                    <div class="asgn-heroActions">
+                        <button type="button" class="asgn-btn primary" id="btnReload" disabled>↻ Tải lại thiết bị</button>
+                        <a class="asgn-btn ghost" href="/Admin">← Về Admin</a>
+                    </div>
+                </div>
+
+                <div class="asgn-showcase" aria-hidden="true">
+                    <div class="asgn-showcaseTop">
+                        <div>
+                            <div class="asgn-showcaseTitle">Device Assignment Deck</div>
+                            <div class="asgn-showcaseSub">User access • GUID mapping • realtime permission</div>
+                        </div>
+                        <div class="asgn-livePill">Ready</div>
+                    </div>
+
+                    <div class="asgn-signal">
+                        <span style="height:42%"></span>
+                        <span style="height:70%"></span>
+                        <span style="height:58%"></span>
+                        <span style="height:86%"></span>
+                        <span style="height:64%"></span>
+                        <span style="height:78%"></span>
+                        <span style="height:50%"></span>
+                    </div>
+
+                    <div class="asgn-showcaseGrid">
+                        <div class="asgn-miniStat">
+                            <b>User</b>
+                            <span>Chọn tài khoản</span>
+                        </div>
+                        <div class="asgn-miniStat">
+                            <b>GUID</b>
+                            <span>Gán thiết bị</span>
+                        </div>
+                        <div class="asgn-miniStat">
+                            <b>Access</b>
+                            <span>Kiểm soát quyền</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="banner" class="asgn-banner" style="display:none;"></div>
+
+        <section class="asgn-grid">
+            <div class="asgn-box">
+                <div class="asgn-boxHead">
+                    <div class="asgn-boxTitle">Chọn User</div>
+                    <div class="asgn-pill" id="userCount">Loading...</div>
+                </div>
+
+                <div class="asgn-field">
+                    <label class="asgn-label" for="userSearch">Tìm nhanh</label>
+                    <input id="userSearch" class="asgn-input" placeholder="Gõ username hoặc userId..." autocomplete="off" />
+                </div>
+
+                <div class="asgn-field">
+                    <label class="asgn-label" for="userSelect">Danh sách tài khoản</label>
+                    <select id="userSelect" class="asgn-select" disabled>
+                        <option value="">-- đang tải user --</option>
+                    </select>
+                </div>
+
+                <div class="asgn-mini" id="selectedUserBox" style="display:none;">
+                    <div class="asgn-miniRow">
+                        <span class="asgn-miniK">UserId</span>
+                        <span class="asgn-miniV asgn-mono" id="selectedUserId"></span>
+                        <button type="button" class="asgn-btn tiny light" id="btnCopyUser">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="asgn-box">
+                <div class="asgn-boxHead">
+                    <div class="asgn-boxTitle">Gán thiết bị</div>
+                    <div class="asgn-pill" id="deviceCount">0 devices</div>
+                </div>
+
+                <div class="asgn-field">
+                    <label class="asgn-label" for="deviceGuid">Device GUID</label>
+                    <input id="deviceGuid" class="asgn-input asgn-mono" placeholder="90319774496194524687" autocomplete="off" />
+                </div>
+
+                <div class="asgn-field">
+                    <label class="asgn-label" for="deviceName">
+                        Device name <span class="asgn-mutedSmall">(tuỳ chọn)</span>
+                    </label>
+                    <input id="deviceName" class="asgn-input" placeholder="Kho lạnh A / Xe tải 01 ..." autocomplete="off" />
+                </div>
+
+                <div class="asgn-actions">
+                    <button type="button" class="asgn-btn primary" id="btnAssign" disabled>➕ Gán thiết bị</button>
+                    <button type="button" class="asgn-btn light" id="btnClear" disabled>Làm mới form</button>
+                </div>
+
+                <div class="asgn-hint" id="hintText">* Chọn user trước khi gán.</div>
+            </div>
+        </section>
+
+        <section class="asgn-tableWrap">
+            <div class="asgn-tablePanel">
+                <div class="asgn-tableTop">
+                    <div class="asgn-boxTitle">Thiết bị đã gán</div>
+                    <div class="asgn-tableRight">
+                        <span class="asgn-chip" id="tableStatus">0 thiết bị</span>
+                    </div>
+                </div>
+
+                <div class="asgn-tableShell">
+                    <table class="asgn-table">
+                        <thead>
+                            <tr>
+                                <th>DeviceGuid</th>
+                                <th>DeviceName</th>
+                                <th style="width:150px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignmentBody">
+                            <tr>
+                                <td colspan="3" class="asgn-empty">Chọn user để xem thiết bị.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="asgn-footnote">
+                    Tip: User chỉ xem được các thiết bị đã được Admin gán. Gán xong có thể qua Realtime/History để kiểm tra dữ liệu theo GUID.
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<a class="asgn-floatingBack" href="/Admin" title="Về Admin">⌘</a>
+
+<script>
+    const state = {
+        users: [],
+        filteredUsers: [],
+        selectedUserId: "",
+        assignments: [],
+        submitting: false
+    };
+
+    const els = {
+        banner: document.getElementById("banner"),
+        userCount: document.getElementById("userCount"),
+        userSearch: document.getElementById("userSearch"),
+        userSelect: document.getElementById("userSelect"),
+        selectedUserText: document.getElementById("selectedUserText"),
+        selectedUserBox: document.getElementById("selectedUserBox"),
+        selectedUserId: document.getElementById("selectedUserId"),
+        btnCopyUser: document.getElementById("btnCopyUser"),
+        btnReload: document.getElementById("btnReload"),
+        btnAssign: document.getElementById("btnAssign"),
+        btnClear: document.getElementById("btnClear"),
+        deviceGuid: document.getElementById("deviceGuid"),
+        deviceName: document.getElementById("deviceName"),
+        deviceCount: document.getElementById("deviceCount"),
+        hintText: document.getElementById("hintText"),
+        tableStatus: document.getElementById("tableStatus"),
+        assignmentBody: document.getElementById("assignmentBody")
+    };
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function errText(e) {
+        if (!e) return "Unknown error";
+        if (e.message) return e.message;
+        try {
+            return JSON.stringify(e);
+        } catch {
+            return String(e);
+        }
+    }
+
+    function showBanner(kind, text) {
+        if (!text) {
+            els.banner.style.display = "none";
+            els.banner.className = "asgn-banner";
+            els.banner.textContent = "";
+            return;
+        }
+
+        els.banner.style.display = "block";
+        els.banner.className = "asgn-banner" + (kind ? " is-" + kind : "");
+        els.banner.textContent = text;
+    }
+
+    async function requestJson(url, options) {
+        const res = await fetch(url, {
+            credentials: "include",
+            ...(options || {}),
+            headers: {
+                ...(options && options.headers ? options.headers : {})
+            }
+        });
+
+        const text = await res.text();
+
+        if (!res.ok) {
+            throw new Error(`${options?.method || "GET"} ${url} failed: ${res.status} ${text}`);
+        }
+
+        if (!text) return {};
+        try {
+            return JSON.parse(text);
+        } catch {
+            throw new Error(`Invalid JSON from ${url}: ${text.slice(0, 200)}`);
+        }
+    }
+
+    function getSelectedUser() {
+        return state.users.find(u => u.userId === state.selectedUserId);
+    }
+
+    function setSubmitting(value) {
+        state.submitting = value;
+        renderButtons();
+    }
+
+    function renderButtons() {
+        const hasUser = !!state.selectedUserId;
+        const hasGuid = !!els.deviceGuid.value.trim();
+
+        els.btnReload.disabled = !hasUser || state.submitting;
+        els.btnAssign.disabled = !hasUser || !hasGuid || state.submitting;
+        els.btnClear.disabled = !hasUser || state.submitting;
+
+        els.btnAssign.textContent = state.submitting ? "Đang xử lý..." : "➕ Gán thiết bị";
+    }
+
+    function renderUsers() {
+        const q = els.userSearch.value.trim().toLowerCase();
+
+        state.filteredUsers = !q
+            ? [...state.users]
+            : state.users.filter(u =>
+                String(u.username || "").toLowerCase().includes(q) ||
+                String(u.userId || "").toLowerCase().includes(q)
+            );
+
+        els.userSelect.innerHTML = "";
+
+        const firstOption = document.createElement("option");
+        firstOption.value = "";
+        firstOption.textContent = "-- chọn user --";
+        els.userSelect.appendChild(firstOption);
+
+        state.filteredUsers.forEach(u => {
+            const opt = document.createElement("option");
+            opt.value = u.userId;
+            opt.textContent = u.username || u.userId;
+            els.userSelect.appendChild(opt);
+        });
+
+        els.userSelect.value = state.selectedUserId;
+        els.userSelect.disabled = false;
+        els.userCount.textContent = `${state.users.length} users`;
+    }
+
+    function renderSelectedUser() {
+        const user = getSelectedUser();
+
+        if (!user) {
+            els.selectedUserText.textContent = "Chọn user, bind thiết bị, kiểm soát quyền xem realtime/history theo từng GUID. Giao diện này dành cho Admin vận hành thiết bị Elitech.";
+            els.selectedUserBox.style.display = "none";
+            els.selectedUserId.textContent = "";
+            els.hintText.textContent = "* Chọn user trước khi gán.";
+            return;
+        }
+
+        els.selectedUserText.innerHTML =
+            `Đang chọn: <b>${escapeHtml(user.username)}</b> <span class="asgn-dot">•</span> <span class="asgn-mono">${escapeHtml(user.userId)}</span>`;
+
+        els.selectedUserBox.style.display = "block";
+        els.selectedUserId.textContent = user.userId;
+        els.hintText.textContent = "* User chỉ xem được các device đã gán.";
+    }
+
+    function renderAssignments(loading) {
+        if (loading) {
+            els.tableStatus.textContent = "Đang tải...";
+            els.assignmentBody.innerHTML = `<tr><td colspan="3" class="asgn-empty">Đang tải dữ liệu...</td></tr>`;
+            return;
+        }
+
+        const rows = [...state.assignments].sort((a, b) => {
+            const an = a.deviceName || "";
+            const bn = b.deviceName || "";
+            return an.localeCompare(bn) || String(a.deviceGuid || "").localeCompare(String(b.deviceGuid || ""));
+        });
+
+        els.deviceCount.textContent = `${rows.length} devices`;
+        els.tableStatus.textContent = `${rows.length} thiết bị`;
+
+        if (!state.selectedUserId) {
+            els.assignmentBody.innerHTML = `<tr><td colspan="3" class="asgn-empty">Chọn user để xem thiết bị.</td></tr>`;
+            return;
+        }
+
+        if (!rows.length) {
+            els.assignmentBody.innerHTML = `<tr><td colspan="3" class="asgn-empty">Chưa có thiết bị.</td></tr>`;
+            return;
+        }
+
+        els.assignmentBody.innerHTML = rows.map(r => {
+            const guid = escapeHtml(r.deviceGuid || "");
+            const name = r.deviceName ? escapeHtml(r.deviceName) : `<span class="asgn-mutedSmall">—</span>`;
+
+            return `
+                        <tr>
+                            <td class="asgn-mono">
+                                <div class="asgn-cellGuid">
+                                    <span>${guid}</span>
+                                    <button type="button" class="asgn-btn tiny light js-copy-guid" data-guid="${guid}">Copy</button>
+                                </div>
+                            </td>
+                            <td>${name}</td>
+                            <td style="text-align:right;">
+                                <button type="button" class="asgn-btn danger js-unassign" data-guid="${guid}">❌ Gỡ</button>
+                            </td>
+                        </tr>
+                    `;
+        }).join("");
+    }
+
+    async function loadUsers() {
+        try {
+            els.userCount.textContent = "Loading...";
+            els.userSelect.disabled = true;
+            els.userSelect.innerHTML = `<option value="">-- đang tải user --</option>`;
+
+            const r = await requestJson("/Admin/GetUsers");
+            if (r.code !== 0) {
+                throw new Error(r.message || "Lỗi tải danh sách user");
+            }
+
+            state.users = r.data || [];
+            renderUsers();
+        } catch (e) {
+            showBanner("err", "❌ " + errText(e));
+            els.userCount.textContent = "Lỗi";
+            els.userSelect.innerHTML = `<option value="">-- lỗi tải user --</option>`;
+        }
+    }
+
+    async function loadAssignments(userId) {
+        if (!userId) {
+            state.assignments = [];
+            renderAssignments(false);
+            renderButtons();
+            return;
+        }
+
+        try {
+            renderAssignments(true);
+            const q = encodeURIComponent(userId);
+            const r = await requestJson(`/Admin/GetAssignments?userId=${q}`);
+
+            if (r.code !== 0) {
+                throw new Error(r.message || "Lỗi tải danh sách thiết bị");
+            }
+
+            state.assignments = r.data || [];
+            renderAssignments(false);
+        } catch (e) {
+            state.assignments = [];
+            renderAssignments(false);
+            showBanner("err", "❌ " + errText(e));
+        } finally {
+            renderButtons();
+        }
+    }
+
+    async function assignDevice() {
+        const userId = state.selectedUserId;
+        const deviceGuid = els.deviceGuid.value.trim();
+        const deviceName = els.deviceName.value.trim();
+
+        if (!userId || !deviceGuid || state.submitting) return;
+
+        try {
+            showBanner("", "");
+            setSubmitting(true);
+
+            const r = await requestJson("/Admin/AssignDevices", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId,
+                    deviceGuid,
+                    deviceName: deviceName || null
+                })
+            });
+
+            if (r.code && r.code !== 0) {
+                throw new Error(r.message || "Gán thiết bị thất bại");
+            }
+
+            showBanner("ok", "✅ Đã gán thiết bị");
+            els.deviceGuid.value = "";
+            els.deviceName.value = "";
+            await loadAssignments(userId);
+        } catch (e) {
+            showBanner("err", "❌ " + errText(e));
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    async function unassignDevice(deviceGuid) {
+        const userId = state.selectedUserId;
+        if (!userId || !deviceGuid || state.submitting) return;
+
+        const ok = confirm(`Gỡ thiết bị ${deviceGuid} khỏi user này?`);
+        if (!ok) return;
+
+        try {
+            showBanner("", "");
+            setSubmitting(true);
+
+            const r = await requestJson("/Admin/UnassignDevice", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId,
+                    deviceGuid
+                })
+            });
+
+            if (r.code && r.code !== 0) {
+                throw new Error(r.message || "Gỡ thiết bị thất bại");
+            }
+
+            showBanner("warn", "🗑️ Đã gỡ thiết bị");
+            await loadAssignments(userId);
+        } catch (e) {
+            showBanner("err", "❌ " + errText(e));
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showBanner("ok", "📋 Đã copy");
+            setTimeout(() => showBanner("", ""), 900);
+        } catch {
+            showBanner("warn", "Không copy được trên trình duyệt này");
+        }
+    }
+
+    els.userSearch.addEventListener("input", () => {
+        renderUsers();
+    });
+
+    els.userSelect.addEventListener("change", async () => {
+        state.selectedUserId = els.userSelect.value;
+        showBanner("", "");
+        renderSelectedUser();
+        renderButtons();
+        await loadAssignments(state.selectedUserId);
+    });
+
+    els.deviceGuid.addEventListener("input", renderButtons);
+
+    els.btnReload.addEventListener("click", async () => {
+        await loadAssignments(state.selectedUserId);
+    });
+
+    els.btnAssign.addEventListener("click", assignDevice);
+
+    els.btnClear.addEventListener("click", () => {
+        els.deviceGuid.value = "";
+        els.deviceName.value = "";
+        showBanner("", "");
+        renderButtons();
+    });
+
+    els.btnCopyUser.addEventListener("click", () => {
+        if (state.selectedUserId) copyText(state.selectedUserId);
+    });
+
+    els.assignmentBody.addEventListener("click", async (e) => {
+        const copyBtn = e.target.closest(".js-copy-guid");
+        if (copyBtn) {
+            copyText(copyBtn.dataset.guid || "");
+            return;
+        }
+
+        const unassignBtn = e.target.closest(".js-unassign");
+        if (unassignBtn) {
+            await unassignDevice(unassignBtn.dataset.guid || "");
+        }
+    });
+
+    loadUsers();
+    renderButtons();
+</script>

@@ -1,0 +1,476 @@
+﻿@{
+    ViewData["Title"] = "Chính sách bảo mật";
+}
+
+<style>
+    .elx-privacy-page {
+        min-height: 100vh;
+        background: radial-gradient(circle at top left, rgba(32, 108, 255, .10), transparent 32%), linear-gradient(180deg, #f7fbff 0%, #ffffff 45%, #f8fafc 100%);
+        padding: 36px 0 56px;
+    }
+
+    .elx-privacy-wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 18px;
+    }
+
+    .elx-privacy-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        background: linear-gradient(135deg, #0f2f5f 0%, #155bd5 52%, #18a0fb 100%);
+        color: #fff;
+        padding: 38px;
+        box-shadow: 0 24px 60px rgba(21, 91, 213, .22);
+    }
+
+        .elx-privacy-hero::after {
+            content: "";
+            position: absolute;
+            right: -90px;
+            top: -90px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .13);
+        }
+
+    .elx-privacy-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 13px;
+        border: 1px solid rgba(255, 255, 255, .28);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .13);
+        backdrop-filter: blur(10px);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .elx-privacy-title {
+        position: relative;
+        z-index: 1;
+        font-size: clamp(30px, 4vw, 50px);
+        font-weight: 900;
+        letter-spacing: -1.2px;
+        line-height: 1.08;
+        margin: 0 0 14px;
+    }
+
+    .elx-privacy-subtitle {
+        position: relative;
+        z-index: 1;
+        max-width: 760px;
+        font-size: 16px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, .88);
+        margin: 0;
+    }
+
+    .elx-privacy-meta {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+    }
+
+    .elx-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 16px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, .14);
+        border: 1px solid rgba(255, 255, 255, .20);
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .elx-privacy-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 22px;
+        margin-top: 24px;
+    }
+
+    .elx-privacy-nav {
+        position: sticky;
+        top: 90px;
+        align-self: start;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, .92);
+        border: 1px solid rgba(15, 47, 95, .08);
+        box-shadow: 0 18px 45px rgba(15, 47, 95, .08);
+        padding: 18px;
+    }
+
+        .elx-privacy-nav h6 {
+            font-weight: 900;
+            color: #0f2f5f;
+            margin-bottom: 12px;
+        }
+
+        .elx-privacy-nav a {
+            display: block;
+            text-decoration: none;
+            color: #475569;
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: .18s ease;
+        }
+
+            .elx-privacy-nav a:hover {
+                background: #eef6ff;
+                color: #155bd5;
+                transform: translateX(3px);
+            }
+
+    .elx-privacy-content {
+        display: grid;
+        gap: 18px;
+    }
+
+    .elx-section {
+        border-radius: 24px;
+        background: #fff;
+        border: 1px solid rgba(15, 47, 95, .08);
+        box-shadow: 0 18px 45px rgba(15, 47, 95, .07);
+        padding: 26px;
+    }
+
+        .elx-section h2 {
+            color: #0f2f5f;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -.3px;
+            margin-bottom: 12px;
+        }
+
+        .elx-section p {
+            color: #475569;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .elx-section ul {
+            color: #475569;
+            line-height: 1.85;
+            margin-bottom: 0;
+            padding-left: 22px;
+        }
+
+        .elx-section li {
+            margin-bottom: 8px;
+        }
+
+    .elx-highlight-box {
+        border-radius: 20px;
+        background: linear-gradient(135deg, #eef6ff, #f8fbff);
+        border: 1px solid rgba(21, 91, 213, .12);
+        padding: 18px;
+        margin-top: 14px;
+    }
+
+        .elx-highlight-box strong {
+            color: #0f2f5f;
+        }
+
+    .elx-contact-card {
+        border-radius: 22px;
+        background: linear-gradient(135deg, #0f2f5f, #155bd5);
+        color: #fff;
+        padding: 24px;
+        margin-top: 6px;
+    }
+
+        .elx-contact-card h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .elx-contact-card p,
+        .elx-contact-card li {
+            color: rgba(255, 255, 255, .88);
+        }
+
+        .elx-contact-card a {
+            color: #fff;
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+    .elx-mini-note {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 14px;
+    }
+
+    @@media (max-width: 992px) {
+        .elx-privacy-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .elx-privacy-nav {
+            position: relative;
+            top: 0;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .elx-privacy-hero {
+            padding: 28px 22px;
+            border-radius: 22px;
+        }
+
+        .elx-section {
+            padding: 22px;
+            border-radius: 20px;
+        }
+
+        .elx-privacy-meta {
+            gap: 8px;
+        }
+
+        .elx-meta-item {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="elx-privacy-page">
+    <div class="elx-privacy-wrap">
+
+        <section class="elx-privacy-hero">
+            <div class="elx-privacy-badge">
+                🔐 Elitech Privacy Center
+            </div>
+
+            <h1 class="elx-privacy-title">Chính sách bảo mật</h1>
+
+            <p class="elx-privacy-subtitle">
+                Chúng tôi tôn trọng quyền riêng tư và cam kết bảo vệ dữ liệu cá nhân của người dùng
+                khi sử dụng hệ thống Elitech, bao gồm các tính năng giám sát thiết bị, cảnh báo nhiệt độ,
+                quản lý dữ liệu, xuất báo cáo và các dịch vụ liên quan.
+            </p>
+
+            <div class="elx-privacy-meta">
+                <div class="elx-meta-item">📅 Cập nhật: @DateTime.Now.ToString("dd/MM/yyyy")</div>
+                <div class="elx-meta-item">🛡️ Bảo vệ dữ liệu cá nhân</div>
+                <div class="elx-meta-item">🌡️ Device Monitoring System</div>
+            </div>
+        </section>
+
+        <div class="elx-privacy-grid">
+
+            <aside class="elx-privacy-nav">
+                <h6>Nội dung chính</h6>
+                <a href="#scope">1. Phạm vi áp dụng</a>
+                <a href="#data">2. Dữ liệu thu thập</a>
+                <a href="#purpose">3. Mục đích sử dụng</a>
+                <a href="#cookie">4. Cookie</a>
+                <a href="#sharing">5. Chia sẻ dữ liệu</a>
+                <a href="#security">6. Bảo mật</a>
+                <a href="#retention">7. Lưu trữ dữ liệu</a>
+                <a href="#rights">8. Quyền người dùng</a>
+                <a href="#contact">9. Liên hệ</a>
+            </aside>
+
+            <main class="elx-privacy-content">
+
+                <section class="elx-section" id="scope">
+                    <h2>1. Phạm vi áp dụng</h2>
+                    <p>
+                        Chính sách bảo mật này áp dụng cho người dùng truy cập và sử dụng website,
+                        hệ thống quản lý thiết bị, tài khoản người dùng, trang quản trị và các dịch vụ
+                        liên quan đến nền tảng Elitech.
+                    </p>
+                    <p>
+                        Khi tiếp tục sử dụng hệ thống, người dùng được hiểu là đã đọc, hiểu và đồng ý
+                        với các nội dung được nêu trong chính sách này, trừ trường hợp pháp luật có quy định khác.
+                    </p>
+                </section>
+
+                <section class="elx-section" id="data">
+                    <h2>2. Dữ liệu chúng tôi có thể thu thập</h2>
+                    <p>
+                        Tùy theo tính năng người dùng sử dụng, hệ thống có thể thu thập và xử lý các nhóm dữ liệu sau:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Thông tin tài khoản:</strong> họ tên, email, số điện thoại, tên đăng nhập,
+                            vai trò người dùng và thông tin xác thực cần thiết.
+                        </li>
+                        <li>
+                            <strong>Thông tin thiết bị:</strong> mã thiết bị, serial number, team ID, trạng thái kết nối,
+                            dữ liệu nhiệt độ, độ ẩm, thời gian ghi nhận và cảnh báo thiết bị.
+                        </li>
+                        <li>
+                            <strong>Dữ liệu sử dụng hệ thống:</strong> lịch sử đăng nhập, thao tác trên hệ thống,
+                            yêu cầu xuất báo cáo, cấu hình cảnh báo và dữ liệu kỹ thuật phục vụ vận hành.
+                        </li>
+                        <li>
+                            <strong>Dữ liệu liên hệ và hỗ trợ:</strong> nội dung phản hồi, yêu cầu hỗ trợ,
+                            lịch sử xử lý sự cố hoặc trao đổi với bộ phận kỹ thuật.
+                        </li>
+                        <li>
+                            <strong>Dữ liệu từ cookie hoặc công nghệ tương tự:</strong> thông tin phiên đăng nhập,
+                            tùy chọn giao diện và dữ liệu giúp cải thiện trải nghiệm người dùng.
+                        </li>
+                    </ul>
+
+                    <div class="elx-highlight-box">
+                        <strong>Lưu ý:</strong>
+                        Dữ liệu nhiệt độ, độ ẩm và trạng thái thiết bị thường là dữ liệu vận hành.
+                        Tuy nhiên, nếu các dữ liệu này được liên kết với tài khoản, tổ chức, địa điểm hoặc cá nhân cụ thể,
+                        chúng tôi vẫn áp dụng các biện pháp bảo vệ phù hợp.
+                    </div>
+                </section>
+
+                <section class="elx-section" id="purpose">
+                    <h2>3. Mục đích xử lý dữ liệu</h2>
+                    <p>
+                        Dữ liệu được thu thập và xử lý nhằm phục vụ các mục đích hợp pháp, rõ ràng và phù hợp
+                        với chức năng của hệ thống, bao gồm:
+                    </p>
+                    <ul>
+                        <li>Tạo, xác thực và quản lý tài khoản người dùng.</li>
+                        <li>Hiển thị dữ liệu thiết bị, biểu đồ, bảng lịch sử và trạng thái realtime.</li>
+                        <li>Gửi cảnh báo nhiệt độ, độ ẩm, mất kết nối, pin yếu hoặc các cảnh báo vận hành khác.</li>
+                        <li>Xuất báo cáo CSV, Excel, PDF hoặc các báo cáo phục vụ quản lý chất lượng.</li>
+                        <li>Hỗ trợ kỹ thuật, xử lý lỗi, kiểm tra nhật ký hệ thống và cải thiện hiệu năng.</li>
+                        <li>Đảm bảo an toàn hệ thống, phòng chống truy cập trái phép, gian lận hoặc lạm dụng dịch vụ.</li>
+                        <li>Tuân thủ nghĩa vụ pháp lý khi có yêu cầu từ cơ quan nhà nước có thẩm quyền.</li>
+                    </ul>
+                </section>
+
+                <section class="elx-section" id="cookie">
+                    <h2>4. Cookie và phiên đăng nhập</h2>
+                    <p>
+                        Website có thể sử dụng cookie hoặc cơ chế lưu phiên để duy trì trạng thái đăng nhập,
+                        ghi nhớ tùy chọn người dùng và hỗ trợ bảo mật tài khoản.
+                    </p>
+                    <p>
+                        Người dùng có thể cấu hình trình duyệt để chặn hoặc xóa cookie. Tuy nhiên, một số chức năng
+                        như đăng nhập, phân quyền, cảnh báo hoặc truy cập trang quản trị có thể không hoạt động chính xác
+                        nếu cookie bị vô hiệu hóa.
+                    </p>
+                </section>
+
+                <section class="elx-section" id="sharing">
+                    <h2>5. Chia sẻ dữ liệu với bên thứ ba</h2>
+                    <p>
+                        Chúng tôi không bán dữ liệu cá nhân của người dùng. Dữ liệu chỉ có thể được chia sẻ trong các trường hợp cần thiết sau:
+                    </p>
+                    <ul>
+                        <li>
+                            Với nhà cung cấp hạ tầng, lưu trữ, email, SMS, dịch vụ kỹ thuật hoặc dịch vụ liên quan
+                            để vận hành hệ thống.
+                        </li>
+                        <li>
+                            Với khách hàng/tổ chức sở hữu tài khoản quản trị, trong phạm vi phân quyền và mục đích sử dụng hệ thống.
+                        </li>
+                        <li>
+                            Với cơ quan nhà nước có thẩm quyền khi có yêu cầu hợp pháp theo quy định pháp luật.
+                        </li>
+                        <li>
+                            Khi cần thiết để bảo vệ quyền, tài sản, an toàn của người dùng, hệ thống hoặc bên thứ ba.
+                        </li>
+                    </ul>
+
+                    <div class="elx-highlight-box">
+                        <strong>Cam kết:</strong>
+                        Các bên được cung cấp dữ liệu, nếu có, phải phục vụ đúng mục đích xử lý,
+                        áp dụng biện pháp bảo mật phù hợp và không được sử dụng dữ liệu trái phạm vi cho phép.
+                    </div>
+                </section>
+
+                <section class="elx-section" id="security">
+                    <h2>6. Biện pháp bảo mật</h2>
+                    <p>
+                        Chúng tôi áp dụng các biện pháp kỹ thuật và quản lý phù hợp để bảo vệ dữ liệu,
+                        hạn chế rủi ro truy cập trái phép, mất mát, rò rỉ hoặc sử dụng sai mục đích.
+                    </p>
+                    <ul>
+                        <li>Phân quyền truy cập theo vai trò người dùng.</li>
+                        <li>Kiểm soát phiên đăng nhập và xác thực tài khoản.</li>
+                        <li>Giới hạn quyền truy cập dữ liệu thiết bị theo tài khoản hoặc tổ chức.</li>
+                        <li>Theo dõi log hệ thống để phát hiện lỗi hoặc hành vi bất thường.</li>
+                        <li>Sao lưu, kiểm tra và cải thiện hệ thống theo nhu cầu vận hành.</li>
+                    </ul>
+                    <p>
+                        Dù chúng tôi luôn nỗ lực bảo vệ dữ liệu, không có hệ thống nào an toàn tuyệt đối.
+                        Người dùng cần tự bảo mật thông tin đăng nhập và thông báo ngay khi phát hiện dấu hiệu bất thường.
+                    </p>
+                </section>
+
+                <section class="elx-section" id="retention">
+                    <h2>7. Thời gian lưu trữ dữ liệu</h2>
+                    <p>
+                        Dữ liệu được lưu trữ trong thời gian cần thiết để cung cấp dịch vụ, phục vụ vận hành,
+                        hỗ trợ kỹ thuật, giải quyết tranh chấp, đáp ứng yêu cầu kiểm tra hoặc tuân thủ nghĩa vụ pháp lý.
+                    </p>
+                    <p>
+                        Khi dữ liệu không còn cần thiết hoặc khi người dùng có yêu cầu hợp lệ, chúng tôi sẽ xem xét
+                        xóa, ẩn danh hoặc hạn chế xử lý dữ liệu theo quy định pháp luật và điều kiện kỹ thuật thực tế.
+                    </p>
+                </section>
+
+                <section class="elx-section" id="rights">
+                    <h2>8. Quyền của người dùng đối với dữ liệu cá nhân</h2>
+                    <p>
+                        Theo quy định pháp luật về bảo vệ dữ liệu cá nhân, người dùng có thể có các quyền sau,
+                        tùy từng trường hợp cụ thể:
+                    </p>
+                    <ul>
+                        <li>Được biết về hoạt động xử lý dữ liệu cá nhân của mình.</li>
+                        <li>Yêu cầu truy cập, xem, chỉnh sửa hoặc cập nhật dữ liệu cá nhân.</li>
+                        <li>Yêu cầu xóa, hạn chế xử lý hoặc phản đối việc xử lý dữ liệu trong trường hợp phù hợp.</li>
+                        <li>Rút lại sự đồng ý đối với một số hoạt động xử lý dữ liệu dựa trên sự đồng ý.</li>
+                        <li>Khiếu nại, phản ánh hoặc yêu cầu giải thích về việc xử lý dữ liệu.</li>
+                    </ul>
+
+                    <div class="elx-highlight-box">
+                        <strong>Quan trọng:</strong>
+                        Một số yêu cầu có thể ảnh hưởng đến khả năng sử dụng dịch vụ, ví dụ như xóa tài khoản,
+                        ngừng nhận cảnh báo hoặc không thể truy cập dữ liệu thiết bị đã liên kết.
+                    </div>
+                </section>
+
+                <section class="elx-section">
+                    <h2>9. Thay đổi chính sách</h2>
+                    <p>
+                        Chính sách bảo mật có thể được cập nhật để phù hợp với thay đổi của hệ thống,
+                        quy định pháp luật hoặc nhu cầu vận hành. Phiên bản mới sẽ được công bố trên website
+                        và có hiệu lực kể từ ngày được cập nhật, trừ khi có thông báo khác.
+                    </p>
+                </section>
+
+                <section class="elx-contact-card" id="contact">
+                    <h2>10. Thông tin liên hệ</h2>
+                    <p>
+                        Nếu người dùng có câu hỏi, yêu cầu hỗ trợ hoặc cần thực hiện quyền liên quan đến dữ liệu cá nhân,
+                        vui lòng liên hệ:
+                    </p>
+                    <ul>
+                        <li><strong>Đơn vị phụ trách:</strong> ELITECH VIETNAM / ELITECH SYSTEM</li>
+                        <li><strong>Email:</strong> <a href="mailto:sales@smarttechco.com.vn">sales@smarttechco.com.vn</a></li>
+                        <li><strong>Hotline:</strong> <a href="tel:02873003603">0938 733 596</a></li>
+                    </ul>
+                    @* <p class="elx-mini-note">
+                        Bạn có thể đổi email/hotline ở phần này cho đúng thông tin công ty đang dùng.
+                    </p> *@
+                </section>
+
+            </main>
+        </div>
+    </div>
+</div>

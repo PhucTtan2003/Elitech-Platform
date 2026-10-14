@@ -1,0 +1,1193 @@
+﻿@{
+    ViewData["Title"] = "Elitech - Lịch sử thiết bị";
+    Layout = "_Layout";
+    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+    var theme = "light";
+}
+<style>
+    :root {
+        --bg: #f4f7fb;
+        --bg2: #eef2f7;
+        --panel: #ffffff;
+        --panel-2: #f8fafc;
+        --panel-3: #ffffff;
+        --card: #ffffff;
+        --card-2: #f8fafc;
+        --stroke: #e5e7eb;
+        --stroke-2: #dbeafe;
+        --text: #0f172a;
+        --muted: #64748b;
+        --muted-2: #94a3b8;
+        --blue: #3b82f6;
+        --blue-2: #60a5fa;
+        --cyan: #22d3ee;
+        --green: #22c55e;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --violet: #8b5cf6;
+        --orange: #f58220;
+        --shadow-lg: 0 20px 40px rgba(0,0,0,.08);
+        --shadow-md: 0 10px 24px rgba(0,0,0,.06);
+        --shadow-sm: 0 6px 16px rgba(0,0,0,.05);
+        --radius-xl: 24px;
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 12px;
+        --glow: 0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    @@keyframes blink {
+        0% {
+            opacity: 1
+        }
+
+        50% {
+            opacity: .3
+        }
+
+        100% {
+            opacity: 1
+        }
+    }
+
+    .blink {
+        animation: blink 1s infinite;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(180deg, #f4f7fb 0%, #eef2f7 100%);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        overflow-x: hidden;
+    }
+
+        body[data-elitech-theme="light"] {
+            background: radial-gradient(1000px 520px at 0% 0%, rgba(59,130,246,.10), transparent 55%), radial-gradient(1100px 580px at 100% 0%, rgba(34,211,238,.08), transparent 48%), linear-gradient(180deg, #08121f 0%, #0a1525 42%, #07111f 100%);
+        }
+
+    .hx-wrap {
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 18px;
+    }
+
+    .hx {
+        position: relative;
+    }
+
+    .hx-top {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        gap: 16px;
+        padding: 18px 20px;
+        border-radius: var(--radius-xl);
+        background: white;
+        border: 1px solid var(--stroke);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        color: black;
+    }
+
+        .hx-top::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.02) 50%, transparent 100%);
+            pointer-events: none;
+        }
+
+    .hx-brand {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        min-width: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hx-logo {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 24px;
+        background: linear-gradient(135deg, var(--orange), var(--blue));
+        box-shadow: 0 18px 34px rgba(59,130,246,.22), inset 0 1px 0 rgba(255,255,255,.24);
+        border: 1px solid rgba(255,255,255,.10);
+        flex: 0 0 auto;
+    }
+
+    .hx-brand-txt {
+        min-width: 0;
+    }
+
+    .hx-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .hx-title b {
+            font-size: clamp(1.12rem, 1rem + .7vw, 1.55rem);
+            font-weight: 950;
+            letter-spacing: -.03em;
+            color: black;
+        }
+
+    .hx-sub {
+        margin-top: 8px;
+        font-size: .94rem;
+        line-height: 1.5;
+        color: var(--muted);
+        max-width: 720px;
+        font-weight: 600;
+    }
+
+    .hx-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--green);
+        box-shadow: 0 0 0 6px rgba(34,197,94,.10);
+    }
+
+    .hx-status,
+    .hx-pill {
+        background: #f8fafc;
+        color: #0f172a;
+        border: 1px solid var(--stroke);
+    }
+
+    .hx-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,.16);
+        background: rgba(255,255,255,.05);
+        color: black;
+        font-size: .78rem;
+        font-weight: 900;
+        letter-spacing: .02em;
+        white-space: nowrap;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    .hx-ok {
+        color: black;
+        background: rgba(34,197,94,.12);
+        border-color: rgba(34,197,94,.18);
+    }
+
+    .hx-info {
+        color: #23508d;
+        background: rgba(59,130,246,.12);
+        border-color: rgba(59,130,246,.18);
+    }
+
+    .hx-meta {
+        min-width: 240px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hx-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: .86rem;
+        font-weight: 700;
+    }
+
+    .hx-muted {
+        color: black;
+    }
+
+    .hx-status {
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: rgba(255,255,255,.05);
+        border: 1px solid rgba(148,163,184,.14);
+        color: black;
+        font-size: .84rem;
+        font-weight: 800;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    .hx-grid {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 380px minmax(0,1fr);
+        gap: 16px;
+        align-items: start;
+    }
+
+    .hx-left,
+    .hx-right {
+        min-width: 0;
+        display: grid;
+        gap: 16px;
+    }
+
+    .hx-card {
+        border-radius: var(--radius-xl);
+        background: #ffffff !important;
+        border: 1px solid var(--stroke);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        min-width: 0;
+    }
+
+    .hx-card-head {
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(148,163,184,.12);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        flex-wrap: wrap;
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+    }
+
+        .hx-card-head h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: -.02em;
+            color: #0f172a;
+        }
+
+            .hx-card-head h3 i {
+                color: var(--blue-2);
+            }
+
+    .hx-hint,
+    .hx-note,
+    .hx-help,
+    .hx-api {
+        color: var(--muted);
+        font-size: .82rem;
+        line-height: 1.45;
+        font-weight: 650;
+    }
+
+    .hx-card-body {
+        padding: 18px;
+        min-width: 0;
+    }
+
+    .hx-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .hx-field {
+        min-width: 0;
+    }
+
+    .hx-label {
+        display: inline-block;
+        margin-bottom: 7px;
+        color: black;
+        font-weight: 850;
+        font-size: .84rem;
+        letter-spacing: .01em;
+    }
+
+    .hx-input {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        height: 44px;
+        padding: 0 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(148,163,184,.16);
+        background: #ffffff;
+        color: #0f172a;
+        outline: none;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+        transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+        .hx-input:focus {
+            border-color: rgba(96,165,250,.38);
+            box-shadow: var(--glow);
+            background: white;
+        }
+
+        .hx-input::placeholder {
+            color: #94a3b8;
+        }
+
+    select.hx-input option {
+        color: black;
+        background: white;
+    }
+
+    input[type="datetime-local"] {
+        width: 100%;
+        color-scheme: light;
+    }
+
+    .hx-row2,
+    .hx-row3,
+    .hx-stats,
+    .hx-badges,
+    .hx-actions,
+    .hx-auto,
+    .hx-zoom {
+        min-width: 0;
+    }
+
+    .hx-row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .hx-row3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
+
+    .hx-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .hx-btn {
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 12px;
+        border: 1px solid var(--stroke);
+        background: #f8fafc;
+        color: #0f172a;
+        cursor: pointer;
+        font-weight: 850;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .hx-btn:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            border-color: rgba(96,165,250,.28);
+            box-shadow: 0 12px 24px rgba(2,8,23,.22);
+        }
+
+    .hx-primary {
+        color: #fff;
+        border: none;
+        background: linear-gradient(135deg, var(--orange), #fb923c);
+        box-shadow: 0 14px 28px rgba(245,130,32,.22);
+    }
+
+    .hx-outline {
+        background: rgba(255,255,255,.03);
+    }
+
+    .hx-sm {
+        min-height: 38px;
+        padding: 0 12px;
+        font-size: .82rem;
+    }
+
+    .hx-sep {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(148,163,184,.18), transparent);
+        margin: 2px 0;
+    }
+
+    .hx-auto,
+    .hx-zoom {
+        display: grid;
+        gap: 10px;
+    }
+
+    .hx-auto {
+        grid-template-columns: minmax(0,1fr) 110px auto;
+        align-items: center;
+    }
+
+    .hx-auto-sel {
+        min-width: 0;
+    }
+
+    .hx-switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #d7e6ff;
+        font-size: .84rem;
+        font-weight: 750;
+        min-width: 0;
+    }
+
+        .hx-switch input {
+            accent-color: var(--blue);
+            transform: translateY(-.5px);
+        }
+
+    .hx-zoom-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(148,163,184,.12);
+        background: rgba(255,255,255,.03);
+    }
+
+    .hx-loading {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 12px;
+        background: rgba(59,130,246,.10);
+        border: 1px solid rgba(59,130,246,.16);
+        color: #dbeafe;
+        font-weight: 800;
+        font-size: .84rem;
+    }
+
+    .hx-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .hx-stat {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.12);
+        background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+        .hx-stat i {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: var(--blue-2);
+            background: rgba(59,130,246,.10);
+            border: 1px solid rgba(59,130,246,.12);
+            flex: 0 0 auto;
+        }
+
+    .hx-num {
+        margin-top: 4px;
+        font-size: 1.1rem;
+        font-weight: 950;
+        letter-spacing: -.02em;
+        color: #0f172a;
+        overflow-wrap: anywhere;
+    }
+
+    .hx-mt {
+        margin-top: 0;
+    }
+
+    .hx-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-left: auto;
+    }
+
+    .hx-chart {
+        position: relative;
+        height: 430px;
+        width: 100%;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        border: 1px solid var(--stroke);
+        padding: 8px;
+    }
+
+    .hx-table-wrap {
+        max-height: 500px;
+        overflow: auto;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.10);
+        background: #ffffff;
+    }
+
+    .hx-table {
+        width: 100%;
+        min-width: 980px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+        color: #334155;
+    }
+
+        .hx-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f1f5f9;
+            color: #0f172a;
+            font-weight: 900;
+            text-align: left;
+            border-bottom: 1px solid rgba(148,163,184,.16);
+            white-space: nowrap;
+        }
+
+        .hx-table th,
+        .hx-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(148,163,184,.08);
+            vertical-align: top;
+        }
+
+        .hx-table tbody tr:nth-child(odd) {
+            background: rgba(255,255,255,.012);
+        }
+
+        .hx-table tbody tr:hover {
+            background: rgba(59,130,246,.07);
+        }
+
+        .hx-table td {
+            color: #0f172a;
+            word-break: break-word;
+        }
+
+    .hx-api {
+        margin-top: 12px;
+        min-height: 22px;
+    }
+
+    .hx-toasty {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 9999;
+        display: grid;
+        gap: 10px;
+        width: min(380px, calc(100vw - 24px));
+        pointer-events: none;
+    }
+
+        .hx-toasty > * {
+            pointer-events: auto;
+        }
+
+    @@media (max-width: 1180px) {
+        .hx-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .hx-wrap {
+            padding: 12px;
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+        }
+
+        .hx-top {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 16px;
+        }
+
+        .hx-meta {
+            width: 100%;
+            min-width: 0;
+            align-items: flex-start;
+        }
+
+        .hx-grid,
+        .hx-row2,
+        .hx-row3,
+        .hx-stats {
+            grid-template-columns: 1fr !important;
+        }
+
+        .hx-auto {
+            grid-template-columns: 1fr;
+        }
+
+        .hx-actions {
+            flex-direction: column;
+        }
+
+        .hx-btn {
+            width: 100%;
+        }
+
+        .hx-chart {
+            height: 310px;
+        }
+
+        .hx-table {
+            min-width: 860px;
+        }
+
+        main, .container, .container-lg, .container-xl, .elx-main,
+        .container, .container-sm, .container-md, .container-xxl {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .hx-wrap {
+            padding: 10px !important;
+        }
+
+        .hx-top,
+        .hx-card {
+            border-radius: 18px;
+        }
+
+        .hx-card-head,
+        .hx-card-body {
+            padding: 14px;
+        }
+
+        .hx-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+        }
+
+        .hx-title {
+            gap: 8px;
+        }
+
+        .hx-chart {
+            height: 260px;
+            padding: 6px;
+        }
+
+        .hx-table {
+            min-width: 760px;
+        }
+    }
+</style>
+<script>
+    document.documentElement.setAttribute("data-elitech-theme", "@theme");
+</script>
+
+<link rel="stylesheet" href="~/css/elitech-history.css" asp-append-version="true" />
+
+<div class="hx hx-wrap">
+
+    <div class="hx-top">
+        <div class="hx-brand">
+            <div class="hx-logo">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="hx-brand-txt">
+                <div class="hx-title">
+                    <b>Elitech – Lịch sử thiết bị</b>
+                    <span class="hx-dot"></span>
+                    <span class="hx-pill">UTC+7</span>
+                    @if (isAdmin)
+                    {
+                        <span class="hx-pill hx-ok">Admin</span>
+                    }
+                    else
+                    {
+                        <span class="hx-pill hx-info">User</span>
+                    }
+                </div>
+                <div class="hx-sub">
+                    Giao diện giám sát kiểu SCADA: truy vấn lịch sử, xem trend chart, lọc nhanh theo thời gian, theo dõi thống kê tức thời và xuất CSV ngay trên một màn hình.
+                </div>
+            </div>
+        </div>
+
+        <div class="hx-meta">
+            <div class="hx-meta-line">
+                <span class="hx-muted">Cập nhật:</span>
+                <b style="color:black;" id="nowText">—</b>
+            </div>
+            <div class="hx-status" id="status">Sẵn sàng truy vấn</div>
+        </div>
+        <button id="btnExportPdf" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Xuất PDF
+        </button>
+    </div>
+
+    <div class="hx-grid">
+
+        <div class="hx-left">
+            <div class="hx-card">
+                <div class="hx-card-head">
+                    <h3><i class="bi bi-sliders2-vertical"></i> Bộ lọc truy vấn</h3>
+                    <div style="color:black" class="hx-hint">Chọn thiết bị, khoảng thời gian, kênh nhiệt/ẩm và chế độ tự cập nhật.</div>
+                </div>
+
+                <div class="hx-card-body">
+                    <form id="qForm" class="hx-form">
+
+                        <div class="hx-field">
+                            <label class="hx-label">Thiết bị</label>
+
+                            <input class="hx-input" id="deviceGuid"
+                                   placeholder="Nhập hoặc chọn từ danh sách…"
+                            @(isAdmin ? "" : "readonly") />
+
+                            <div style="height:8px"></div>
+
+                            <select class="hx-input" id="devicePick">
+                                <option value="">— Đang tải danh sách thiết bị… —</option>
+                            </select>
+
+                            <div class="hx-help">
+                                @(isAdmin ? "Admin có thể dán GUID trực tiếp để truy vấn nhanh." : "User chỉ chọn thiết bị được gán theo quyền hiện tại.")
+                            </div>
+                        </div>
+
+                        <div class="hx-row2">
+                            <div class="hx-field">
+                                <label class="hx-label">Từ (local)</label>
+                                <input type="datetime-local" class="hx-input" id="from" />
+                            </div>
+
+                            <div class="hx-field">
+                                <label class="hx-label">Đến (local)</label>
+                                <input type="datetime-local" class="hx-input" id="to" />
+                            </div>
+                        </div>
+
+                        <div class="hx-row3">
+                            <div class="hx-field">
+                                <label class="hx-label">Khoảng nhanh</label>
+                                <select id="quick" class="hx-input">
+                                    <option value="1">1 giờ</option>
+                                    <option value="6">6 giờ</option>
+                                    <option value="24" selected>24 giờ</option>
+                                    <option value="72">3 ngày</option>
+                                    <option value="240">10 ngày</option>
+                                </select>
+                            </div>
+
+                            <div class="hx-field">
+                                <label class="hx-label">Kênh nhiệt (tmp)</label>
+                                <select id="tempChan" class="hx-input">
+                                    <option value="1" selected>tmp1</option>
+                                    <option value="2">tmp2</option>
+                                    <option value="3">tmp3</option>
+                                    <option value="4">tmp4</option>
+                                </select>
+                            </div>
+
+                            <div class="hx-field">
+                                <label class="hx-label">Kênh ẩm (hum)</label>
+                                <select id="humChan" class="hx-input">
+                                    <option value="1" selected>hum1</option>
+                                    <option value="2">hum2</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="hx-actions">
+                            <button class="hx-btn hx-primary" id="btnFetch" type="submit">
+                                <i class="bi bi-cloud-download"></i> Lấy dữ liệu
+                            </button>
+                            <button class="hx-btn hx-outline" type="button" id="btnClear">
+                                <i class="bi bi-eraser"></i> Xoá
+                            </button>
+                        </div>
+
+                        <div class="hx-sep"></div>
+
+                        <div class="hx-auto">
+                            <div class="hx-switch">
+                                <input class="form-check-input" type="checkbox" id="autoToggle">
+                                <label style="color:black;" for="autoToggle">Tự động cập nhật</label>
+                            </div>
+
+                            <select id="autoInterval" class="hx-input hx-auto-sel">
+                                <option value="0">Tắt</option>
+                                <option value="60" selected>1 phút</option>
+                                <option value="300">5 phút</option>
+                            </select>
+
+                            <span class="hx-pill" id="autoCountdown">—</span>
+                        </div>
+
+                        @if (!isAdmin)
+                        {
+                            <div class="hx-sep"></div>
+
+                            <div class="hx-zoom">
+                                <div class="hx-zoom-item">
+                                    <div class="hx-switch">
+                                        <input class="form-check-input" type="checkbox" id="zoomTempToggle" checked>
+                                        <label style="color:black;" for="zoomTempToggle">Zoom °C</label>
+                                    </div>
+                                    <span class="hx-pill" id="zoomTempBadge">°C —</span>
+                                </div>
+
+                                <div class="hx-zoom-item">
+                                    <div class="hx-switch">
+                                        <input class="form-check-input" type="checkbox" id="zoomRhToggle" checked>
+                                        <label style="color:black;" for="zoomRhToggle">Zoom %RH</label>
+                                    </div>
+                                    <span class="hx-pill" id="zoomRhBadge">%RH —</span>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="hx-loading" id="loading">
+                            <span class="spinner-border spinner-border-sm"></span>
+                            Đang tải dữ liệu từ API…
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="hx-card hx-mt">
+                <div class="hx-card-head">
+                    <h3><i class="bi bi-speedometer2"></i> Thống kê nhanh</h3>
+                    <span class="hx-pill" id="deviceText">—</span>
+                </div>
+
+                <div class="hx-card-body">
+                    <div class="hx-stats">
+                        <div class="hx-stat">
+                            <i class="bi bi-thermometer-half"></i>
+                            <div>
+                                <div class="hx-muted">Trung bình</div>
+                                <div class="hx-num" id="avgTemp">—</div>
+                            </div>
+                        </div>
+
+                        <div class="hx-stat">
+                            <i class="bi bi-thermometer-high"></i>
+                            <div>
+                                <div class="hx-muted">Cao nhất</div>
+                                <div class="hx-num" id="maxTemp">—</div>
+                            </div>
+                        </div>
+
+                        <div class="hx-stat">
+                            <i class="bi bi-thermometer-low"></i>
+                            <div>
+                                <div class="hx-muted">Thấp nhất</div>
+                                <div class="hx-num" id="minTemp">—</div>
+                            </div>
+                        </div>
+
+                        <div class="hx-stat">
+                            <i class="bi bi-droplet-half"></i>
+                            <div>
+                                <div class="hx-muted">Độ ẩm gần nhất</div>
+                                <div class="hx-num" id="lastHum">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* <div class="hx-note" style="margin-top:12px;">
+                        * Time hiển thị theo UTC+7. Chart và bảng giữ nguyên các ID để file <code>elitech-history.js</code> tiếp tục hoạt động bình thường.
+                    </div> *@
+                </div>
+            </div>
+        </div>
+
+        <div class="hx-right">
+            <div class="hx-card">
+                <div class="hx-card-head">
+                    <h3><i class="bi bi-graph-up-arrow"></i> Trend chart</h3>
+                    <div class="hx-badges">
+                        <span class="hx-pill" id="pointCount">0 điểm</span>
+                        <span class="hx-pill" id="rangeText">—</span>
+                    </div>
+                </div>
+
+                <div class="hx-card-body">
+                    <div class="hx-chart">
+                        <canvas id="chartTemp"></canvas>
+                    </div>
+                    <div class="hx-note" style="margin-top:12px;">
+                        * Bố cục tối ưu để nhìn giống màn hình giám sát vận hành: biểu đồ lớn, vùng hiển thị sâu, phù hợp quan sát liên tục.
+                    </div>
+                </div>
+            </div>
+
+            <div class="hx-card hx-mt">
+                <div class="hx-card-head">
+                    <h3><i class="bi bi-table"></i> Bảng dữ liệu lịch sử</h3>
+                    <button class="hx-btn hx-outline hx-sm" id="btnExport" type="button">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Xuất CSV
+                    </button>
+
+                </div>
+
+                <div class="hx-card-body">
+                    <div class="hx-table-wrap">
+                        <table class="hx-table" id="tbl">
+                            <thead>
+                                <tr>
+                                    <th>Time (UTC+7)</th>
+                                    <th>tmp1</th>
+                                    <th>tmp2</th>
+                                    <th>tmp3</th>
+                                    <th>tmp4</th>
+                                    <th>hum1</th>
+                                    <th>hum2</th>
+                                    <th>signal</th>
+                                    <th>power</th>
+                                    <th>address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="hx-api" id="apiMsg"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="hx-toasty" id="toasty"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+    // ===== INIT CONFIG =====
+    window.__ELITECH_HISTORY__ = {
+    isAdmin: @((isAdmin) ? "true" : "false"),
+    baseUrl: '@Url.Content("~/")'
+    };
+
+    const alarmBox = document.getElementById("alarmBox");
+
+    // 🔊 SOUND
+    const alarmSound = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+
+    function checkAlarm(temp){
+    const threshold = 30;
+
+    if(temp > threshold){
+    if(alarmBox){
+    alarmBox.style.display = "block";
+    alarmBox.classList.add("blink");
+    }
+    alarmSound.play().catch(()=>{});
+    }else{
+    if(alarmBox){
+    alarmBox.style.display = "none";
+    alarmBox.classList.remove("blink");
+    }
+    }
+    }
+
+    // ===== HOOK DATA (ALARM) =====
+    (function(){
+    const oldPush = Array.prototype.push;
+
+    Array.prototype.push = function(...args){
+    args.forEach(v=>{
+    if(typeof v === "number"){
+    checkAlarm(v);
+    }
+    });
+    return oldPush.apply(this,args);
+    };
+    })();
+
+    // ===== RANGE DEFAULT (24H) =====
+    const fromDate = document.getElementById("fromDate");
+    const toDate = document.getElementById("toDate");
+
+    if(fromDate && toDate){
+    const now = new Date();
+    const before = new Date();
+    before.setHours(now.getHours() - 24);
+
+    fromDate.value = before.toISOString().slice(0,16);
+    toDate.value = now.toISOString().slice(0,16);
+    }
+
+    // ===== LOAD DATA =====
+    async function loadHistory(){
+
+    const deviceSelect = document.getElementById("deviceSelect");
+    const deviceGuid = deviceSelect ? deviceSelect.value : null;
+
+    const from = fromDate ? fromDate.value : null;
+    const to = toDate ? toDate.value : null;
+
+    if(!deviceGuid){
+    alert("Chọn thiết bị!");
+    return;
+    }
+
+    let url = `/api/elitech/history?deviceGuid=${deviceGuid}`;
+
+    if(from && to){
+    url += `&from=${from}&to=${to}`;
+    }
+
+    console.log("CALL API:", url);
+
+    try{
+    const res = await fetch(url);
+
+    if(!res.ok){
+    throw new Error("API lỗi");
+    }
+
+    const json = await res.json();
+
+    const data = json.data || [];
+
+    console.log("DATA:", data);
+
+    // 👉 bạn đã có sẵn
+    renderChart(data);
+    renderTable(data);
+
+    }catch(err){
+    console.error(err);
+    alert("Không load được dữ liệu");
+    }
+    }
+
+    // ===== BUTTON FILTER =====
+    const btnFilter = document.getElementById("btnFilter");
+    if(btnFilter){
+    btnFilter.addEventListener("click", () => {
+    loadHistory();
+    });
+    }
+
+    // ===== QUICK RANGE =====
+    window.quickRange = function(hours){
+    const now = new Date();
+    const before = new Date();
+
+    before.setHours(now.getHours() - hours);
+
+    fromDate.value = before.toISOString().slice(0,16);
+    toDate.value = now.toISOString().slice(0,16);
+
+    loadHistory();
+    }
+
+    // ===== EXPORT PDF =====
+    const btnPdf = document.getElementById("btnExportPdf");
+
+    if(btnPdf){
+    btnPdf.addEventListener("click", async () => {
+
+    console.log("CLICK PDF");
+
+    const canvas = document.getElementById("chartTemp");
+    if(!canvas){
+    alert("Không tìm thấy chart");
+    return;
+    }
+
+    await new Promise(r => setTimeout(r, 300));
+
+    const chartImage = canvas.toDataURL("image/png");
+
+    const table = document.getElementById("tbl");
+    if(!table){
+    alert("Không tìm thấy bảng");
+    return;
+    }
+
+    const tableHtml = table.outerHTML;
+
+    const from = fromDate ? fromDate.value : null;
+    const to = toDate ? toDate.value : null;
+
+    try{
+    const res = await fetch("/export/pdf", {
+    method: "POST",
+    headers: {
+    "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+    chartImage,
+    tableHtml,
+    from,
+    to
+    })
+    });
+
+    if(!res.ok){
+    throw new Error("API lỗi");
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Elitech Report.pdf";
+    a.click();
+
+    }catch(err){
+    console.error(err);
+    alert("Xuất PDF thất bại");
+    }
+    });
+    }
+
+    // ===== AUTO LOAD FIRST =====
+    loadHistory();
+
+    });
+</script>
+<script src="~/js/elitech-history.js" asp-append-version="true"></script>

@@ -33,3 +33,7 @@ artifacts/
 # System
 .DS_Store
 Thumbs.db
+
+# Generated publish output
+ElitechAPI/out/
+ElitechAPI/**/out/

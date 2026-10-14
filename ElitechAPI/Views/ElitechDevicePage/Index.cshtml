@@ -1,0 +1,1260 @@
+﻿@using System.Text.Json
+@{
+    ViewData["Title"] = "Elitech Device Info";
+    var deviceGuids = (ViewBag.DeviceGuids as string) ?? "";
+    var deviceGuidsJson = JsonSerializer.Serialize(deviceGuids);
+}
+
+<style>
+    :root {
+        --di-ink: #0f172a;
+        --di-muted: #94a3b8;
+        --di-soft-muted: #64748b;
+        --di-line: rgba(148,163,184,.26);
+        --di-line-2: rgba(226,232,240,.88);
+        --di-bg: #eef3fb;
+        --di-card: rgba(255,255,255,.92);
+        --di-orange: #f58220;
+        --di-orange-2: #ffb25b;
+        --di-blue: #2563eb;
+        --di-sky: #38bdf8;
+        --di-green: #22c55e;
+        --di-red: #ef4444;
+        --di-shadow: 0 22px 60px rgba(15,23,42,.12);
+        --di-shadow-soft: 0 12px 28px rgba(15,23,42,.08);
+    }
+
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        background: radial-gradient(900px 460px at 9% 0%, rgba(245,130,32,.14), transparent 58%), radial-gradient(880px 460px at 90% 6%, rgba(37,99,235,.14), transparent 60%), linear-gradient(180deg, #f8fafc 0%, #edf3fb 46%, #eef3fb 100%) !important;
+        color: var(--di-ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .di-page {
+        position: relative;
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 18px 16px 34px;
+    }
+
+    .di-hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 310px;
+        border-radius: 38px;
+        padding: 30px;
+        color: #fff;
+        background: radial-gradient(800px 330px at 88% 0%, rgba(245,130,32,.34), transparent 52%), radial-gradient(700px 340px at 3% 8%, rgba(56,189,248,.22), transparent 58%), linear-gradient(135deg, #071226 0%, #0b1833 48%, #10204a 100%);
+        border: 1px solid rgba(255,255,255,.14);
+        box-shadow: 0 28px 84px rgba(7,18,38,.28);
+    }
+
+        .di-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,.052) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.052) 1px, transparent 1px);
+            background-size: 44px 44px;
+            opacity: .48;
+            pointer-events: none;
+            mask-image: linear-gradient(90deg, #000 0%, transparent 96%);
+        }
+
+        .di-hero::after {
+            content: "";
+            position: absolute;
+            width: 430px;
+            height: 430px;
+            right: -170px;
+            top: -170px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.16);
+            box-shadow: inset 0 0 0 22px rgba(255,255,255,.035), inset 0 0 0 55px rgba(255,255,255,.022), 0 0 70px rgba(245,130,32,.20);
+            pointer-events: none;
+        }
+
+    .di-hero-inner {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .di-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 13px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.16);
+        color: rgba(255,255,255,.86);
+        font-size: .76rem;
+        font-weight: 1000;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+        .di-kicker i {
+            color: var(--di-orange-2);
+        }
+
+    .di-title {
+        margin: 18px 0 0;
+        max-width: 850px;
+        font-size: clamp(2.4rem, 5.2vw, 5.1rem);
+        line-height: .92;
+        font-weight: 1000;
+        letter-spacing: -.075em;
+    }
+
+        .di-title span {
+            background: linear-gradient(90deg, #fff 0%, #dbeafe 38%, #ffb25b 78%, #f58220 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    .di-sub {
+        margin-top: 18px;
+        max-width: 760px;
+        color: rgba(226,232,240,.82);
+        font-size: .98rem;
+        line-height: 1.7;
+        font-weight: 680;
+    }
+
+    .di-hero-actions {
+        margin-top: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 11px;
+    }
+
+    .di-btn,
+    .di-btn-link {
+        min-height: 44px;
+        border: 1px solid rgba(148,163,184,.28);
+        border-radius: 999px;
+        padding: 0 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #111827;
+        background: #fff;
+        box-shadow: var(--di-shadow-soft);
+        font-weight: 1000;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .18s ease;
+        white-space: nowrap;
+    }
+
+        .di-btn:hover,
+        .di-btn-link:hover {
+            transform: translateY(-2px);
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .di-btn.primary,
+        .di-btn-link.primary {
+            border: 0;
+            background: linear-gradient(135deg, var(--di-orange), var(--di-orange-2));
+            color: #111827;
+            box-shadow: 0 18px 42px rgba(245,130,32,.24);
+        }
+
+        .di-btn.dark,
+        .di-btn-link.dark {
+            background: rgba(255,255,255,.10);
+            color: #fff;
+            border-color: rgba(255,255,255,.16);
+            box-shadow: none;
+        }
+
+        .di-btn:disabled {
+            opacity: .58;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .di-signal-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 250px;
+        border-radius: 32px;
+        padding: 20px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.16);
+        box-shadow: 0 20px 62px rgba(0,0,0,.20);
+    }
+
+        .di-signal-card::before {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -78px;
+            top: -88px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(245,130,32,.58), transparent 68%);
+        }
+
+    .di-signal-top,
+    .di-bars,
+    .di-signal-foot {
+        position: relative;
+        z-index: 2;
+    }
+
+    .di-signal-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        color: rgba(255,255,255,.92);
+        font-weight: 1000;
+    }
+
+    .di-live-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.14);
+        font-size: .78rem;
+    }
+
+    .di-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--di-green);
+        box-shadow: 0 0 0 7px rgba(34,197,94,.14);
+    }
+
+    .di-bars {
+        height: 110px;
+        margin-top: 24px;
+        display: flex;
+        align-items: end;
+        gap: 11px;
+    }
+
+    .di-bar {
+        flex: 1;
+        min-width: 16px;
+        border-radius: 999px 999px 12px 12px;
+        background: linear-gradient(180deg, rgba(219,234,254,.98), rgba(56,189,248,.62), rgba(37,99,235,.42));
+        box-shadow: 0 0 24px rgba(56,189,248,.16);
+    }
+
+        .di-bar.orange {
+            background: linear-gradient(180deg, #ffb25b, #f58220 70%, rgba(245,130,32,.44));
+        }
+
+    .di-signal-foot {
+        margin-top: 17px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .di-mini {
+        border-radius: 18px;
+        padding: 12px;
+        background: rgba(255,255,255,.11);
+        border: 1px solid rgba(255,255,255,.14);
+    }
+
+        .di-mini b {
+            display: block;
+            color: #fff;
+            font-size: 1.15rem;
+            line-height: 1;
+            font-weight: 1000;
+        }
+
+        .di-mini span {
+            display: block;
+            margin-top: 5px;
+            color: rgba(226,232,240,.76);
+            font-size: .72rem;
+            font-weight: 820;
+        }
+
+    .di-card {
+        background: var(--di-card);
+        border: 1px solid rgba(255,255,255,.76);
+        border-radius: 30px;
+        box-shadow: var(--di-shadow);
+    }
+
+    .di-toolbar {
+        margin-top: 16px;
+        padding: 18px;
+    }
+
+    .di-form {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) auto auto auto;
+        gap: 11px;
+        align-items: center;
+    }
+
+    .di-input-wrap {
+        position: relative;
+    }
+
+        .di-input-wrap i {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: #64748b;
+            pointer-events: none;
+        }
+
+    .di-input {
+        width: 100%;
+        height: 48px;
+        border: 1px solid rgba(148,163,184,.32);
+        border-radius: 18px;
+        padding: 0 14px 0 43px;
+        outline: none;
+        color: #0f172a;
+        background: #fff;
+        font-weight: 900;
+        box-shadow: 0 10px 24px rgba(15,23,42,.055);
+        transition: .15s ease;
+    }
+
+        .di-input:focus {
+            border-color: rgba(245,130,32,.62);
+            box-shadow: 0 0 0 4px rgba(245,130,32,.13);
+        }
+
+    .di-guid-line {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 9px;
+        color: #64748b;
+        font-size: .84rem;
+        font-weight: 780;
+    }
+
+        .di-guid-line code {
+            max-width: 680px;
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #0f172a;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    .di-stats {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .di-stat {
+        position: relative;
+        overflow: hidden;
+        padding: 19px;
+        min-height: 150px;
+    }
+
+        .di-stat::after {
+            content: "";
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            right: -64px;
+            bottom: -72px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(37,99,235,.18), transparent 70%);
+        }
+
+        .di-stat.orange::after {
+            background: radial-gradient(circle, rgba(245,130,32,.23), transparent 70%);
+        }
+
+        .di-stat.green::after {
+            background: radial-gradient(circle, rgba(34,197,94,.20), transparent 70%);
+        }
+
+        .di-stat.dark::after {
+            background: radial-gradient(circle, rgba(15,23,42,.18), transparent 70%);
+        }
+
+    .di-stat-top {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .di-stat-label {
+        color: #64748b;
+        font-size: .74rem;
+        font-weight: 1000;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .di-stat-ico {
+        width: 48px;
+        height: 48px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, #2563eb, #38bdf8);
+        box-shadow: 0 14px 28px rgba(37,99,235,.18);
+    }
+
+    .di-stat.orange .di-stat-ico {
+        color: #111827;
+        background: linear-gradient(135deg, #f58220, #ffb25b);
+        box-shadow: 0 14px 28px rgba(245,130,32,.20);
+    }
+
+    .di-stat.green .di-stat-ico {
+        background: linear-gradient(135deg, #16a34a, #86efac);
+        box-shadow: 0 14px 28px rgba(22,163,74,.18);
+    }
+
+    .di-stat.dark .di-stat-ico {
+        background: linear-gradient(135deg, #071226, #142b63);
+        box-shadow: 0 14px 28px rgba(15,23,42,.18);
+    }
+
+    .di-stat-value {
+        position: relative;
+        z-index: 2;
+        margin-top: 18px;
+        color: #0f172a;
+        font-size: 2.4rem;
+        line-height: 1;
+        font-weight: 1000;
+        letter-spacing: -.06em;
+    }
+
+    .di-stat-sub {
+        position: relative;
+        z-index: 2;
+        margin-top: 8px;
+        color: #64748b;
+        font-size: .82rem;
+        font-weight: 760;
+    }
+
+    .di-alert {
+        display: none;
+        margin-top: 16px;
+        border-radius: 22px;
+        padding: 14px 16px;
+        background: #fff7ed;
+        border: 1px solid rgba(245,130,32,.25);
+        color: #9a3412;
+        font-weight: 860;
+        box-shadow: var(--di-shadow-soft);
+    }
+
+        .di-alert.show {
+            display: block;
+        }
+
+    .di-panel {
+        margin-top: 16px;
+        overflow: hidden;
+    }
+
+    .di-panel-head {
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(226,232,240,.90);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        background: radial-gradient(480px 160px at 100% 0%, rgba(245,130,32,.10), transparent 58%), rgba(255,255,255,.70);
+    }
+
+    .di-panel-kicker {
+        color: var(--di-orange);
+        font-size: .72rem;
+        font-weight: 1000;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .di-panel-title {
+        margin: 5px 0 0;
+        color: #0f172a;
+        font-size: 1.24rem;
+        line-height: 1.15;
+        font-weight: 1000;
+        letter-spacing: -.035em;
+    }
+
+    .di-panel-note {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: .84rem;
+        font-weight: 760;
+    }
+
+    .di-loading {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        color: #334155;
+        padding: 9px 12px;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid rgba(226,232,240,.92);
+        font-weight: 900;
+        font-size: .82rem;
+    }
+
+        .di-loading.show {
+            display: inline-flex;
+        }
+
+    .di-spinner {
+        width: 15px;
+        height: 15px;
+        border-radius: 999px;
+        border: 2px solid #fed7aa;
+        border-top-color: var(--di-orange);
+        animation: diSpin .75s linear infinite;
+    }
+
+    @@keyframes diSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .di-table-wrap {
+        max-height: 65vh;
+        overflow: auto;
+        background: #fff;
+    }
+
+    .di-table {
+        width: 100%;
+        min-width: 1120px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .di-table th,
+        .di-table td {
+            padding: 14px 15px;
+            border-bottom: 1px solid rgba(226,232,240,.84);
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        .di-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            color: #64748b;
+            background: #f8fafc;
+            font-size: .72rem;
+            font-weight: 1000;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .di-table td {
+            color: #0f172a;
+            font-size: .88rem;
+            font-weight: 800;
+        }
+
+        .di-table tbody tr {
+            transition: .15s ease;
+        }
+
+            .di-table tbody tr:hover td {
+                background: rgba(245,130,32,.055);
+            }
+
+    .di-device-name {
+        color: #0f172a;
+        font-weight: 1000;
+        line-height: 1.2;
+    }
+
+    .di-device-sub {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: .76rem;
+        font-weight: 760;
+    }
+
+    .di-code {
+        max-width: 260px;
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 10px;
+        border-radius: 13px;
+        background: #f1f5f9;
+        color: #0f172a;
+        font-size: .78rem;
+        font-weight: 900;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .di-copy-btn {
+        height: 32px;
+        border: 0;
+        margin-left: 6px;
+        padding: 0 10px;
+        border-radius: 12px;
+        background: #e0edff;
+        color: #1d4ed8;
+        font-size: .75rem;
+        font-weight: 1000;
+        cursor: pointer;
+        transition: .15s ease;
+    }
+
+        .di-copy-btn:hover {
+            transform: translateY(-1px);
+            background: #cfe0ff;
+        }
+
+    .di-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 29px;
+        padding: 6px 11px;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 1000;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+
+        .di-pill.blue {
+            background: #e0edff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .di-pill.green {
+            background: #e8fff1;
+            color: #059669;
+            border-color: #bbf7d0;
+        }
+
+        .di-pill.orange {
+            background: #fff4e5;
+            color: #c75f12;
+            border-color: #fed7aa;
+        }
+
+        .di-pill.gray {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+
+    .di-empty {
+        padding: 42px 18px !important;
+        text-align: center !important;
+        color: #64748b !important;
+        font-weight: 860 !important;
+        background: #fff !important;
+    }
+
+    .di-empty-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 12px;
+        border-radius: 22px;
+        display: grid;
+        place-items: center;
+        color: #c75f12;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        font-size: 1.35rem;
+    }
+
+    .di-toast {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 9999;
+        display: none;
+        width: min(420px, calc(100vw - 36px));
+        padding: 14px 15px;
+        border-radius: 20px;
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(226,232,240,.92);
+        box-shadow: 0 20px 52px rgba(15,23,42,.18);
+    }
+
+        .di-toast.show {
+            display: block;
+        }
+
+    .di-toast-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #0f172a;
+        font-weight: 1000;
+    }
+
+        .di-toast-title span:first-child {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: var(--di-green);
+        }
+
+    .di-toast-msg {
+        margin-top: 4px;
+        color: #334155;
+        font-size: .86rem;
+        font-weight: 720;
+        line-height: 1.4;
+    }
+
+    @@media (max-width: 1180px) {
+        .di-hero-inner {
+            grid-template-columns: 1fr;
+        }
+
+        .di-signal-card {
+            max-width: 520px;
+        }
+
+        .di-form {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .di-page {
+            padding: 12px 10px 26px;
+        }
+
+        .di-hero {
+            border-radius: 28px;
+            padding: 22px;
+        }
+
+        .di-title {
+            font-size: 2.55rem;
+        }
+
+        .di-form {
+            grid-template-columns: 1fr;
+        }
+
+        .di-btn,
+        .di-btn-link {
+            width: 100%;
+        }
+
+        .di-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .di-signal-foot {
+            grid-template-columns: 1fr;
+        }
+
+        .di-guid-line code {
+            max-width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .di-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        * {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="di-toast" id="diToast">
+    <div class="di-toast-title">
+        <span></span>
+        <div id="diToastTitle">Thông báo</div>
+    </div>
+    <div class="di-toast-msg" id="diToastMsg"></div>
+</div>
+
+<div class="di-page">
+    <section class="di-hero">
+        <div class="di-hero-inner">
+            <div>
+                <div class="di-kicker">
+                    <i class="bi bi-cpu-fill"></i>
+                    Elitech Device Intelligence
+                </div>
+
+                <h1 class="di-title">
+                    Device Info <span>Command Center</span>
+                </h1>
+
+                <p class="di-sub">
+                    Khu vực kiểm tra nhanh thông tin thiết bị Elitech theo GUID:
+                    tên thiết bị, loại thiết bị, scene, SubUID, SMS/Voice, thời hạn và lần cập nhật cuối.
+                    Giao diện mới ưu tiên thao tác nhanh, đọc dữ liệu rõ và giữ nguyên API hiện tại.
+                </p>
+
+                <div class="di-hero-actions">
+                    <a class="di-btn-link primary" href="/ElitechRealtime">
+                        <i class="bi bi-broadcast-pin"></i>
+                        Mở Realtime
+                    </a>
+
+                    <a class="di-btn-link dark" href="/Admin">
+                        <i class="bi bi-arrow-left"></i>
+                        Về Admin
+                    </a>
+                </div>
+            </div>
+
+            <div class="di-signal-card">
+                <div class="di-signal-top">
+                    <span>Device Signal Deck</span>
+                    <span class="di-live-pill"><span class="di-dot"></span> Ready</span>
+                </div>
+
+                <div class="di-bars">
+                    <div class="di-bar" style="height:50%;"></div>
+                    <div class="di-bar" style="height:78%;"></div>
+                    <div class="di-bar orange" style="height:62%;"></div>
+                    <div class="di-bar" style="height:92%;"></div>
+                    <div class="di-bar" style="height:70%;"></div>
+                    <div class="di-bar orange" style="height:83%;"></div>
+                    <div class="di-bar" style="height:56%;"></div>
+                </div>
+
+                <div class="di-signal-foot">
+                    <div class="di-mini">
+                        <b>GUID</b>
+                        <span>Quick lookup</span>
+                    </div>
+                    <div class="di-mini">
+                        <b>SMS</b>
+                        <span>Device quota</span>
+                    </div>
+                    <div class="di-mini">
+                        <b>Voice</b>
+                        <span>Call alert</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="di-card di-toolbar">
+        <form method="get" class="di-form">
+            <div class="di-input-wrap">
+                <i class="bi bi-search"></i>
+                <input id="deviceGuidsInput"
+                       name="deviceGuids"
+                       class="di-input"
+                       placeholder="Nhập GUID, ví dụ: GUID1,GUID2"
+                       value="@deviceGuids"
+                       autocomplete="off" />
+            </div>
+
+            <button class="di-btn primary" type="submit">
+                <i class="bi bi-rocket-takeoff-fill"></i>
+                Load
+            </button>
+
+            <button type="button" id="btnFetch" class="di-btn">
+                <i class="bi bi-lightning-charge-fill"></i>
+                Fetch via API
+            </button>
+
+            <button type="button" id="btnClear" class="di-btn">
+                <i class="bi bi-x-circle"></i>
+                Clear
+            </button>
+        </form>
+
+        <div class="di-guid-line">
+            <span>GUID hiện tại:</span>
+            <code id="guidShow">@(string.IsNullOrWhiteSpace(deviceGuids) ? "Chưa nhập" : deviceGuids)</code>
+        </div>
+    </section>
+
+    <section class="di-stats">
+        <div class="di-card di-stat">
+            <div class="di-stat-top">
+                <div class="di-stat-label">Tổng thiết bị</div>
+                <div class="di-stat-ico">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+            </div>
+            <div class="di-stat-value" id="statTotal">0</div>
+            <div class="di-stat-sub">Số thiết bị trả về từ API</div>
+        </div>
+
+        <div class="di-card di-stat orange">
+            <div class="di-stat-top">
+                <div class="di-stat-label">Tổng SMS</div>
+                <div class="di-stat-ico">
+                    <i class="bi bi-chat-dots-fill"></i>
+                </div>
+            </div>
+            <div class="di-stat-value" id="statSms">0</div>
+            <div class="di-stat-sub">Số lượt SMS còn/đã cấu hình</div>
+        </div>
+
+        <div class="di-card di-stat green">
+            <div class="di-stat-top">
+                <div class="di-stat-label">Tổng Voice</div>
+                <div class="di-stat-ico">
+                    <i class="bi bi-telephone-fill"></i>
+                </div>
+            </div>
+            <div class="di-stat-value" id="statVoice">0</div>
+            <div class="di-stat-sub">Số lượt Voice còn/đã cấu hình</div>
+        </div>
+
+        <div class="di-card di-stat dark">
+            <div class="di-stat-top">
+                <div class="di-stat-label">Có hạn dùng</div>
+                <div class="di-stat-ico">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                </div>
+            </div>
+            <div class="di-stat-value" id="statExpired">0</div>
+            <div class="di-stat-sub">Thiết bị có expiredTime</div>
+        </div>
+    </section>
+
+    <div id="err" class="di-alert"></div>
+
+    <section class="di-card di-panel">
+        <div class="di-panel-head">
+            <div>
+                <div class="di-panel-kicker">Device List</div>
+                <h2 class="di-panel-title">Danh sách thiết bị</h2>
+                <div class="di-panel-note">
+                    Dữ liệu được lấy từ endpoint <b>/api/elitech/device-info</b>
+                </div>
+            </div>
+
+            <div id="loading" class="di-loading">
+                <span class="di-spinner"></span>
+                Đang tải dữ liệu...
+            </div>
+        </div>
+
+        <div class="di-table-wrap">
+            <table class="di-table" id="tbl">
+                <thead>
+                    <tr>
+                        <th>Tên thiết bị</th>
+                        <th>GUID</th>
+                        <th>Loại thiết bị</th>
+                        <th>Scene</th>
+                        <th>SubUID</th>
+                        <th>SMS</th>
+                        <th>Voice</th>
+                        <th>Hết hạn</th>
+                        <th>Lần cuối</th>
+                    </tr>
+                </thead>
+                <tbody id="body">
+                    <tr>
+                        <td colspan="9" class="di-empty">
+                            <div class="di-empty-icon">
+                                <i class="bi bi-inbox-fill"></i>
+                            </div>
+                            Chưa có dữ liệu. Nhập GUID rồi bấm Load hoặc Fetch via API.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+    const initialDeviceGuids = @Html.Raw(deviceGuidsJson);
+
+    const input = document.getElementById('deviceGuidsInput');
+    const body = document.getElementById('body');
+    const err = document.getElementById('err');
+    const loading = document.getElementById('loading');
+    const btnFetch = document.getElementById('btnFetch');
+    const btnClear = document.getElementById('btnClear');
+    const guidShow = document.getElementById('guidShow');
+
+    const statTotal = document.getElementById('statTotal');
+    const statSms = document.getElementById('statSms');
+    const statVoice = document.getElementById('statVoice');
+    const statExpired = document.getElementById('statExpired');
+
+    const toast = document.getElementById('diToast');
+    const toastTitle = document.getElementById('diToastTitle');
+    const toastMsg = document.getElementById('diToastMsg');
+
+    function getDeviceGuids() {
+        return (input?.value || initialDeviceGuids || '').trim();
+    }
+
+    function showToast(title, message) {
+        if (!toast || !toastTitle || !toastMsg) return;
+
+        toastTitle.textContent = title || 'Thông báo';
+        toastMsg.textContent = message || '';
+        toast.classList.add('show');
+
+        clearTimeout(window.__diToastTimer);
+        window.__diToastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function showErr(message) {
+        err.textContent = message;
+        err.classList.add('show');
+    }
+
+    function hideErr() {
+        err.classList.remove('show');
+        err.textContent = '';
+    }
+
+    function setLoading(isLoading) {
+        loading.classList.toggle('show', !!isLoading);
+        btnFetch.disabled = isLoading;
+        btnFetch.innerHTML = isLoading
+            ? '<i class="bi bi-arrow-repeat"></i> Đang fetch...'
+            : '<i class="bi bi-lightning-charge-fill"></i> Fetch via API';
+    }
+
+    function esc(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function fmtTime(sec) {
+        if (!sec) return '-';
+        return new Date(sec * 1000).toLocaleString('vi-VN');
+    }
+
+    function num(value) {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : 0;
+    }
+
+    function resetStats() {
+        statTotal.textContent = '0';
+        statSms.textContent = '0';
+        statVoice.textContent = '0';
+        statExpired.textContent = '0';
+    }
+
+    function renderEmpty(message) {
+        body.innerHTML = `
+                <tr>
+                    <td colspan="9" class="di-empty">
+                        <div class="di-empty-icon">
+                            <i class="bi bi-inbox-fill"></i>
+                        </div>
+                        ${esc(message)}
+                    </td>
+                </tr>
+            `;
+        resetStats();
+    }
+
+    function renderRows(rows) {
+        const total = rows.length;
+        const totalSms = rows.reduce((sum, x) => sum + num(x.smsCount), 0);
+        const totalVoice = rows.reduce((sum, x) => sum + num(x.voiceCount), 0);
+        const totalExpired = rows.filter(x => !!x.expiredTime).length;
+
+        statTotal.textContent = total;
+        statSms.textContent = totalSms;
+        statVoice.textContent = totalVoice;
+        statExpired.textContent = totalExpired;
+
+        if (total === 0) {
+            renderEmpty('Không có dữ liệu từ API.');
+            return;
+        }
+
+        body.innerHTML = rows.map(x => {
+            const guid = x.deviceGuid || '-';
+            const expiredText = x.expiredTime ? fmtTime(x.expiredTime) : '-';
+            const lastText = x.lastTimeStr || (x.lastTime ? fmtTime(x.lastTime) : '-');
+
+            return `
+                    <tr>
+                        <td>
+                            <div class="di-device-name">${esc(x.deviceName || '-')}</div>
+                            <div class="di-device-sub">Elitech device</div>
+                        </td>
+
+                        <td>
+                            <code class="di-code" title="${esc(guid)}">${esc(guid)}</code>
+                            ${guid !== '-' ? `<button type="button" class="di-copy-btn" data-guid="${esc(guid)}">Copy</button>` : ''}
+                        </td>
+
+                        <td>
+                            <span class="di-pill blue">${esc(x.deviceTypeName || '-')}</span>
+                        </td>
+
+                        <td>${esc(x.sceneName || '-')}</td>
+
+                        <td>
+                            <span class="di-pill gray">${esc(x.subUid ?? '-')}</span>
+                        </td>
+
+                        <td>
+                            <span class="di-pill green">${esc(x.smsCount ?? 0)}</span>
+                        </td>
+
+                        <td>
+                            <span class="di-pill orange">${esc(x.voiceCount ?? 0)}</span>
+                        </td>
+
+                        <td>${esc(expiredText)}</td>
+
+                        <td>${esc(lastText)}</td>
+                    </tr>
+                `;
+        }).join('');
+    }
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            temp.remove();
+        }
+    }
+
+    async function fetchInfo() {
+        const deviceGuids = getDeviceGuids();
+
+        if (!deviceGuids) {
+            showErr('Hãy nhập deviceGuids trước khi fetch.');
+            renderEmpty('Chưa có dữ liệu. Nhập GUID rồi bấm Load hoặc Fetch via API.');
+            return;
+        }
+
+        guidShow.textContent = deviceGuids;
+        hideErr();
+        setLoading(true);
+
+        try {
+            const url = `/api/elitech/device-info?deviceGuids=${encodeURIComponent(deviceGuids)}`;
+            const res = await fetch(url, { cache: 'no-store' });
+
+            if (!res.ok) {
+                let text = await res.text().catch(() => '');
+
+                try {
+                    const parsed = JSON.parse(text);
+                    text = parsed.message || text;
+                } catch { }
+
+                showErr(`API lỗi: ${res.status} — ${text || 'Không đọc được nội dung lỗi.'}`);
+                renderEmpty('Không tải được dữ liệu.');
+                return;
+            }
+
+            const json = await res.json();
+            const rows = json?.data ?? [];
+
+            renderRows(rows);
+            showToast('Device info loaded', `Đã tải ${rows.length} thiết bị.`);
+        } catch (e) {
+            showErr(`Không gọi được API: ${e?.message || e}`);
+            renderEmpty('Không tải được dữ liệu.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    btnFetch.addEventListener('click', fetchInfo);
+
+    btnClear.addEventListener('click', () => {
+        input.value = '';
+        guidShow.textContent = 'Chưa nhập';
+        hideErr();
+        renderEmpty('Chưa có dữ liệu. Nhập GUID rồi bấm Load hoặc Fetch via API.');
+    });
+
+    input.addEventListener('input', () => {
+        const value = getDeviceGuids();
+        guidShow.textContent = value || 'Chưa nhập';
+    });
+
+    body.addEventListener('click', async function(e) {
+        const btn = e.target.closest('.di-copy-btn');
+        if (!btn) return;
+
+        const guid = btn.getAttribute('data-guid');
+        await copyText(guid);
+
+        const oldText = btn.textContent;
+        btn.textContent = 'Copied';
+        showToast('Đã copy GUID', guid);
+
+        setTimeout(() => btn.textContent = oldText, 900);
+    });
+
+    if (getDeviceGuids()) {
+        fetchInfo();
+    }
+</script>

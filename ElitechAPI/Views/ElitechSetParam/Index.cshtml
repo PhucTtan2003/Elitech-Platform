@@ -1,0 +1,1230 @@
+﻿@{
+    ViewData["Title"] = "Set Param";
+    Layout = "_Layout";
+}
+
+<style>
+    :root {
+        --sp-bg: #f4f7fc;
+        --sp-surface: rgba(255,255,255,.92);
+        --sp-surface-2: rgba(255,255,255,.72);
+        --sp-ink: #0f172a;
+        --sp-muted: #64748b;
+        --sp-line: rgba(148,163,184,.22);
+        --sp-line-2: rgba(15,23,42,.10);
+        --sp-blue: #0a84ff;
+        --sp-blue-2: #38bdf8;
+        --sp-orange: #f58220;
+        --sp-orange-2: #ffb25b;
+        --sp-green: #16a34a;
+        --sp-red: #ef4444;
+        --sp-amber: #f59e0b;
+        --sp-radius-xl: 34px;
+        --sp-radius-lg: 24px;
+        --sp-radius-md: 18px;
+        --sp-shadow: 0 24px 70px rgba(15,23,42,.12);
+        --sp-shadow-soft: 0 12px 32px rgba(15,23,42,.08);
+    }
+
+    body {
+        background: radial-gradient(920px 520px at 5% -10%, rgba(10,132,255,.13), transparent 60%), radial-gradient(860px 520px at 98% 0%, rgba(245,130,32,.13), transparent 58%), linear-gradient(180deg, #ffffff 0%, #eef4ff 52%, #f8fbff 100%) !important;
+        color: var(--sp-ink);
+    }
+
+    .sp-page {
+        position: relative;
+        padding: 22px 18px 46px;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+        .sp-page::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(15,23,42,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.035) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: linear-gradient(180deg, rgba(0,0,0,.78), transparent 74%);
+            pointer-events: none;
+        }
+
+    .sp-container {
+        position: relative;
+        z-index: 1;
+        width: min(1500px, 100%);
+        margin: 0 auto;
+        display: grid;
+        gap: 18px;
+    }
+
+    .sp-hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 270px;
+        border-radius: var(--sp-radius-xl);
+        border: 1px solid var(--sp-line);
+        background: radial-gradient(680px 280px at 4% 0%, rgba(10,132,255,.18), transparent 60%), radial-gradient(620px 260px at 96% 4%, rgba(245,130,32,.16), transparent 58%), linear-gradient(135deg, rgba(255,255,255,.96), rgba(248,250,252,.78));
+        box-shadow: var(--sp-shadow);
+        padding: 30px;
+    }
+
+        .sp-hero::after {
+            content: "";
+            position: absolute;
+            right: -80px;
+            bottom: -120px;
+            width: 340px;
+            height: 340px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(10,132,255,.16), transparent 68%);
+            pointer-events: none;
+        }
+
+    .sp-hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(360px, .55fr);
+        gap: 22px;
+        align-items: stretch;
+    }
+
+    .sp-kicker {
+        width: fit-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 40px;
+        padding: 0 14px;
+        border-radius: 999px;
+        color: #9a3412;
+        background: #fff7ed;
+        border: 1px solid rgba(245,130,32,.24);
+        box-shadow: 0 10px 24px rgba(245,130,32,.10);
+        font-size: .78rem;
+        font-weight: 1000;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .sp-hero h1 {
+        max-width: 760px;
+        margin: 20px 0 0;
+        font-size: clamp(2.8rem, 6vw, 6.4rem);
+        line-height: .9;
+        letter-spacing: -.075em;
+        font-weight: 1000;
+        color: var(--sp-ink);
+    }
+
+        .sp-hero h1 span {
+            background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 44%, #f58220 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    .sp-lead {
+        max-width: 760px;
+        margin: 18px 0 0;
+        color: var(--sp-muted);
+        font-weight: 820;
+        font-size: 1.02rem;
+        line-height: 1.65;
+    }
+
+    .sp-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .sp-back,
+    .sp-soft-btn,
+    .sp-submit {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 999px;
+        border: 1px solid var(--sp-line);
+        text-decoration: none !important;
+        font-weight: 1000;
+        padding: 0 18px;
+        transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, filter .16s ease;
+        cursor: pointer;
+    }
+
+    .sp-back,
+    .sp-soft-btn {
+        color: var(--sp-ink) !important;
+        background: rgba(255,255,255,.86);
+        box-shadow: var(--sp-shadow-soft);
+    }
+
+        .sp-back:hover,
+        .sp-soft-btn:hover,
+        .sp-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(15,23,42,.12);
+        }
+
+    .sp-submit {
+        border: 0;
+        color: #fff;
+        background: linear-gradient(135deg, #0a84ff, #38bdf8);
+        box-shadow: 0 18px 42px rgba(10,132,255,.26);
+    }
+
+        .sp-submit:disabled {
+            opacity: .62;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    .sp-deck {
+        position: relative;
+        overflow: hidden;
+        border-radius: 30px;
+        border: 1px solid rgba(255,255,255,.44);
+        background: linear-gradient(180deg, rgba(15,23,42,.92), rgba(30,41,59,.86));
+        box-shadow: 0 28px 70px rgba(15,23,42,.24);
+        color: #fff;
+        padding: 22px;
+        min-height: 100%;
+    }
+
+        .sp-deck::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+            background-size: 34px 34px;
+            pointer-events: none;
+        }
+
+        .sp-deck > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    .sp-deck-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+
+    .sp-deck-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 1000;
+        letter-spacing: -.03em;
+    }
+
+    .sp-deck-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--sp-orange), var(--sp-orange-2));
+        color: #111827;
+        font-size: 1.25rem;
+        box-shadow: 0 18px 36px rgba(245,130,32,.22);
+    }
+
+    .sp-live-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 13px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.13);
+        color: rgba(255,255,255,.88);
+        font-weight: 1000;
+        font-size: .82rem;
+    }
+
+    .sp-live-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--sp-green);
+        box-shadow: 0 0 0 5px rgba(34,197,94,.16);
+    }
+
+    .sp-deck-panel {
+        margin-top: 18px;
+        border-radius: 24px;
+        padding: 18px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .sp-deck-label {
+        color: rgba(226,232,240,.68);
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-size: .72rem;
+        font-weight: 1000;
+    }
+
+    .sp-deck-value {
+        margin-top: 10px;
+        font-size: 2.1rem;
+        line-height: 1;
+        font-weight: 1000;
+        letter-spacing: -.06em;
+    }
+
+    .sp-mini-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .sp-mini {
+        min-height: 90px;
+        border-radius: 20px;
+        padding: 14px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.11);
+    }
+
+        .sp-mini b {
+            display: block;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            font-weight: 1000;
+            letter-spacing: -.03em;
+        }
+
+        .sp-mini span {
+            color: rgba(226,232,240,.64);
+            font-size: .78rem;
+            font-weight: 800;
+        }
+
+    .sp-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(380px, .75fr);
+        gap: 18px;
+        align-items: start;
+    }
+
+    .sp-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--sp-radius-lg);
+        border: 1px solid var(--sp-line);
+        background: var(--sp-surface);
+        box-shadow: var(--sp-shadow-soft);
+    }
+
+    .sp-card-head {
+        padding: 20px 22px 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        border-bottom: 1px solid rgba(148,163,184,.16);
+        background: radial-gradient(560px 180px at 0% 0%, rgba(10,132,255,.08), transparent 58%), linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.72));
+    }
+
+    .sp-card-title {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .sp-card-ico {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        color: var(--sp-blue);
+        background: #eff6ff;
+        border: 1px solid rgba(10,132,255,.16);
+        flex: 0 0 auto;
+    }
+
+    .sp-card-title b {
+        display: block;
+        color: var(--sp-ink);
+        font-size: 1.05rem;
+        font-weight: 1000;
+        letter-spacing: -.025em;
+    }
+
+    .sp-card-title span {
+        display: block;
+        margin-top: 5px;
+        color: var(--sp-muted);
+        font-size: .86rem;
+        line-height: 1.42;
+        font-weight: 780;
+    }
+
+    .sp-tag {
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: #fff7ed;
+        color: #9a3412;
+        border: 1px solid rgba(245,130,32,.22);
+        font-size: .78rem;
+        font-weight: 1000;
+        white-space: nowrap;
+    }
+
+    .sp-card-body {
+        padding: 22px;
+    }
+
+    .sp-form-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .sp-row-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .sp-row-4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .sp-field {
+        min-width: 0;
+    }
+
+        .sp-field label,
+        .sp-section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 8px;
+            color: #334155;
+            font-size: .78rem;
+            font-weight: 1000;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .sp-field input {
+            width: 100%;
+            min-height: 52px;
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,.28);
+            background: #fff;
+            color: var(--sp-ink);
+            outline: none;
+            padding: 0 14px;
+            font-size: .94rem;
+            font-weight: 880;
+            box-shadow: inset 0 1px 0 rgba(15,23,42,.04);
+            transition: box-shadow .16s ease, border-color .16s ease, background .16s ease;
+        }
+
+            .sp-field input:focus {
+                border-color: rgba(10,132,255,.44);
+                box-shadow: 0 0 0 4px rgba(10,132,255,.12);
+            }
+
+    .sp-input-with-copy {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .sp-chip-row,
+    .sp-preset-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .sp-chip,
+    .sp-preset,
+    .sp-copy {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 999px;
+        border: 1px solid var(--sp-line);
+        background: rgba(255,255,255,.88);
+        color: #334155;
+        font-size: .8rem;
+        font-weight: 920;
+        padding: 0 13px;
+        cursor: pointer;
+        transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+        white-space: nowrap;
+    }
+
+    .sp-chip {
+        cursor: default;
+    }
+
+    .sp-preset:hover,
+    .sp-copy:hover {
+        transform: translateY(-1px);
+        border-color: rgba(245,130,32,.28);
+        box-shadow: 0 12px 24px rgba(15,23,42,.08);
+    }
+
+    .sp-preset.active {
+        color: #9a3412;
+        background: #fff7ed;
+        border-color: rgba(245,130,32,.26);
+    }
+
+    .sp-status {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 1px solid var(--sp-line);
+        background: #fff;
+        color: var(--sp-muted);
+        font-size: .82rem;
+        font-weight: 1000;
+    }
+
+        .sp-status.ok {
+            color: #166534;
+            background: #dcfce7;
+            border-color: #bbf7d0;
+        }
+
+        .sp-status.err {
+            color: #991b1b;
+            background: #fee2e2;
+            border-color: #fecaca;
+        }
+
+        .sp-status.warn {
+            color: #9a3412;
+            background: #ffedd5;
+            border-color: #fed7aa;
+        }
+
+    .sp-response {
+        margin-top: 18px;
+        overflow: hidden;
+        border-radius: 22px;
+        border: 1px solid var(--sp-line);
+        background: #0b1220;
+        box-shadow: var(--sp-shadow-soft);
+    }
+
+    .sp-response-head {
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 14px 0 18px;
+        color: rgba(226,232,240,.84);
+        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+        border-bottom: 1px solid rgba(255,255,255,.10);
+        font-size: .84rem;
+        font-weight: 1000;
+    }
+
+    .sp-response pre {
+        margin: 0;
+        min-height: 210px;
+        max-height: 460px;
+        overflow: auto;
+        padding: 18px;
+        color: #dbeafe;
+        background: transparent;
+        font-size: .82rem;
+        line-height: 1.55;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        white-space: pre-wrap;
+    }
+
+    .sp-side-stack {
+        display: grid;
+        gap: 18px;
+    }
+
+    .sp-info-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .sp-info-item {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding: 14px;
+        border-radius: 20px;
+        border: 1px solid var(--sp-line);
+        background: rgba(255,255,255,.72);
+    }
+
+    .sp-info-ico {
+        width: 42px;
+        height: 42px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        color: var(--sp-blue);
+        background: #eff6ff;
+        border: 1px solid rgba(10,132,255,.16);
+    }
+
+    .sp-info-item b {
+        display: block;
+        color: var(--sp-ink);
+        font-size: .92rem;
+        font-weight: 1000;
+        letter-spacing: -.015em;
+    }
+
+    .sp-info-item span {
+        display: block;
+        margin-top: 4px;
+        color: var(--sp-muted);
+        font-size: .82rem;
+        line-height: 1.42;
+        font-weight: 760;
+    }
+
+    .sp-range-preview {
+        display: grid;
+        gap: 12px;
+    }
+
+    .sp-range-item {
+        padding: 14px;
+        border-radius: 20px;
+        background: rgba(255,255,255,.76);
+        border: 1px solid var(--sp-line);
+    }
+
+    .sp-range-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--sp-muted);
+        font-size: .78rem;
+        font-weight: 1000;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+    .sp-range-value {
+        margin-top: 8px;
+        color: var(--sp-ink);
+        font-size: 1.32rem;
+        font-weight: 1000;
+        letter-spacing: -.04em;
+    }
+
+    .sp-bar {
+        margin-top: 12px;
+        height: 9px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(148,163,184,.20);
+    }
+
+        .sp-bar span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--sp-blue), var(--sp-orange));
+            width: 68%;
+        }
+
+    @@media (max-width: 1180px) {
+        .sp-hero-grid,
+        .sp-content {
+            grid-template-columns: 1fr;
+        }
+
+        .sp-deck {
+            min-height: auto;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .sp-page {
+            padding: 16px 12px 34px;
+        }
+
+        .sp-hero {
+            padding: 22px;
+            border-radius: 26px;
+        }
+
+            .sp-hero h1 {
+                font-size: clamp(2.5rem, 13vw, 4.2rem);
+            }
+
+        .sp-row-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 620px) {
+        .sp-hero-grid,
+        .sp-content,
+        .sp-row-2,
+        .sp-row-4,
+        .sp-mini-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sp-hero-actions,
+        .sp-chip-row,
+        .sp-preset-row {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .sp-back,
+        .sp-soft-btn,
+        .sp-submit,
+        .sp-preset,
+        .sp-copy,
+        .sp-status {
+            width: 100%;
+        }
+
+        .sp-card-head {
+            flex-direction: column;
+        }
+
+        .sp-input-with-copy {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            transition: none !important;
+            animation: none !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+
+<div class="sp-page">
+    <div class="sp-container">
+        <section class="sp-hero">
+            <div class="sp-hero-grid">
+                <div>
+                    <div class="sp-kicker">
+                        <i class="bi bi-sliders2-vertical"></i>
+                        Admin SetParam Tool
+                    </div>
+
+                    <h1>Set Param<br /><span>Elitech.</span></h1>
+
+                    <p class="sp-lead">
+                        Cấu hình thời gian ghi, thời gian tải lên và ngưỡng nhiệt độ/độ ẩm cho thiết bị.
+                        Giao diện này dành cho Admin thao tác nhanh với API SetParam.
+                    </p>
+
+                    <div class="sp-hero-actions">
+                        <a asp-controller="Admin" asp-action="Index" class="sp-back">
+                            <i class="bi bi-arrow-left"></i>
+                            Về Admin
+                        </a>
+                        <button type="button" class="sp-soft-btn" id="btnColdPreset">
+                            <i class="bi bi-snow2"></i>
+                            Preset kho lạnh 2–8°C
+                        </button>
+                        <button type="button" class="sp-soft-btn" id="btnDefaultPreset">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Preset mặc định
+                        </button>
+                    </div>
+                </div>
+
+                <aside class="sp-deck" aria-label="SetParam status deck">
+                    <div class="sp-deck-head">
+                        <div class="sp-deck-title">
+                            <span class="sp-deck-icon"><i class="bi bi-cpu"></i></span>
+                            <span>
+                                Elitech Control Deck<br />
+                                <small style="color:rgba(226,232,240,.62);font-weight:850;letter-spacing:0;">SetParam • Interval • Threshold</small>
+                            </span>
+                        </div>
+                        <span class="sp-live-pill"><span class="sp-live-dot"></span> Ready</span>
+                    </div>
+
+                    <div class="sp-deck-panel">
+                        <div class="sp-deck-label">Current target</div>
+                        <div class="sp-deck-value" id="deckGuidShort">—</div>
+                        <div style="margin-top:10px;color:rgba(226,232,240,.65);font-weight:800;line-height:1.45;" id="deckGuidFull">
+                            Nhập Device GUID để bắt đầu cấu hình.
+                        </div>
+                    </div>
+
+                    <div class="sp-mini-grid">
+                        <div class="sp-mini">
+                            <i class="bi bi-clock-history"></i>
+                            <b><span id="deckRecord">30</span>s</b>
+                            <span>Record interval</span>
+                        </div>
+                        <div class="sp-mini">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <b><span id="deckUpload">30</span>s</b>
+                            <span>Upload interval</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="sp-content">
+            <div>
+                <section class="sp-card">
+                    <div class="sp-card-head">
+                        <div class="sp-card-title">
+                            <span class="sp-card-ico"><i class="bi bi-router"></i></span>
+                            <div>
+                                <b>Thông tin thiết bị</b>
+                                <span>Nhập GUID thiết bị cần cấu hình. Có thể copy nhanh response để kiểm tra log/API.</span>
+                            </div>
+                        </div>
+                        <span class="sp-tag"><i class="bi bi-shield-lock"></i> Admin only</span>
+                    </div>
+
+                    <div class="sp-card-body">
+                        <div class="sp-form-grid">
+                            <div class="sp-field">
+                                <label for="deviceGuid"><i class="bi bi-upc-scan"></i>Device GUID</label>
+                                <div class="sp-input-with-copy">
+                                    <input id="deviceGuid"
+                                           value="@ViewBag.DeviceGuid"
+                                           placeholder="VD: 90319774496194524687"
+                                           autocomplete="off" />
+                                    <button type="button" class="sp-copy" id="copyGuidBtn">
+                                        <i class="bi bi-copy"></i> Copy GUID
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="sp-chip-row">
+                                <span class="sp-chip"><i class="bi bi-info-circle"></i> API: /api/elitech/set-param</span>
+                                <span class="sp-chip"><i class="bi bi-thermometer-half"></i> Temp threshold</span>
+                                <span class="sp-chip"><i class="bi bi-droplet-half"></i> Humidity threshold</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sp-card" style="margin-top:18px;">
+                    <div class="sp-card-head">
+                        <div class="sp-card-title">
+                            <span class="sp-card-ico"><i class="bi bi-clock"></i></span>
+                            <div>
+                                <b>Intervals</b>
+                                <span>Cấu hình thời gian ghi dữ liệu và thời gian upload dữ liệu lên cloud.</span>
+                            </div>
+                        </div>
+                        <span class="sp-tag"><i class="bi bi-stopwatch"></i> seconds</span>
+                    </div>
+
+                    <div class="sp-card-body">
+                        <div class="sp-row-2">
+                            <div class="sp-field">
+                                <label for="recordInterval"><i class="bi bi-record-circle"></i>Thời gian ghi</label>
+                                <input id="recordInterval" type="number" inputmode="numeric" min="1" value="30" />
+                            </div>
+
+                            <div class="sp-field">
+                                <label for="uploadInterval"><i class="bi bi-cloud-upload"></i>Thời gian tải lên</label>
+                                <input id="uploadInterval" type="number" inputmode="numeric" min="1" value="30" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sp-card" style="margin-top:18px;">
+                    <div class="sp-card-head">
+                        <div class="sp-card-title">
+                            <span class="sp-card-ico"><i class="bi bi-sliders"></i></span>
+                            <div>
+                                <b>Thresholds</b>
+                                <span>Thiết lập ngưỡng trên/dưới cho nhiệt độ và độ ẩm của thiết bị.</span>
+                            </div>
+                        </div>
+                        <span class="sp-tag"><i class="bi bi-rulers"></i> °C / %RH</span>
+                    </div>
+
+                    <div class="sp-card-body">
+                        <div class="sp-preset-row" style="margin-bottom:16px;">
+                            <button type="button" class="sp-preset" data-preset="cold">
+                                <i class="bi bi-snow2"></i> Kho lạnh 2–8°C
+                            </button>
+                            <button type="button" class="sp-preset active" data-preset="default">
+                                <i class="bi bi-box-seam"></i> Mặc định 15–30°C
+                            </button>
+                            <button type="button" class="sp-preset" data-preset="custom">
+                                <i class="bi bi-pencil-square"></i> Tùy chỉnh
+                            </button>
+                        </div>
+
+                        <div class="sp-row-4">
+                            <div class="sp-field">
+                                <label for="tmpUpper"><i class="bi bi-thermometer-high"></i>Nhiệt trên</label>
+                                <input id="tmpUpper" inputmode="decimal" value="30" />
+                            </div>
+
+                            <div class="sp-field">
+                                <label for="tmpLower"><i class="bi bi-thermometer-low"></i>Nhiệt dưới</label>
+                                <input id="tmpLower" inputmode="decimal" value="15" />
+                            </div>
+
+                            <div class="sp-field">
+                                <label for="humUpper"><i class="bi bi-droplet-fill"></i>Ẩm trên</label>
+                                <input id="humUpper" inputmode="decimal" value="75" />
+                            </div>
+
+                            <div class="sp-field">
+                                <label for="humLower"><i class="bi bi-droplet"></i>Ẩm dưới</label>
+                                <input id="humLower" inputmode="decimal" value="50" />
+                            </div>
+                        </div>
+
+                        <div class="sp-hero-actions" style="margin-top:18px;">
+                            <button class="sp-submit" id="btn" type="button">
+                                <i class="bi bi-send-check-fill"></i>
+                                Submit SetParam
+                            </button>
+                            <span id="status" class="sp-status">
+                                <i class="bi bi-circle"></i>
+                                Chưa chạy
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sp-response">
+                    <div class="sp-response-head">
+                        <span><i class="bi bi-braces"></i> Response JSON</span>
+                        <button type="button" class="sp-copy" id="copyBtn">
+                            <i class="bi bi-copy"></i> Copy response
+                        </button>
+                    </div>
+                    <pre id="out">{}</pre>
+                </section>
+            </div>
+
+            <aside class="sp-side-stack">
+                <section class="sp-card">
+                    <div class="sp-card-head">
+                        <div class="sp-card-title">
+                            <span class="sp-card-ico"><i class="bi bi-activity"></i></span>
+                            <div>
+                                <b>Preview cấu hình</b>
+                                <span>Cập nhật theo thông số đang nhập trước khi gửi API.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sp-card-body">
+                        <div class="sp-range-preview">
+                            <div class="sp-range-item">
+                                <div class="sp-range-top">
+                                    <span>Nhiệt độ</span>
+                                    <i class="bi bi-thermometer-half"></i>
+                                </div>
+                                <div class="sp-range-value"><span id="previewTemp">15 → 30</span> °C</div>
+                                <div class="sp-bar"><span id="tempBar"></span></div>
+                            </div>
+
+                            <div class="sp-range-item">
+                                <div class="sp-range-top">
+                                    <span>Độ ẩm</span>
+                                    <i class="bi bi-droplet-half"></i>
+                                </div>
+                                <div class="sp-range-value"><span id="previewHum">50 → 75</span> %RH</div>
+                                <div class="sp-bar"><span id="humBar" style="width:72%;background:linear-gradient(90deg,#14b8a6,#38bdf8);"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sp-card">
+                    <div class="sp-card-head">
+                        <div class="sp-card-title">
+                            <span class="sp-card-ico"><i class="bi bi-lightbulb"></i></span>
+                            <div>
+                                <b>Gợi ý vận hành</b>
+                                <span>Checklist trước khi gửi cấu hình xuống thiết bị.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sp-card-body">
+                        <div class="sp-info-list">
+                            <div class="sp-info-item">
+                                <span class="sp-info-ico"><i class="bi bi-check2-circle"></i></span>
+                                <div>
+                                    <b>Kiểm tra đúng GUID</b>
+                                    <span>Không gửi nhầm thiết bị, đặc biệt khi thao tác nhiều kho/khu vực.</span>
+                                </div>
+                            </div>
+
+                            <div class="sp-info-item">
+                                <span class="sp-info-ico"><i class="bi bi-clock-history"></i></span>
+                                <div>
+                                    <b>Interval hợp lý</b>
+                                    <span>Record/upload càng nhỏ thì dữ liệu càng dày, nhưng có thể tăng tải cloud/API.</span>
+                                </div>
+                            </div>
+
+                            <div class="sp-info-item">
+                                <span class="sp-info-ico"><i class="bi bi-exclamation-triangle"></i></span>
+                                <div>
+                                    <b>Ngưỡng dưới &lt; ngưỡng trên</b>
+                                    <span>Trang đã chặn lỗi cơ bản trước khi gửi để tránh API bị reject.</span>
+                                </div>
+                            </div>
+
+                            <div class="sp-info-item">
+                                <span class="sp-info-ico"><i class="bi bi-journal-text"></i></span>
+                                <div>
+                                    <b>Lưu response</b>
+                                    <span>Copy response để đối chiếu khi cần kiểm tra log hoặc báo lỗi upstream.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </section>
+    </div>
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    function readNum(id) {
+        const el = $(id);
+        if (!el) return null;
+        const v = (el.value || "").trim();
+        if (!v) return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function readStr(id) {
+        const el = $(id);
+        if (!el) return null;
+        const v = (el.value || "").trim();
+        return v ? v : null;
+    }
+
+    function setStatus(text, kind) {
+        const s = $("status");
+        if (!s) return;
+
+        const icon = kind === "ok"
+            ? "bi-check-circle-fill"
+            : kind === "err"
+                ? "bi-x-circle-fill"
+                : kind === "warn"
+                    ? "bi-hourglass-split"
+                    : "bi-circle";
+
+        s.innerHTML = `<i class="bi ${icon}"></i>${escapeHtml(text || "")}`;
+        s.className = "sp-status" + (kind ? (" " + kind) : "");
+    }
+
+    function escapeHtml(s) {
+        return (s ?? "").toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function validateThresholds() {
+        const tL = readNum("tmpLower");
+        const tU = readNum("tmpUpper");
+        if (tL !== null && tU !== null && tL >= tU) return "Nhiệt độ dưới phải nhỏ hơn nhiệt độ trên.";
+
+        const hL = readNum("humLower");
+        const hU = readNum("humUpper");
+        if (hL !== null && hU !== null && hL >= hU) return "Độ ẩm dưới phải nhỏ hơn độ ẩm trên.";
+
+        return null;
+    }
+
+    function shortGuid(guid) {
+        const g = (guid || "").trim();
+        if (!g) return "—";
+        if (g.length <= 12) return g;
+        return g.substring(0, 6) + "…" + g.substring(g.length - 6);
+    }
+
+    function updatePreview() {
+        const guid = readStr("deviceGuid") || "";
+        const record = readStr("recordInterval") || "—";
+        const upload = readStr("uploadInterval") || "—";
+        const tL = readStr("tmpLower") || "—";
+        const tU = readStr("tmpUpper") || "—";
+        const hL = readStr("humLower") || "—";
+        const hU = readStr("humUpper") || "—";
+
+        if ($("deckGuidShort")) $("deckGuidShort").textContent = shortGuid(guid);
+        if ($("deckGuidFull")) $("deckGuidFull").textContent = guid || "Nhập Device GUID để bắt đầu cấu hình.";
+        if ($("deckRecord")) $("deckRecord").textContent = record;
+        if ($("deckUpload")) $("deckUpload").textContent = upload;
+        if ($("previewTemp")) $("previewTemp").textContent = `${tL} → ${tU}`;
+        if ($("previewHum")) $("previewHum").textContent = `${hL} → ${hU}`;
+
+        const err = validateThresholds();
+        if (err) {
+            setStatus(err, "err");
+        } else {
+            const current = ($("status")?.textContent || "").trim();
+            if (!current || current.includes("phải nhỏ hơn") || current === "Chưa chạy") {
+                setStatus("Sẵn sàng gửi", "");
+            }
+        }
+    }
+
+    function setPreset(type) {
+        document.querySelectorAll("[data-preset]").forEach(x => x.classList.remove("active"));
+        const active = document.querySelector(`[data-preset="${type}"]`);
+        if (active) active.classList.add("active");
+
+        if (type === "cold") {
+            $("tmpLower").value = "2";
+            $("tmpUpper").value = "8";
+            $("humLower").value = "30";
+            $("humUpper").value = "70";
+            $("recordInterval").value = "30";
+            $("uploadInterval").value = "30";
+        }
+
+        if (type === "default") {
+            $("tmpLower").value = "15";
+            $("tmpUpper").value = "30";
+            $("humLower").value = "50";
+            $("humUpper").value = "75";
+            $("recordInterval").value = "30";
+            $("uploadInterval").value = "30";
+        }
+
+        updatePreview();
+    }
+
+    async function copyText(text, okMessage) {
+        try {
+            await navigator.clipboard.writeText(text || "");
+            setStatus(okMessage || "Đã copy", "ok");
+            setTimeout(() => updatePreview(), 1200);
+        } catch {
+            setStatus("Copy thất bại", "err");
+        }
+    }
+
+    ["deviceGuid", "recordInterval", "uploadInterval", "tmpUpper", "tmpLower", "humUpper", "humLower"].forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        el.addEventListener("input", () => {
+            document.querySelectorAll("[data-preset]").forEach(x => x.classList.remove("active"));
+            const custom = document.querySelector('[data-preset="custom"]');
+            if (custom) custom.classList.add("active");
+            updatePreview();
+        });
+    });
+
+    document.querySelectorAll("[data-preset]").forEach(btn => {
+        btn.addEventListener("click", () => setPreset(btn.getAttribute("data-preset") || "default"));
+    });
+
+    $("btnColdPreset")?.addEventListener("click", () => setPreset("cold"));
+    $("btnDefaultPreset")?.addEventListener("click", () => setPreset("default"));
+
+    $("copyGuidBtn")?.addEventListener("click", async () => {
+        await copyText(readStr("deviceGuid") || "", "Đã copy GUID");
+    });
+
+    $("copyBtn")?.addEventListener("click", async () => {
+        const text = $("out")?.textContent || "";
+        await copyText(text, "Đã copy response");
+    });
+
+    $("btn")?.addEventListener("click", async () => {
+        const deviceGuid = readStr("deviceGuid");
+        if (!deviceGuid) { setStatus("Thiếu Device GUID", "err"); return; }
+
+        const err = validateThresholds();
+        if (err) { setStatus(err, "err"); return; }
+
+        $("btn").disabled = true;
+        setStatus("Đang gửi SetParam...", "warn");
+        $("out").textContent = "{}";
+
+        const payload = {
+            deviceGuid: deviceGuid,
+            recordInterval: readNum("recordInterval"),
+            uploadInterval: readNum("uploadInterval"),
+            tmpUpper: readStr("tmpUpper"),
+            tmpLower: readStr("tmpLower"),
+            humUpper: readStr("humUpper"),
+            humLower: readStr("humLower"),
+        };
+
+        try {
+            const r = await fetch("/api/elitech/set-param", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            });
+
+            const j = await r.json().catch(() => ({}));
+            $("out").textContent = JSON.stringify(j, null, 2);
+
+            if (r.ok && j && typeof j === "object" && "code" in j && j.code === 0) {
+                setStatus("OK - Đã gửi cấu hình", "ok");
+            } else {
+                setStatus(r.ok ? "Upstream lỗi (code != 0)" : ("HTTP " + r.status), "err");
+            }
+        } catch (e) {
+            $("out").textContent = JSON.stringify({ error: String(e) }, null, 2);
+            setStatus("Error", "err");
+        } finally {
+            $("btn").disabled = false;
+        }
+    });
+
+    updatePreview();
+</script>

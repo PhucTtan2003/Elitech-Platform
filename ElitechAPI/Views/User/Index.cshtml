@@ -1,0 +1,2986 @@
+﻿@using System.Text.Json
+@{
+    ViewData["Title"] = "Thiết bị của tôi";
+    Layout = "_Layout";
+
+    var assignedDevices = ViewBag.Devices ?? new List<object>();
+    bool canUserSubscribeSms = (bool)(ViewBag.CanUserSubscribeSms ?? false);
+    var smsAlready = (bool)(ViewBag.SmsAlreadySubscribed ?? false);
+    var smsExp = ViewBag.SmsSubExpiresAtUtc as DateTime?;
+
+    var userMeta = new
+    {
+        name = User?.Identity?.Name ?? "",
+        role = User?.Claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value ?? "",
+        userId = User?.Claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? ""
+    };
+}
+
+<style>
+    :root {
+        --ud-bg: #eef4ff;
+        --ud-bg2: #f8fbff;
+        --ud-ink: #0f172a;
+        --ud-soft-ink: #334155;
+        --ud-mut: #64748b;
+        --ud-faint: #94a3b8;
+        --ud-line: rgba(148, 163, 184, .22);
+        --ud-line2: rgba(100, 116, 139, .28);
+        --ud-card: rgba(255, 255, 255, .94);
+        --ud-card2: #f8fafc;
+        --ud-blue: #2563eb;
+        --ud-blue2: #3b82f6;
+        --ud-orange: #f58220;
+        --ud-orange2: #e36f15;
+        --ud-green: #16a34a;
+        --ud-amber: #d97706;
+        --ud-red: #dc2626;
+        --ud-cyan: #0891b2;
+        --ud-shadow-lg: 0 24px 70px rgba(15, 23, 42, .12);
+        --ud-shadow-md: 0 14px 34px rgba(15, 23, 42, .09);
+        --ud-shadow-sm: 0 7px 18px rgba(15, 23, 42, .07);
+        --ud-radius-xl: 28px;
+        --ud-radius-lg: 22px;
+        --ud-radius-md: 16px;
+        --ud-sidebar: 88px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        color: var(--ud-ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        background: radial-gradient(900px 520px at -10% -10%, rgba(37, 99, 235, .14), transparent 58%), radial-gradient(900px 520px at 110% -10%, rgba(245, 130, 32, .12), transparent 56%), radial-gradient(820px 520px at 50% 115%, rgba(22, 163, 74, .08), transparent 58%), linear-gradient(180deg, #f8fbff 0%, #eef4ff 52%, #edf3fb 100%);
+    }
+
+    .ud-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: var(--ud-sidebar) minmax(0, 1fr);
+    }
+
+    .ud-side {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 16px 12px;
+        border-right: 1px solid rgba(148, 163, 184, .18);
+        background: linear-gradient(180deg, rgba(255, 255, 255, .76), rgba(255, 255, 255, .42));
+        backdrop-filter: saturate(150%) blur(12px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        z-index: 10;
+    }
+
+    .side-logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: radial-gradient(120% 120% at 20% 10%, rgba(255, 255, 255, .42), transparent 46%), linear-gradient(135deg, var(--ud-blue2), var(--ud-blue));
+        box-shadow: 0 18px 36px rgba(37, 99, 235, .22);
+        font-size: 23px;
+        border: 1px solid rgba(255, 255, 255, .36);
+    }
+
+    .side-stack {
+        display: grid;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .side-btn {
+        width: 100%;
+        min-height: 54px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, .80);
+        color: #334155;
+        display: grid;
+        place-items: center;
+        text-decoration: none;
+        box-shadow: var(--ud-shadow-sm);
+        transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease, background .14s ease;
+        font-size: 18px;
+    }
+
+        .side-btn:hover,
+        .side-btn.is-active {
+            transform: translateY(-1px);
+            border-color: rgba(37, 99, 235, .26);
+            background: linear-gradient(180deg, #ffffff, #eff6ff);
+            box-shadow: 0 14px 28px rgba(37, 99, 235, .11);
+            color: var(--ud-blue);
+        }
+
+    .side-spacer {
+        flex: 1;
+    }
+
+    .ud-main {
+        padding: 18px;
+        min-width: 0;
+    }
+
+    .ud-page {
+        max-width: 1500px;
+        margin: 0 auto;
+        display: grid;
+        gap: 16px;
+    }
+
+    .glass {
+        border: 1px solid rgba(148, 163, 184, .20);
+        background: rgba(255, 255, 255, .78);
+        box-shadow: var(--ud-shadow-md);
+        backdrop-filter: blur(14px);
+    }
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 32px;
+        padding: 18px;
+        display: grid;
+        gap: 16px;
+        background: radial-gradient(880px 240px at 5% 0%, rgba(37, 99, 235, .13), transparent 64%), radial-gradient(760px 260px at 96% 10%, rgba(245, 130, 32, .14), transparent 60%), linear-gradient(135deg, rgba(255, 255, 255, .94), rgba(255, 255, 255, .78));
+    }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto 18px 0 auto;
+            width: 260px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(37, 99, 235, .12), transparent 64%);
+            pointer-events: none;
+        }
+
+    .hero-top {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .hero-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 280px;
+    }
+
+    .hero-badge {
+        width: 64px;
+        height: 64px;
+        border-radius: 24px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 26px;
+        background: radial-gradient(120% 120% at 18% 8%, rgba(255, 255, 255, .45), transparent 45%), linear-gradient(135deg, #1d4ed8, #2563eb 55%, #38bdf8);
+        box-shadow: 0 20px 42px rgba(37, 99, 235, .22);
+        border: 1px solid rgba(255, 255, 255, .36);
+        flex: 0 0 auto;
+    }
+
+    .hero-copy h1 {
+        margin: 0;
+        font-size: clamp(1.28rem, 1.1rem + .9vw, 1.9rem);
+        font-weight: 1000;
+        letter-spacing: -.04em;
+    }
+
+    .hero-copy p {
+        margin: 8px 0 0;
+        color: var(--ud-mut);
+        font-weight: 760;
+        line-height: 1.48;
+        max-width: 820px;
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+        margin-left: auto;
+    }
+
+    .hero-pills,
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .pill,
+    .soft-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .86);
+        border: 1px solid rgba(148, 163, 184, .22);
+        box-shadow: var(--ud-shadow-sm);
+        color: #334155;
+        font-weight: 880;
+        font-size: .82rem;
+        white-space: nowrap;
+    }
+
+        .pill strong {
+            color: var(--ud-ink);
+        }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        box-shadow: 0 0 0 4px rgba(148, 163, 184, .10);
+    }
+
+        .dot.ok {
+            background: var(--ud-green);
+            box-shadow: 0 0 0 4px rgba(22, 163, 74, .10);
+        }
+
+        .dot.warn {
+            background: var(--ud-amber);
+            box-shadow: 0 0 0 4px rgba(217, 119, 6, .10);
+        }
+
+        .dot.bad {
+            background: var(--ud-red);
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, .10);
+        }
+
+    .action-btn,
+    .sms-btn {
+        appearance: none;
+        border: 1px solid rgba(148, 163, 184, .22);
+        background: #fff;
+        color: var(--ud-ink);
+        border-radius: 17px;
+        min-height: 46px;
+        padding: 0 16px;
+        font-weight: 950;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        box-shadow: var(--ud-shadow-sm);
+        transition: transform .14s ease, box-shadow .14s ease, background .14s ease, border-color .14s ease, opacity .14s ease;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .action-btn i {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            place-items: center;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, .20);
+        }
+
+        .action-btn:hover,
+        .sms-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            border-color: rgba(37, 99, 235, .26);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, .09);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #111827, #1f2937);
+            color: #fff;
+            border-color: #111827;
+        }
+
+        .action-btn.dark {
+            background: linear-gradient(135deg, #334155, #1f2937);
+            color: #fff;
+            border-color: #334155;
+        }
+
+            .action-btn.primary i,
+            .action-btn.dark i {
+                background: rgba(255, 255, 255, .10);
+                border-color: rgba(255, 255, 255, .16);
+                color: #fff;
+            }
+
+    .sms-btn {
+        border-radius: 999px;
+        padding: 0 18px;
+        background: linear-gradient(180deg, #ffffff, #f8fbff);
+    }
+
+        .sms-btn.is-on {
+            color: #fff;
+            border-color: rgba(22, 163, 74, .16);
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+        }
+
+        .sms-btn:disabled {
+            opacity: .68;
+            cursor: not-allowed;
+        }
+
+    .hero-stats {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .metric {
+        border-radius: 22px;
+        padding: 14px 16px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 252, .96));
+        box-shadow: var(--ud-shadow-sm);
+    }
+
+    .metric-k {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-weight: 950;
+        color: var(--ud-mut);
+    }
+
+    .metric-v {
+        margin-top: 8px;
+        font-size: 1.28rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+        color: var(--ud-ink);
+    }
+
+    .metric-s {
+        margin-top: 4px;
+        color: var(--ud-mut);
+        font-size: .8rem;
+        font-weight: 760;
+        line-height: 1.38;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(340px, .74fr);
+        gap: 16px;
+        align-items: start;
+    }
+
+    .card {
+        border-radius: var(--ud-radius-xl);
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: rgba(255, 255, 255, .92);
+        box-shadow: var(--ud-shadow-md);
+        overflow: hidden;
+    }
+
+    .card-hd {
+        padding: 18px 18px 14px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        border-bottom: 1px solid rgba(148, 163, 184, .14);
+        flex-wrap: wrap;
+    }
+
+    .card-bd {
+        padding: 18px;
+    }
+
+    .title-wrap b {
+        display: block;
+        font-size: 1.02rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+        color: var(--ud-ink);
+    }
+
+    .sub {
+        margin-top: 6px;
+        color: var(--ud-mut);
+        font-weight: 760;
+        font-size: .88rem;
+        line-height: 1.45;
+    }
+
+    .tools {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-left: auto;
+    }
+
+    .soft-chip.btn {
+        cursor: pointer;
+        user-select: none;
+        transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+    }
+
+        .soft-chip.btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(37, 99, 235, .24);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, .08);
+        }
+
+    .ud-rt-wrap {
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: linear-gradient(180deg, #ffffff, #fbfdff);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .70), var(--ud-shadow-sm);
+        overflow: hidden;
+    }
+
+    .ud-rt-hd {
+        padding: 16px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(148, 163, 184, .14);
+        flex-wrap: wrap;
+    }
+
+    .ud-rt-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 1000;
+        color: var(--ud-ink);
+    }
+
+    .ud-rt-sub {
+        margin-top: 6px;
+        color: var(--ud-mut);
+        font-size: .82rem;
+        font-weight: 760;
+    }
+
+    .ud-rt-tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-left: auto;
+    }
+
+    .ud-rt-select,
+    .ud-rt-btn,
+    .ud-rt-chip,
+    .search-input {
+        min-height: 42px;
+        border-radius: 15px;
+        border: 1px solid rgba(148, 163, 184, .22);
+        background: #fff;
+        box-shadow: var(--ud-shadow-sm);
+        font-weight: 880;
+        color: var(--ud-ink);
+    }
+
+    .ud-rt-select {
+        min-width: min(100%, 390px);
+        padding: 0 12px;
+        outline: none;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0 14px;
+        outline: none;
+    }
+
+        .ud-rt-select:focus,
+        .search-input:focus {
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+            border-color: rgba(37, 99, 235, .30);
+        }
+
+    .ud-rt-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        cursor: pointer;
+        transition: transform .14s ease, box-shadow .14s ease;
+    }
+
+        .ud-rt-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(15, 23, 42, .08);
+        }
+
+    .ud-rt-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        background: #f8fafc;
+    }
+
+    .ud-rt-host {
+        padding: 16px;
+    }
+
+    .ud-rt-empty {
+        border-radius: 18px;
+        border: 1px dashed rgba(148, 163, 184, .34);
+        background: #f8fafc;
+        color: var(--ud-mut);
+        padding: 18px;
+        font-weight: 850;
+        text-align: center;
+    }
+
+    .rt-card {
+        border-radius: 24px;
+        background: linear-gradient(180deg, #ffffff, #fbfdff);
+        border: 1px solid rgba(148, 163, 184, .18);
+        box-shadow: 0 18px 42px rgba(15, 23, 42, .09);
+        overflow: hidden;
+    }
+
+    .rt-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px 16px 10px;
+    }
+
+    .rt-name {
+        font-size: 1.1rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+        color: var(--ud-ink);
+        overflow-wrap: anywhere;
+    }
+
+    .rt-guid {
+        margin-top: 6px;
+        color: var(--ud-mut);
+        font-size: .8rem;
+        font-weight: 820;
+        overflow-wrap: anywhere;
+    }
+
+    .rt-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 1000;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+        .rt-pill:before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: #cbd5e1;
+        }
+
+    .rt-ok {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+        .rt-ok:before {
+            background: var(--ud-green);
+        }
+
+    .rt-warn {
+        background: #ffedd5;
+        color: #9a3412;
+        border-color: #fed7aa;
+    }
+
+        .rt-warn:before {
+            background: var(--ud-amber);
+        }
+
+    .rt-bad {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+        .rt-bad:before {
+            background: var(--ud-red);
+        }
+
+    .rt-banner {
+        margin: 0 16px 4px;
+        padding: 12px 14px;
+        border-radius: 19px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, .08), rgba(8, 145, 178, .06));
+        border: 1px solid rgba(37, 99, 235, .12);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .rt-banner-box {
+        min-width: 0;
+        border-radius: 15px;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, .78);
+        border: 1px solid rgba(148, 163, 184, .14);
+    }
+
+    .rt-banner-k,
+    .rt-k,
+    .stat .k,
+    .mini-k {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-weight: 950;
+        color: var(--ud-mut);
+    }
+
+    .rt-banner-v {
+        margin-top: 6px;
+        font-size: .98rem;
+        font-weight: 950;
+        color: var(--ud-ink);
+        overflow-wrap: anywhere;
+    }
+
+    .rt-grid {
+        padding: 12px 16px 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .rt-box,
+    .rt-sensors,
+    .stat,
+    .mini-card {
+        border-radius: 19px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        box-shadow: var(--ud-shadow-sm);
+    }
+
+    .rt-box {
+        padding: 12px 14px;
+    }
+
+    .rt-v,
+    .stat .v,
+    .mini-v {
+        margin-top: 8px;
+        font-size: 1.12rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+        color: var(--ud-ink);
+        overflow-wrap: anywhere;
+    }
+
+        .rt-v.ok {
+            color: #166534;
+        }
+
+        .rt-v.bad {
+            color: #991b1b;
+        }
+
+    .rt-full {
+        grid-column: 1 / -1;
+    }
+
+    .rt-sensors {
+        grid-column: 1 / -1;
+        padding: 14px;
+    }
+
+    .rt-sensors-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .rt-sensors-title {
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-weight: 950;
+        color: var(--ud-mut);
+    }
+
+    .rt-sensors-badge {
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: #f8fafc;
+        display: inline-flex;
+        align-items: center;
+        font-size: .78rem;
+        font-weight: 850;
+        color: #334155;
+    }
+
+    .rt-sensor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+    }
+
+    .rt-sensor {
+        border-radius: 17px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: #f8fafc;
+        padding: 12px;
+        min-height: 86px;
+    }
+
+    .rt-unit {
+        margin-left: 6px;
+        font-size: .78rem;
+        font-weight: 900;
+        color: #94a3b8;
+    }
+
+    .rt-foot {
+        padding: 12px 16px 14px;
+        border-top: 1px solid rgba(148, 163, 184, .14);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--ud-mut);
+        font-size: .8rem;
+        font-weight: 850;
+    }
+
+    .layout-note {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+        .layout-note .note {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, .18);
+            color: #475569;
+            font-size: .82rem;
+            font-weight: 820;
+        }
+
+    .ud-mini {
+        display: grid;
+        gap: 16px;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .stat,
+    .mini-card {
+        padding: 14px;
+    }
+
+        .stat .s,
+        .mini-s {
+            margin-top: 4px;
+            color: var(--ud-mut);
+            font-size: .82rem;
+            font-weight: 760;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+    .mini-grid {
+        display: grid;
+        gap: 12px;
+    }
+
+    .sr-badge,
+    .sr-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        font-weight: 860;
+        white-space: nowrap;
+    }
+
+    .sr-badge {
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: #f8fafc;
+        font-size: .78rem;
+    }
+
+    .sr-chip {
+        min-height: 32px;
+        padding: 0 10px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: #f8fafc;
+        color: #475569;
+        font-size: .75rem;
+    }
+
+    .sr-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #cbd5e1;
+    }
+
+    .sr-ok {
+        background: rgba(22, 163, 74, .08);
+        border-color: rgba(22, 163, 74, .18);
+        color: #166534;
+    }
+
+        .sr-ok .sr-dot {
+            background: var(--ud-green);
+        }
+
+    .sr-warn {
+        background: rgba(217, 119, 6, .10);
+        border-color: rgba(217, 119, 6, .20);
+        color: #9a3412;
+    }
+
+        .sr-warn .sr-dot {
+            background: var(--ud-amber);
+        }
+
+    .sr-bad {
+        background: rgba(220, 38, 38, .09);
+        border-color: rgba(220, 38, 38, .18);
+        color: #991b1b;
+    }
+
+        .sr-bad .sr-dot {
+            background: var(--ud-red);
+        }
+
+    .sr-sub {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .sr-bar {
+        margin-top: 12px;
+        height: 8px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(148, 163, 184, .16);
+        border: 1px solid rgba(148, 163, 184, .14);
+    }
+
+    .sr-bar-fill {
+        display: block;
+        height: 100%;
+        width: 58%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(37, 99, 235, .95), rgba(34, 197, 94, .74));
+        opacity: .88;
+    }
+
+    .device-filter {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .device-list {
+        display: grid;
+        gap: 10px;
+        max-height: 520px;
+        overflow: auto;
+        padding-right: 2px;
+    }
+
+        .device-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .device-list::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, .36);
+            border-radius: 999px;
+        }
+
+    .device-item {
+        appearance: none;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 17px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: #fff;
+        box-shadow: var(--ud-shadow-sm);
+        cursor: pointer;
+    }
+
+        .device-item:hover,
+        .device-item.active {
+            border-color: rgba(37, 99, 235, .24);
+            background: linear-gradient(180deg, #fff, #eff6ff);
+        }
+
+    .device-item-main {
+        min-width: 0;
+    }
+
+    .device-item-name {
+        font-weight: 950;
+        color: var(--ud-ink);
+        overflow-wrap: anywhere;
+    }
+
+    .device-item-guid {
+        margin-top: 4px;
+        color: var(--ud-mut);
+        font-size: .8rem;
+        font-weight: 760;
+        overflow-wrap: anywhere;
+    }
+
+    .device-item-tag {
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: #eff6ff;
+        border: 1px solid rgba(37, 99, 235, .14);
+        display: inline-flex;
+        align-items: center;
+        font-size: .78rem;
+        font-weight: 880;
+        color: var(--ud-blue);
+        white-space: nowrap;
+    }
+
+    .guide-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 2px;
+    }
+
+    .guide-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #334155;
+        font-weight: 760;
+        line-height: 1.5;
+    }
+
+    .guide-icon {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border-radius: 11px;
+        background: #eff6ff;
+        color: var(--ud-blue);
+        border: 1px solid rgba(37, 99, 235, .12);
+    }
+
+    .toast-wrap {
+        position: fixed;
+        top: 22px;
+        right: 22px;
+        width: min(390px, calc(100vw - 24px));
+        display: grid;
+        gap: 10px;
+        z-index: 9999;
+        pointer-events: none;
+    }
+
+    .toast {
+        pointer-events: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, .20);
+        background: rgba(255, 255, 255, .98);
+        box-shadow: 0 22px 50px rgba(15, 23, 42, .16);
+        overflow: hidden;
+        transform: translateY(-8px);
+        opacity: 0;
+        animation: toastIn .16s ease forwards;
+    }
+
+    @@keyframes toastIn {
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .toast .hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(148, 163, 184, .14);
+    }
+
+    .toast .title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 950;
+        color: var(--ud-ink);
+        font-size: .84rem;
+    }
+
+    .t-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 999px;
+        background: #cbd5e1;
+    }
+
+        .t-dot.ok {
+            background: var(--ud-green);
+        }
+
+        .t-dot.warn {
+            background: var(--ud-amber);
+        }
+
+        .t-dot.bad {
+            background: var(--ud-red);
+        }
+
+    .toast .close {
+        min-width: 34px;
+        height: 34px;
+        border: 1px solid rgba(148, 163, 184, .20);
+        background: #f8fafc;
+        border-radius: 12px;
+        font-weight: 950;
+        cursor: pointer;
+        color: #334155;
+    }
+
+    .toast .bd {
+        padding: 12px 14px 14px;
+        color: #0f172a;
+        font-size: .84rem;
+        font-weight: 760;
+        line-height: 1.5;
+    }
+
+    .toast .meta {
+        margin-top: 10px;
+        color: var(--ud-mut);
+        font-size: .78rem;
+        font-weight: 760;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    @@media (max-width: 1180px) {
+        .hero-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 840px) {
+        .ud-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .ud-side {
+            position: static;
+            height: auto;
+            width: 100%;
+            padding: 12px;
+            border-right: none;
+            border-bottom: 1px solid rgba(148, 163, 184, .16);
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .side-stack {
+            display: flex;
+            flex-wrap: wrap;
+            width: auto;
+            gap: 8px;
+        }
+
+        .side-btn {
+            width: 48px;
+            min-height: 48px;
+            border-radius: 14px;
+        }
+
+        .side-spacer {
+            display: none;
+        }
+
+        .ud-main {
+            padding: 14px;
+        }
+
+        .hero-meta {
+            align-items: flex-start;
+            width: 100%;
+            margin-left: 0;
+        }
+
+        .hero-pills,
+        .hero-actions,
+        .tools,
+        .ud-rt-tools {
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .toast-wrap {
+            top: 12px;
+            right: 12px;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .hero,
+        .card,
+        .ud-rt-wrap,
+        .rt-card {
+            border-radius: 20px;
+        }
+
+        .hero-stats,
+        .stat-grid,
+        .rt-grid,
+        .rt-banner {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-brand {
+            min-width: 0;
+        }
+
+        .ud-rt-select,
+        .ud-rt-btn,
+        .ud-rt-chip,
+        .action-btn,
+        .sms-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .device-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+
+    /* =========================================================
+                   FRESH 2026 VISUAL OVERRIDE - Elitech Command Center
+                   Giữ nguyên HTML id + JS, chỉ làm mới bố cục/giao diện.
+                   ========================================================= */
+
+    :root {
+        --neo-navy: #0b1220;
+        --neo-navy2: #111827;
+        --neo-panel: rgba(255,255,255,.82);
+        --neo-glow-blue: rgba(37,99,235,.18);
+        --neo-glow-orange: rgba(245,130,32,.20);
+        --neo-glow-green: rgba(22,163,74,.14);
+        --neo-line: rgba(148,163,184,.24);
+        --neo-shadow: 0 28px 90px rgba(15,23,42,.16);
+        --neo-shadow-soft: 0 14px 36px rgba(15,23,42,.09);
+    }
+
+    html, body {
+        background: radial-gradient(820px 520px at 6% 3%, rgba(37,99,235,.18), transparent 58%), radial-gradient(780px 520px at 94% 0%, rgba(245,130,32,.16), transparent 56%), radial-gradient(780px 520px at 52% 110%, rgba(22,163,74,.12), transparent 56%), linear-gradient(180deg, #f8fbff 0%, #eef4ff 48%, #edf3fb 100%) !important;
+    }
+
+    .ud-shell {
+        grid-template-columns: 104px minmax(0, 1fr);
+    }
+
+    .ud-side {
+        margin: 16px 0 16px 16px;
+        height: calc(100vh - 32px);
+        border: 1px solid rgba(148,163,184,.20);
+        border-radius: 30px;
+        background: linear-gradient(180deg, rgba(11,18,32,.92), rgba(30,41,59,.88));
+        box-shadow: 0 30px 70px rgba(15,23,42,.20);
+        backdrop-filter: blur(18px) saturate(140%);
+    }
+
+    .side-logo {
+        background: radial-gradient(110% 110% at 18% 12%, rgba(255,255,255,.50), transparent 44%), linear-gradient(135deg, #f58220, #2563eb 66%, #16a34a);
+        box-shadow: 0 18px 44px rgba(245,130,32,.26);
+    }
+
+    .side-btn {
+        color: rgba(226,232,240,.90);
+        background: rgba(255,255,255,.08);
+        border-color: rgba(255,255,255,.10);
+        box-shadow: none;
+    }
+
+        .side-btn:hover,
+        .side-btn.is-active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(245,130,32,.95), rgba(37,99,235,.82));
+            border-color: rgba(255,255,255,.20);
+            box-shadow: 0 18px 34px rgba(37,99,235,.18);
+        }
+
+    .ud-main {
+        padding: 18px 24px 30px;
+    }
+
+    .ud-page {
+        max-width: 1540px;
+        gap: 18px;
+    }
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 34px;
+        border-color: rgba(255,255,255,.18);
+        color: #fff;
+        background: radial-gradient(620px 340px at 8% 5%, rgba(245,130,32,.34), transparent 58%), radial-gradient(640px 420px at 92% 2%, rgba(37,99,235,.36), transparent 56%), linear-gradient(135deg, #0b1220 0%, #172033 48%, #1f2937 100%) !important;
+        box-shadow: 0 34px 90px rgba(15,23,42,.22);
+        padding: 24px;
+    }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+            background-size: 34px 34px;
+            mask-image: linear-gradient(180deg, rgba(0,0,0,.92), transparent 78%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            right: -70px;
+            bottom: -120px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(245,130,32,.34), transparent 68%);
+            filter: blur(2px);
+            pointer-events: none;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    .hero-badge {
+        width: 68px;
+        height: 68px;
+        border-radius: 24px;
+        background: radial-gradient(120% 120% at 22% 15%, rgba(255,255,255,.62), transparent 42%), linear-gradient(135deg, #f58220, #2563eb 64%, #16a34a);
+        box-shadow: 0 20px 48px rgba(245,130,32,.28);
+    }
+
+    .hero-copy h1 {
+        color: #fff;
+        font-size: clamp(1.55rem, 1.1rem + 1.7vw, 2.55rem);
+        letter-spacing: -.05em;
+    }
+
+    .hero-copy p {
+        color: rgba(226,232,240,.82);
+        font-size: .98rem;
+        max-width: 820px;
+    }
+
+    .hero .pill,
+    .hero .soft-chip,
+    .hero .sms-btn,
+    .hero .action-btn {
+        background: rgba(255,255,255,.10);
+        border-color: rgba(255,255,255,.16);
+        color: rgba(255,255,255,.94);
+        box-shadow: none;
+        backdrop-filter: blur(10px);
+    }
+
+        .hero .pill strong {
+            color: #fff;
+        }
+
+        .hero .sms-btn.is-on {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            border-color: rgba(255,255,255,.18);
+        }
+
+        .hero .action-btn.primary {
+            background: linear-gradient(135deg, #f58220, #e36f15);
+            color: #111827;
+            border-color: rgba(255,255,255,.18);
+        }
+
+        .hero .action-btn.dark {
+            background: linear-gradient(135deg, rgba(37,99,235,.95), rgba(14,165,233,.82));
+        }
+
+    .hero-stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 2px;
+    }
+
+    .metric {
+        background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08));
+        border-color: rgba(255,255,255,.14);
+        box-shadow: none;
+        backdrop-filter: blur(10px);
+    }
+
+    .metric-k,
+    .metric-s {
+        color: rgba(226,232,240,.76);
+    }
+
+    .metric-v {
+        color: #fff;
+        font-size: 1.48rem;
+    }
+
+    .command-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .command-tile {
+        min-height: 92px;
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) 24px;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 24px;
+        text-decoration: none;
+        color: #0f172a;
+        border: 1px solid rgba(148,163,184,.20);
+        background: rgba(255,255,255,.86);
+        box-shadow: var(--neo-shadow-soft);
+        transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+        .command-tile:hover {
+            transform: translateY(-2px);
+            border-color: rgba(245,130,32,.26);
+            box-shadow: 0 24px 54px rgba(15,23,42,.12);
+        }
+
+        .command-tile.primary {
+            color: #fff;
+            background: radial-gradient(160px 120px at 14% 12%, rgba(255,255,255,.24), transparent 58%), linear-gradient(135deg, #f58220, #2563eb);
+            border-color: rgba(255,255,255,.16);
+        }
+
+    .ct-icon {
+        width: 52px;
+        height: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        color: #2563eb;
+        background: #eff6ff;
+        border: 1px solid rgba(37,99,235,.12);
+        font-size: 21px;
+    }
+
+    .command-tile.primary .ct-icon {
+        color: #fff;
+        background: rgba(255,255,255,.14);
+        border-color: rgba(255,255,255,.18);
+    }
+
+    .command-tile b {
+        display: block;
+        font-size: .96rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+    }
+
+    .command-tile em {
+        display: block;
+        margin-top: 4px;
+        color: #64748b;
+        font-style: normal;
+        font-size: .80rem;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+
+    .command-tile.primary em {
+        color: rgba(255,255,255,.78);
+    }
+
+    .ct-arrow {
+        color: #94a3b8;
+    }
+
+    .command-tile.primary .ct-arrow {
+        color: rgba(255,255,255,.78);
+    }
+
+    .content-grid {
+        grid-template-columns: minmax(0, 1.55fr) minmax(340px, .72fr);
+        gap: 18px;
+    }
+
+    .card,
+    .ud-rt-wrap,
+    .mini-card,
+    .stat,
+    .rt-card {
+        border-color: rgba(148,163,184,.18);
+        background: rgba(255,255,255,.88);
+        box-shadow: var(--neo-shadow-soft);
+        backdrop-filter: blur(14px) saturate(140%);
+    }
+
+    .card {
+        border-radius: 30px;
+    }
+
+    .card-hd {
+        background: linear-gradient(180deg, rgba(255,255,255,.84), rgba(248,250,252,.62));
+    }
+
+    .ud-rt-wrap {
+        border-radius: 28px;
+        background: radial-gradient(520px 180px at 8% 0%, rgba(37,99,235,.08), transparent 58%), linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.88));
+    }
+
+    .ud-rt-hd {
+        padding: 18px;
+    }
+
+    .ud-rt-title {
+        font-size: 1.05rem;
+    }
+
+    .ud-rt-host {
+        padding: 18px;
+    }
+
+    .rt-card {
+        overflow: hidden;
+        border-radius: 28px;
+        background: linear-gradient(180deg, #ffffff, #f8fbff);
+        box-shadow: 0 26px 64px rgba(15,23,42,.12);
+    }
+
+    .rt-top {
+        padding: 20px 20px 12px;
+    }
+
+    .rt-name {
+        font-size: 1.24rem;
+    }
+
+    .rt-banner {
+        margin: 0 20px 8px;
+        background: radial-gradient(420px 180px at 0% 0%, rgba(245,130,32,.10), transparent 56%), linear-gradient(135deg, rgba(37,99,235,.08), rgba(8,145,178,.06));
+    }
+
+    .rt-grid {
+        padding: 14px 20px 20px;
+    }
+
+    .rt-sensor,
+    .rt-box,
+    .rt-banner-box {
+        background: rgba(255,255,255,.82);
+        border-color: rgba(148,163,184,.16);
+    }
+
+    .rt-v.ok {
+        color: #047857;
+    }
+
+    .rt-v.bad {
+        color: #b91c1c;
+    }
+
+    .device-filter {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .search-input {
+        min-height: 44px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.22);
+        background: #fff;
+        padding: 0 14px;
+        font-weight: 850;
+        color: #0f172a;
+        outline: none;
+        box-shadow: var(--ud-shadow-sm);
+    }
+
+        .search-input:focus {
+            border-color: rgba(37,99,235,.34);
+            box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+        }
+
+    .device-list {
+        max-height: 470px;
+        overflow: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+    }
+
+    .device-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        background: radial-gradient(180px 80px at 0% 0%, rgba(37,99,235,.06), transparent 58%), #fff;
+        transition: transform .14s ease, border-color .14s ease, background .14s ease, box-shadow .14s ease;
+    }
+
+        .device-item:hover,
+        .device-item.is-active {
+            transform: translateY(-1px);
+            border-color: rgba(245,130,32,.32);
+            box-shadow: 0 16px 34px rgba(15,23,42,.09);
+            background: radial-gradient(180px 80px at 0% 0%, rgba(245,130,32,.12), transparent 58%), #fff;
+        }
+
+            .device-item.is-active::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 12px;
+                bottom: 12px;
+                width: 4px;
+                border-radius: 999px;
+                background: linear-gradient(180deg, #f58220, #2563eb);
+            }
+
+    .device-item-tag {
+        background: #fff7ed;
+        color: #9a3412;
+        border-color: rgba(245,130,32,.22);
+    }
+
+
+
+    /* ===== Device list modes: vertical / horizontal / grid / compact ===== */
+    .device-toolbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .device-mode-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .device-mode-group {
+        display: inline-flex;
+        gap: 8px;
+        padding: 6px;
+        border-radius: 18px;
+        background: rgba(248,250,252,.92);
+        border: 1px solid rgba(148,163,184,.18);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+    }
+
+    .device-mode-btn {
+        min-height: 34px;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        background: transparent;
+        color: #475569;
+        font-weight: 950;
+        font-size: .78rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 10px;
+        cursor: pointer;
+        transition: transform .14s ease, background .14s ease, color .14s ease, border-color .14s ease, box-shadow .14s ease;
+        white-space: nowrap;
+    }
+
+        .device-mode-btn:hover,
+        .device-mode-btn.is-active {
+            transform: translateY(-1px);
+            color: #0f172a;
+            background: #fff;
+            border-color: rgba(37,99,235,.18);
+            box-shadow: 0 10px 20px rgba(15,23,42,.07);
+        }
+
+        .device-mode-btn.is-active {
+            color: #9a3412;
+            border-color: rgba(245,130,32,.24);
+            background: #fff7ed;
+        }
+
+    .device-scroll-hint {
+        color: #64748b;
+        font-size: .78rem;
+        font-weight: 850;
+        line-height: 1.35;
+    }
+
+    .device-list-shell {
+        border-radius: 22px;
+        padding: 10px;
+        background: rgba(248,250,252,.62);
+        border: 1px solid rgba(148,163,184,.14);
+    }
+
+    .device-list {
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+    }
+
+        .device-list.is-vertical {
+            display: grid;
+            gap: 10px;
+            max-height: 520px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+
+        .device-list.is-horizontal {
+            display: flex;
+            gap: 12px;
+            max-height: none;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 2px 4px 12px;
+            scroll-snap-type: x proximity;
+        }
+
+            .device-list.is-horizontal .device-item {
+                min-width: 280px;
+                max-width: 320px;
+                flex: 0 0 280px;
+                scroll-snap-align: start;
+            }
+
+        .device-list.is-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+            max-height: 560px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .device-list.is-compact {
+            display: grid;
+            gap: 8px;
+            max-height: 520px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+            .device-list.is-compact .device-item {
+                min-height: 54px;
+                padding: 9px 10px;
+                border-radius: 15px;
+            }
+
+            .device-list.is-compact .device-item-guid {
+                font-size: .72rem;
+                margin-top: 2px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 210px;
+            }
+
+            .device-list.is-compact .device-item-tag {
+                min-height: 28px;
+                padding: 0 9px;
+                font-size: .72rem;
+            }
+
+        .device-list.is-horizontal::-webkit-scrollbar {
+            height: 9px;
+        }
+
+        .device-list.is-vertical::-webkit-scrollbar,
+        .device-list.is-grid::-webkit-scrollbar,
+        .device-list.is-compact::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .device-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(245,130,32,.42), rgba(37,99,235,.38));
+            border-radius: 999px;
+        }
+
+        .device-list::-webkit-scrollbar-track {
+            background: rgba(148,163,184,.10);
+            border-radius: 999px;
+        }
+
+    .guide-item,
+    .stat,
+    .mini-card {
+        transition: transform .14s ease, box-shadow .14s ease;
+    }
+
+        .guide-item:hover,
+        .stat:hover,
+        .mini-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 36px rgba(15,23,42,.09);
+        }
+
+    .toast {
+        border-radius: 22px;
+        box-shadow: 0 28px 70px rgba(15,23,42,.20);
+    }
+
+    @@media (max-width: 1180px) {
+        .command-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 840px) {
+        .ud-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .ud-side {
+            margin: 12px;
+            height: auto;
+            border-radius: 24px;
+        }
+
+        .ud-main {
+            padding: 0 12px 22px;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .command-strip,
+        .device-filter {
+            grid-template-columns: 1fr;
+        }
+
+        .device-mode-group {
+            width: 100%;
+            overflow-x: auto;
+            justify-content: flex-start;
+        }
+
+        .device-list.is-horizontal .device-item {
+            min-width: 245px;
+            flex-basis: 245px;
+        }
+
+        .command-tile {
+            min-height: 84px;
+        }
+    }
+
+
+    /* =========================================================
+               APPLE STYLE VIDEO HERO - User Dashboard
+               Đường dẫn video: wwwroot/videos/user-hero.mp4
+               Poster dự phòng: wwwroot/videos/user-hero-poster.jpg
+               Giữ nguyên ID metric + JS cũ.
+               ========================================================= */
+
+    .user-video-hero {
+        position: relative;
+        min-height: 440px;
+        isolation: isolate;
+        overflow: hidden;
+        color: #f8fafc;
+        background: #020617 !important;
+        border: 1px solid rgba(255,255,255,.16) !important;
+        box-shadow: 0 36px 100px rgba(15,23,42,.26) !important;
+    }
+
+    .user-hero-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        transform: scale(1.015);
+        filter: saturate(1.08) contrast(1.05);
+    }
+
+    .user-hero-video-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(900px 360px at 12% 8%, rgba(37,99,235,.28), transparent 58%), radial-gradient(760px 380px at 92% 0%, rgba(245,130,32,.26), transparent 58%), linear-gradient(90deg, rgba(2,6,23,.82) 0%, rgba(2,6,23,.54) 46%, rgba(2,6,23,.34) 100%), linear-gradient(180deg, rgba(2,6,23,.16) 0%, rgba(2,6,23,.54) 100%);
+    }
+
+    .user-video-hero::before {
+        z-index: 2;
+        opacity: .72;
+        mix-blend-mode: screen;
+    }
+
+    .user-video-hero::after {
+        z-index: 2;
+        opacity: .88;
+    }
+
+    .user-video-hero > *:not(.user-hero-video):not(.user-hero-video-overlay) {
+        position: relative;
+        z-index: 3;
+    }
+
+    .user-video-hero .hero-copy h1 {
+        color: #ffffff !important;
+        text-shadow: 0 18px 60px rgba(0,0,0,.38);
+    }
+
+    .user-video-hero .hero-copy p {
+        color: rgba(248,250,252,.84) !important;
+        text-shadow: 0 10px 34px rgba(0,0,0,.34);
+    }
+
+    .user-video-hero .hero-badge {
+        background: radial-gradient(120% 120% at 22% 15%, rgba(255,255,255,.62), transparent 42%), linear-gradient(135deg, #f58220, #2563eb 64%, #16a34a) !important;
+        border-color: rgba(255,255,255,.34) !important;
+        box-shadow: 0 22px 54px rgba(0,0,0,.22), 0 16px 44px rgba(37,99,235,.24) !important;
+    }
+
+    .user-video-hero .pill,
+    .user-video-hero .soft-chip,
+    .user-video-hero .sms-btn,
+    .user-video-hero .action-btn,
+    .user-video-hero .metric {
+        background: rgba(255,255,255,.12) !important;
+        border-color: rgba(255,255,255,.18) !important;
+        color: rgba(255,255,255,.94) !important;
+        box-shadow: none !important;
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+    }
+
+        .user-video-hero .pill strong,
+        .user-video-hero .metric-v {
+            color: #fff !important;
+        }
+
+    .user-video-hero .metric-k,
+    .user-video-hero .metric-s {
+        color: rgba(226,232,240,.78) !important;
+    }
+
+    .user-video-hero .sms-btn.is-on {
+        background: linear-gradient(135deg, rgba(22,163,74,.96), rgba(34,197,94,.86)) !important;
+        border-color: rgba(255,255,255,.20) !important;
+        color: #fff !important;
+    }
+
+    .user-video-hero .action-btn.primary {
+        background: linear-gradient(135deg, #f58220, #ffb25b) !important;
+        color: #111827 !important;
+    }
+
+    .user-video-hero .action-btn.dark {
+        background: linear-gradient(135deg, rgba(37,99,235,.96), rgba(14,165,233,.84)) !important;
+        color: #fff !important;
+    }
+
+    @@media (max-width: 840px) {
+        .user-video-hero {
+            min-height: 560px;
+            padding: 22px 18px !important;
+        }
+
+        .user-hero-video-overlay {
+            background: radial-gradient(760px 360px at 12% 0%, rgba(37,99,235,.26), transparent 58%), radial-gradient(700px 340px at 92% 0%, rgba(245,130,32,.22), transparent 58%), linear-gradient(180deg, rgba(2,6,23,.58) 0%, rgba(2,6,23,.82) 100%);
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .user-hero-video {
+            display: none;
+        }
+
+        .user-video-hero {
+            background: radial-gradient(820px 460px at 8% 0%, rgba(37,99,235,.32), transparent 58%), radial-gradient(760px 420px at 92% 0%, rgba(245,130,32,.24), transparent 56%), linear-gradient(135deg, #020617, #111827) !important;
+        }
+    }
+
+</style>
+
+<div class="ud-shell">
+    <aside class="ud-side">
+        <div class="side-logo"><i class="bi bi-cpu"></i></div>
+
+        <div class="side-stack">
+            <a class="side-btn is-active" href="/ElitechDevicePage/Index" title="Thiết bị của tôi">
+                <i class="bi bi-grid"></i>
+            </a>
+
+            <a class="side-btn" href="/ElitechRealtime/Index" title="Realtime">
+                <i class="bi bi-broadcast-pin"></i>
+            </a>
+
+            <a class="side-btn" href="/ElitechHistoryUser" title="Biểu đồ">
+                <i class="bi bi-graph-up-arrow"></i>
+            </a>
+
+            <a class="side-btn" href="/ElitechAlertRulesPage/Index" title="Cài ngưỡng">
+                <i class="bi bi-sliders"></i>
+            </a>
+
+            <a class="side-btn" href="/SmsPeriodic" title="SMS định kỳ nhiệt độ">
+                <i class="bi bi-alarm"></i>
+            </a>
+        </div>
+
+        <div class="side-spacer"></div>
+
+        <a class="side-btn" href="/" title="Trang chủ"><i class="bi bi-house-door"></i></a>
+    </aside>
+
+    <main class="ud-main">
+        <div class="ud-page">
+            <section class="hero glass user-video-hero">
+                <video class="user-hero-video" autoplay muted loop playsinline preload="metadata" poster="/videos/user-hero-poster.jpg">
+                    <source src="/videos/user-hero.mp4" type="video/mp4" />
+                </video>
+                <div class="user-hero-video-overlay"></div>
+
+                <div class="hero-top">
+                    <div class="hero-brand">
+                        <div class="hero-badge"><i class="bi bi-router-fill"></i></div>
+                        <div class="hero-copy">
+                            <h1>Elitech Command Center</h1>
+                            <p>Theo dõi thiết bị được gán cho tài khoản, xem realtime nhanh, nhận cảnh báo quan trọng và chuyển sang biểu đồ, cấu hình ngưỡng hoặc SMS định kỳ chỉ trong một màn hình.</p>
+                        </div>
+                    </div>
+
+                    <div class="hero-meta">
+                        <div class="hero-pills">
+                            <span class="pill"><span class="dot ok"></span> Live / SignalR</span>
+                            <span class="pill"><i class="bi bi-person-check"></i> <strong>@userMeta.name</strong></span>
+                            <span class="pill"><i class="bi bi-shield-lock"></i> Role: <strong>@userMeta.role</strong></span>
+                        </div>
+
+                        <div class="hero-actions">
+                            @* <a class="action-btn" href="/ElitechAlertRulesPage/Index">
+                                <i class="bi bi-sliders"></i><span>Cài ngưỡng</span>
+                            </a> *@
+
+                            @* <a class="action-btn" href="/SmsPeriodic">
+                                <i class="bi bi-alarm"></i><span>SMS định kỳ</span>
+                            </a> *@
+
+                            <button class="sms-btn @(smsAlready ? "is-on" : "")"
+                                    type="button"
+                                    onclick="@((!smsAlready && canUserSubscribeSms) ? "openSmsSubscribe('')" : "return false;")"
+                                @((!smsAlready && canUserSubscribeSms) ? "" : "disabled")
+                                    title="@(smsAlready
+                                                                                                                                                                                                                                            ? $"Bạn đã đăng ký dịch vụ. Hết hạn: {(smsExp.HasValue ? smsExp.Value.ToString("yyyy-MM-dd HH:mm") + " UTC" : "—")}"
+                                                                                                                                                                                                                                            : (canUserSubscribeSms ? "Đăng ký/ xác thực SMS" : "Admin đang tạm khóa đăng ký SMS"))">
+                                @(smsAlready ? "✅ Đã đăng ký SMS" : "Đăng ký SMS")
+                            </button>
+
+                            @* <a class="action-btn dark" href="/ElitechHistoryUserPage/Index">
+                                <i class="bi bi-activity"></i><span>Biểu đồ</span>
+                            </a> *@
+
+                            @* <a class="action-btn primary" href="/ElitechRealtime/Index">
+                                <i class="bi bi-broadcast-pin"></i><span>Realtime đầy đủ</span>
+                            </a> *@
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="metric">
+                        <div class="metric-k"><span>Thiết bị được gán</span><i class="bi bi-hdd-network"></i></div>
+                        <div class="metric-v" id="metricDevices">0</div>
+                        <div class="metric-s">Danh sách lấy theo quyền user hiện tại.</div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-k"><span>Realtime preview</span><i class="bi bi-broadcast"></i></div>
+                        <div class="metric-v" id="metricPreview">Sẵn sàng</div>
+                        <div class="metric-s">Preview nhanh thiết bị đang chọn.</div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-k"><span>Toast cảnh báo</span><i class="bi bi-bell"></i></div>
+                        <div class="metric-v" id="metricToasts">0</div>
+                        <div class="metric-s">Số cảnh báo quan trọng đã hiển thị.</div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-k"><span>Đồng bộ lúc</span><i class="bi bi-clock-history"></i></div>
+                        <div class="metric-v" id="metricNow">@DateTime.Now.ToString("HH:mm")</div>
+                        <div class="metric-s">Tự refresh preview mỗi 30 giây.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="command-strip">
+                <a class="command-tile primary" href="/ElitechRealtime/Index">
+                    <span class="ct-icon"><i class="bi bi-broadcast-pin"></i></span>
+                    <span><b>Realtime live</b><em>Xem tất cả thiết bị đang online</em></span>
+                    <i class="bi bi-arrow-right ct-arrow"></i>
+                </a>
+                <a class="command-tile" href="/ElitechHistoryUserPage/Index">
+                    <span class="ct-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                    <span><b>Biểu đồ lịch sử</b><em>Phân tích theo thời gian</em></span>
+                    <i class="bi bi-arrow-right ct-arrow"></i>
+                </a>
+                <a class="command-tile" href="/ElitechAlertRulesPage/Index">
+                    <span class="ct-icon"><i class="bi bi-sliders"></i></span>
+                    <span><b>Cài ngưỡng</b><em>Thiết lập cảnh báo nhiệt/ẩm</em></span>
+                    <i class="bi bi-arrow-right ct-arrow"></i>
+                </a>
+                <a class="command-tile" href="/SmsPeriodic">
+                    <span class="ct-icon"><i class="bi bi-alarm"></i></span>
+                    <span><b>SMS định kỳ</b><em>Gửi nhiệt độ theo giờ</em></span>
+                    <i class="bi bi-arrow-right ct-arrow"></i>
+                </a>
+            </section>
+
+            <div class="content-grid">
+                <section class="card">
+                    <div class="card-hd">
+                        <div class="title-wrap">
+                            <b>Realtime preview</b>
+                            <div class="sub">Chọn thiết bị để xem nhanh nhiệt độ, độ ẩm, nguồn, tín hiệu, vị trí và trạng thái mới nhất.</div>
+                        </div>
+
+                        <div class="tools">
+                            <span class="soft-chip"><i class="bi bi-clock"></i> @DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy")</span>
+                            <span class="soft-chip btn" id="btnRefresh"><i class="bi bi-arrow-repeat"></i> Refresh trang</span>
+                            <span class="soft-chip btn" id="btnClearToasts"><i class="bi bi-trash3"></i> Clear toast</span>
+                        </div>
+                    </div>
+
+                    <div class="card-bd">
+                        <div class="ud-rt-wrap">
+                            <div class="ud-rt-hd">
+                                <div>
+                                    <div class="ud-rt-title"><i class="bi bi-broadcast-pin"></i> Thiết bị đang giám sát</div>
+                                    <div class="ud-rt-sub">Có thể chọn từ dropdown hoặc bấm nhanh trong danh sách thiết bị bên phải.</div>
+                                </div>
+
+                                <div class="ud-rt-tools">
+                                    <select id="rtDeviceSelect" class="ud-rt-select"></select>
+
+                                    <button class="ud-rt-btn" type="button" id="rtRefreshBtn">
+                                        <i class="bi bi-arrow-repeat"></i> Refresh
+                                    </button>
+
+                                    <span class="ud-rt-chip">
+                                        <i class="bi bi-clock-history"></i> <span id="rtLastUpdate">—</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div id="rtCardHost" class="ud-rt-host">
+                                <div class="ud-rt-empty">Chưa có thiết bị để hiển thị.</div>
+                            </div>
+                        </div>
+
+                        <div class="layout-note">
+                            <span class="note"><i class="bi bi-info-circle"></i> Không thấy thiết bị? Liên hệ Admin để được gán quyền.</span>
+                            <span class="note"><i class="bi bi-cloud-check"></i> Dữ liệu lấy từ Elitech Cloud + Mongo assignment.</span>
+                            <span class="note"><i class="bi bi-lightning-charge"></i> Cần xem nhiều thiết bị cùng lúc? Mở Realtime đầy đủ.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="ud-mini">
+                    <section class="card">
+                        <div class="card-hd">
+                            <div class="title-wrap">
+                                <b>Control tower</b>
+                                <div class="sub">Kết nối SignalR, cảnh báo và thiết bị đang chọn.</div>
+                            </div>
+                        </div>
+
+                        <div class="card-bd">
+                            <div class="stat-grid">
+                                <div class="stat" id="srCard">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                        <div class="k">SignalR</div>
+                                        <div class="sr-badge sr-warn" id="srBadge">
+                                            <span class="sr-dot"></span>
+                                            <span class="sr-text" id="srState">Connecting…</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="sr-sub">
+                                        <span class="sr-chip" id="srStateSub"><i class="bi bi-broadcast-pin"></i> /hubs/alarm</span>
+                                        <span class="sr-chip"><i class="bi bi-clock-history"></i> <span id="srSince">—</span></span>
+                                    </div>
+
+                                    <div class="sr-bar">
+                                        <span id="srBarFill" class="sr-bar-fill"></span>
+                                    </div>
+                                </div>
+
+                                <div class="stat">
+                                    <div class="k">Toast received</div>
+                                    <div class="v" id="toastCount">0</div>
+                                    <div class="s">Sự kiện quan trọng đã hiển thị trên màn hình.</div>
+                                </div>
+                            </div>
+
+                            <div class="mini-grid" style="margin-top:12px;">
+                                <div class="mini-card">
+                                    <div class="mini-k">Người dùng</div>
+                                    <div class="mini-v" style="font-size:1rem;">@userMeta.name</div>
+                                    <div class="mini-s">userId: @userMeta.userId</div>
+                                </div>
+
+                                <div class="mini-card">
+                                    <div class="mini-k">Thiết bị đang chọn</div>
+                                    <div class="mini-v" id="activeDeviceName">—</div>
+                                    <div class="mini-s" id="activeDeviceGuid">Chưa chọn thiết bị</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="card-hd">
+                            <div class="title-wrap">
+                                <b>Danh sách thiết bị</b>
+                                <div class="sub">Tìm nhanh thiết bị, đổi preview chỉ với một lần bấm.</div>
+                            </div>
+                        </div>
+
+                        <div class="card-bd">
+                            <div class="device-toolbar">
+                                <div class="device-filter">
+                                    <input id="deviceSearch" class="search-input" type="search" placeholder="Tìm theo tên hoặc GUID..." autocomplete="off" />
+                                    <div class="soft-chip" style="width:max-content;">
+                                        <i class="bi bi-list-check"></i> <span id="deviceListCount">0 thiết bị</span>
+                                    </div>
+                                </div>
+
+                                <div class="device-mode-row">
+                                    <div class="device-mode-group" aria-label="Kiểu hiển thị danh sách thiết bị">
+                                        <button type="button" class="device-mode-btn" data-device-view="vertical" title="Cuộn dọc">
+                                            <i class="bi bi-list-ul"></i> Dọc
+                                        </button>
+                                        <button type="button" class="device-mode-btn" data-device-view="horizontal" title="Cuộn ngang">
+                                            <i class="bi bi-layout-three-columns"></i> Ngang
+                                        </button>
+                                        <button type="button" class="device-mode-btn" data-device-view="grid" title="Lưới nhiều thiết bị">
+                                            <i class="bi bi-grid-3x3-gap"></i> Lưới
+                                        </button>
+                                        <button type="button" class="device-mode-btn" data-device-view="compact" title="Danh sách gọn">
+                                            <i class="bi bi-view-list"></i> Gọn
+                                        </button>
+                                    </div>
+                                    <div class="device-scroll-hint" id="deviceScrollHint">
+                                        Có thể đổi dạng cuộn dọc/ngang/lưới khi danh sách nhiều thiết bị.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="device-list-shell">
+                                <div id="deviceListHost" class="device-list is-vertical">
+                                    <div class="ud-rt-empty">Đang tải danh sách thiết bị…</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="card-hd">
+                            <div class="title-wrap">
+                                <b>Gợi ý vận hành</b>
+                                <div class="sub">Các thao tác quan trọng cho người dùng.</div>
+                            </div>
+                        </div>
+
+                        <div class="card-bd">
+                            <div class="guide-list">
+                                <div class="guide-item"><span class="guide-icon"><i class="bi bi-bell"></i></span><span>Toast chỉ nhận event quan trọng từ <b>alert.toast</b>, tránh spam liên tục.</span></div>
+                                <div class="guide-item"><span class="guide-icon"><i class="bi bi-thermometer-half"></i></span><span>Cảm biến nổi bật khi vượt khoảng demo 2–8°C hoặc độ ẩm 30–70%.</span></div>
+                                <div class="guide-item"><span class="guide-icon"><i class="bi bi-arrow-repeat"></i></span><span>Preview tự refresh mỗi 30 giây, vẫn có nút refresh tay để lấy dữ liệu ngay.</span></div>
+                                <div class="guide-item"><span class="guide-icon"><i class="bi bi-alarm"></i></span><span>Cài SMS định kỳ để hệ thống tự gửi nhiệt độ gần nhất theo giờ đã chọn.</span></div>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+    window.__USER_DEVICES__ = @Html.Raw(JsonSerializer.Serialize(assignedDevices));
+    window.__USER_META__ = @Html.Raw(JsonSerializer.Serialize(userMeta));
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+<script>
+    let _toastSeq = 0;
+    let _toastReceived = 0;
+
+    function escapeHtml(s) {
+        return (s ?? "").toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function toneToDot(level) {
+        const s = (level || "").toLowerCase();
+        if (s === "high" || s === "bad" || s === "error") return "bad";
+        if (s === "warn" || s === "warning") return "warn";
+        return "ok";
+    }
+
+    function fmtToastTime(ts) {
+        if (!ts) return new Date().toLocaleString();
+        const n = Number(ts);
+        if (!Number.isFinite(n)) return new Date().toLocaleString();
+        return new Date(n > 3000000000 ? n : n * 1000).toLocaleString();
+    }
+
+    function updateToastMetric() {
+        const c = document.getElementById("toastCount");
+        const m = document.getElementById("metricToasts");
+        if (c) c.textContent = String(_toastReceived);
+        if (m) m.textContent = String(_toastReceived);
+    }
+
+
+    /* =========================================================
+       USER PAGE ALARM SOUND FIX
+       Lý do: trang User nhận SignalR alert.toast riêng, nhưng code cũ chỉ show toast
+       và không gọi audio. Khối này phát /sounds/alarm.mp3 khi có alert.toast.
+       ========================================================= */
+    const _userAlarmAudio = new Audio('/sounds/alarm.mp3');
+    _userAlarmAudio.preload = 'auto';
+    _userAlarmAudio.volume = 0.88;
+
+    let _userAlarmUnlocked = false;
+    let _userAlarmPending = false;
+
+    function ensureUserAlarmUnlockButton() {
+        let btn = document.getElementById('userAlarmUnlockBtn');
+        if (btn) return btn;
+
+        btn = document.createElement('button');
+        btn.id = 'userAlarmUnlockBtn';
+        btn.type = 'button';
+        btn.innerHTML = '<i class="bi bi-volume-up-fill"></i><span>Bật âm thanh cảnh báo</span>';
+        btn.style.cssText = 'position:fixed;left:18px;bottom:18px;z-index:100000;min-height:46px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.20);background:linear-gradient(135deg,#f58220,#ffb25b);color:#111827;font-weight:1000;box-shadow:0 18px 44px rgba(15,23,42,.24);display:none;align-items:center;gap:9px;cursor:pointer;';
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            unlockUserAlarmAudio();
+        });
+        document.body.appendChild(btn);
+        return btn;
+    }
+
+    function showUserAlarmUnlockButton() {
+        ensureUserAlarmUnlockButton().style.display = 'inline-flex';
+    }
+
+    function hideUserAlarmUnlockButton() {
+        const btn = document.getElementById('userAlarmUnlockBtn');
+        if (btn) btn.style.display = 'none';
+    }
+
+    async function unlockUserAlarmAudio() {
+        if (_userAlarmUnlocked) return;
+
+        try {
+            await _userAlarmAudio.play();
+            _userAlarmAudio.pause();
+            _userAlarmAudio.currentTime = 0;
+            _userAlarmUnlocked = true;
+            hideUserAlarmUnlockButton();
+
+            if (_userAlarmPending) {
+                _userAlarmPending = false;
+                playUserAlarmSound();
+            }
+        } catch (err) {
+            _userAlarmUnlocked = false;
+            showUserAlarmUnlockButton();
+            console.warn('User alarm audio blocked:', err);
+        }
+    }
+
+    function playUserAlarmSound() {
+        if (!_userAlarmUnlocked) {
+            _userAlarmPending = true;
+            showUserAlarmUnlockButton();
+            unlockUserAlarmAudio();
+            return;
+        }
+
+        try {
+            _userAlarmAudio.pause();
+            _userAlarmAudio.currentTime = 0;
+            const promise = _userAlarmAudio.play();
+            if (promise && typeof promise.catch === 'function') {
+                promise.catch(err => {
+                    _userAlarmUnlocked = false;
+                    _userAlarmPending = true;
+                    showUserAlarmUnlockButton();
+                    console.warn('User alarm play blocked:', err);
+                });
+            }
+
+            setTimeout(() => {
+                try {
+                    _userAlarmAudio.pause();
+                    _userAlarmAudio.currentTime = 0;
+                } catch { }
+            }, 7500);
+        } catch { }
+    }
+
+    window.addEventListener('pointerdown', unlockUserAlarmAudio, { passive: true });
+    window.addEventListener('keydown', unlockUserAlarmAudio);
+    window.addEventListener('touchstart', unlockUserAlarmAudio, { passive: true });
+
+    function showToast(payload) {
+        const wrap = document.getElementById("toastWrap");
+        if (!wrap) return;
+
+        _toastReceived++;
+        updateToastMetric();
+        playUserAlarmSound();
+
+        const id = "t" + (++_toastSeq);
+        const dot = toneToDot(payload?.level);
+        const title = payload?.title || "Cảnh báo";
+        const msg = payload?.message || "";
+        const device = payload?.deviceName || payload?.deviceGuid || "";
+        const time = fmtToastTime(payload?.ts);
+
+        const el = document.createElement("div");
+        el.className = "toast";
+        el.id = id;
+        el.innerHTML = `
+            <div class="hd">
+            <div class="title">
+            <span class="t-dot ${dot}"></span>
+            <span>${escapeHtml(title)}</span>
+            </div>
+            <button class="close" title="Close">×</button>
+            </div>
+            <div class="bd">
+            ${escapeHtml(msg)}
+            <div class="meta">
+            <span>${escapeHtml(device)}</span>
+            <span>${escapeHtml(time)}</span>
+            </div>
+            </div>
+            `;
+
+        el.querySelector(".close").addEventListener("click", () => removeToast(id));
+        wrap.prepend(el);
+
+        setTimeout(() => removeToast(id), 6500);
+
+        while (wrap.children.length > 4) {
+            wrap.removeChild(wrap.lastElementChild);
+        }
+    }
+
+    function removeToast(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.opacity = "0";
+        el.style.transform = "translateY(-6px)";
+        setTimeout(() => el.remove(), 160);
+    }
+
+    let _hub = null;
+    let _srConnectedAt = null;
+
+    function setSrState(text, tone) {
+        const t = (tone || "").toLowerCase();
+
+        const stateEl = document.getElementById("srState");
+        if (stateEl) stateEl.textContent = text;
+
+        const badge = document.getElementById("srBadge");
+        const bar = document.getElementById("srBarFill");
+        const since = document.getElementById("srSince");
+
+        if (badge) {
+            badge.classList.remove("sr-ok", "sr-warn", "sr-bad");
+            badge.classList.add(t === "ok" ? "sr-ok" : t === "bad" ? "sr-bad" : "sr-warn");
+        }
+
+        if (bar) {
+            bar.style.opacity = (t === "ok") ? ".88" : ".95";
+            bar.style.filter = (t === "bad") ? "saturate(1.2)" : "none";
+        }
+
+        if (t === "ok") {
+            if (!_srConnectedAt) _srConnectedAt = Date.now();
+        } else {
+            _srConnectedAt = null;
+        }
+
+        if (since) {
+            if (!_srConnectedAt) {
+                since.textContent = "—";
+            } else {
+                const sec = Math.floor((Date.now() - _srConnectedAt) / 1000);
+                since.textContent = sec < 60 ? `${sec}s` : `${Math.floor(sec / 60)}m ${sec % 60}s`;
+            }
+        }
+    }
+
+    setInterval(() => {
+        const badge = document.getElementById("srBadge");
+        if (!badge) return;
+
+        if (badge.classList.contains("sr-ok")) {
+            setSrState(document.getElementById("srState")?.textContent || "Live connected", "ok");
+        }
+    }, 1000);
+
+    async function startHub() {
+        if (_hub) return;
+
+        _hub = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/alarm")
+            .withAutomaticReconnect()
+            .build();
+
+        _hub.onreconnecting(() => setSrState("Reconnecting…", "warn"));
+        _hub.onreconnected(() => setSrState("Live connected", "ok"));
+        _hub.onclose(() => setSrState("Disconnected", "bad"));
+        _hub.on("alert.toast", (payload) => showToast(payload));
+
+        await _hub.start();
+        setSrState("Live connected", "ok");
+    }
+
+    (function initSignalR() {
+        startHub().catch(() => setSrState("Disconnected", "bad"));
+    })();
+
+    (function commonActions() {
+        const btnRefresh = document.getElementById("btnRefresh");
+        const btnClearToasts = document.getElementById("btnClearToasts");
+        const toastWrap = document.getElementById("toastWrap");
+
+        if (btnRefresh) btnRefresh.addEventListener("click", () => location.reload());
+
+        if (btnClearToasts && toastWrap) {
+            btnClearToasts.addEventListener("click", () => {
+                toastWrap.innerHTML = "";
+                _toastReceived = 0;
+                updateToastMetric();
+            });
+        }
+    })();
+
+    (function deviceDashboard() {
+        const devices = window.__USER_DEVICES__ || [];
+        const sel = document.getElementById("rtDeviceSelect");
+        const host = document.getElementById("rtCardHost");
+        const last = document.getElementById("rtLastUpdate");
+        const btn = document.getElementById("rtRefreshBtn");
+        const metricDevices = document.getElementById("metricDevices");
+        const metricPreview = document.getElementById("metricPreview");
+        const metricNow = document.getElementById("metricNow");
+        const deviceListHost = document.getElementById("deviceListHost");
+        const deviceSearch = document.getElementById("deviceSearch");
+        const deviceListCount = document.getElementById("deviceListCount");
+        const deviceViewButtons = Array.from(document.querySelectorAll("[data-device-view]"));
+        const deviceScrollHint = document.getElementById("deviceScrollHint");
+        const activeDeviceName = document.getElementById("activeDeviceName");
+        const activeDeviceGuid = document.getElementById("activeDeviceGuid");
+
+        function toItem(d) {
+            const guid = (d?.deviceGuid || d?.DeviceGuid || d?.guid || d?.Guid || "").toString().trim();
+            const name = (d?.deviceName || d?.DeviceName || d?.name || d?.Name || "Device").toString().trim();
+            return { guid, name };
+        }
+
+        const items = devices
+            .map(toItem)
+            .filter(x => x.guid)
+            .filter((x, idx, arr) => arr.findIndex(y => y.guid.toUpperCase() === x.guid.toUpperCase()) === idx);
+
+        if (metricDevices) metricDevices.textContent = String(items.length);
+        if (deviceListCount) deviceListCount.textContent = `${items.length} thiết bị`;
+
+        let deviceListMode = localStorage.getItem("elitechDeviceListMode") || "vertical";
+        const modeText = {
+            vertical: "Đang xem dạng cuộn dọc. Phù hợp khi cần xem chi tiết từng thiết bị.",
+            horizontal: "Đang xem dạng cuộn ngang. Kéo ngang để lướt nhanh nhiều thiết bị.",
+            grid: "Đang xem dạng lưới. Phù hợp khi có nhiều thiết bị và màn hình rộng.",
+            compact: "Đang xem dạng gọn. Phù hợp khi có 50-200+ thiết bị."
+        };
+
+        function applyDeviceListMode() {
+            if (!deviceListHost) return;
+
+            const allowed = ["vertical", "horizontal", "grid", "compact"];
+            if (!allowed.includes(deviceListMode)) deviceListMode = "vertical";
+
+            deviceListHost.classList.remove("is-vertical", "is-horizontal", "is-grid", "is-compact");
+            deviceListHost.classList.add("is-" + deviceListMode);
+
+            deviceViewButtons.forEach(btn => {
+                btn.classList.toggle("is-active", btn.getAttribute("data-device-view") === deviceListMode);
+            });
+
+            if (deviceScrollHint) {
+                deviceScrollHint.textContent = modeText[deviceListMode] || modeText.vertical;
+            }
+        }
+
+        function setDeviceListMode(mode) {
+            deviceListMode = mode || "vertical";
+            localStorage.setItem("elitechDeviceListMode", deviceListMode);
+            applyDeviceListMode();
+            renderDeviceList();
+        }
+
+        deviceViewButtons.forEach(btn => {
+            btn.addEventListener("click", () => setDeviceListMode(btn.getAttribute("data-device-view") || "vertical"));
+        });
+
+        function filteredItems() {
+            const q = (deviceSearch?.value || "").trim().toLowerCase();
+            if (!q) return items;
+
+            return items.filter(x =>
+                x.name.toLowerCase().includes(q) ||
+                x.guid.toLowerCase().includes(q)
+            );
+        }
+
+        function markActiveDevice(guid) {
+            document.querySelectorAll(".device-item").forEach(el => {
+                const active = (el.getAttribute("data-guid") || "") === guid;
+                el.classList.toggle("active", active);
+                el.classList.toggle("is-active", active);
+
+                if (active && deviceListMode === "horizontal") {
+                    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }), 60);
+                }
+            });
+        }
+
+        function renderDeviceList() {
+            if (!deviceListHost) return;
+
+            const rows = filteredItems();
+
+            if (deviceListCount) deviceListCount.textContent = `${rows.length}/${items.length} thiết bị`;
+
+            if (items.length === 0) {
+                deviceListHost.innerHTML = `<div class="ud-rt-empty">Tài khoản chưa được gán thiết bị nào.</div>`;
+                return;
+            }
+
+            if (rows.length === 0) {
+                deviceListHost.innerHTML = `<div class="ud-rt-empty">Không tìm thấy thiết bị phù hợp.</div>`;
+                return;
+            }
+
+            applyDeviceListMode();
+
+            const currentGuid = (sel?.value || "").trim();
+
+            deviceListHost.innerHTML = rows.map((x, idx) => {
+                const isActive = currentGuid === x.guid;
+                const tag = isActive ? "Đang chọn" : (idx === 0 ? "Mặc định" : "Chọn");
+
+                return `
+            <button type="button" class="device-item ${isActive ? "active is-active" : ""}" data-guid="${escapeHtml(x.guid)}" data-name="${escapeHtml(x.name)}">
+            <div class="device-item-main">
+            <div class="device-item-name">${escapeHtml(x.name)}</div>
+            <div class="device-item-guid">${escapeHtml(x.guid)}</div>
+            </div>
+            <span class="device-item-tag">${tag}</span>
+            </button>
+            `;
+            }).join("");
+
+            deviceListHost.querySelectorAll(".device-item").forEach(button => {
+                button.addEventListener("click", () => {
+                    if (sel) sel.value = button.getAttribute("data-guid") || "";
+                    load();
+                });
+            });
+        }
+
+        function asNumber(x) {
+            if (x === 0) return 0;
+            if (x === null || x === undefined) return null;
+            const m = String(x).match(/-?\d+(\.\d+)?/);
+            return m ? parseFloat(m[0]) : null;
+        }
+
+        function fmt(x) {
+            const s = (x === null || x === undefined) ? "" : String(x).trim();
+            return s ? s : "—";
+        }
+
+        function pick(obj, ...names) {
+            for (const n of names) {
+                if (obj && obj[n] !== undefined && obj[n] !== null) return obj[n];
+            }
+            return null;
+        }
+
+        function normalizeRow(row) {
+            if (!row) return null;
+
+            return {
+                ...row,
+                deviceGuid: pick(row, "deviceGuid", "DeviceGuid", "guid", "Guid", "GUID"),
+                deviceName: pick(row, "deviceName", "DeviceName", "name", "Name"),
+                tmp1: pick(row, "tmp1", "Tmp1", "TMP1"),
+                tmp2: pick(row, "tmp2", "Tmp2", "TMP2"),
+                tmp3: pick(row, "tmp3", "Tmp3", "TMP3"),
+                tmp4: pick(row, "tmp4", "Tmp4", "TMP4"),
+                hum1: pick(row, "hum1", "Hum1", "HUM1"),
+                hum2: pick(row, "hum2", "Hum2", "HUM2"),
+                power: pick(row, "power", "Power"),
+                signal: pick(row, "signal", "Signal"),
+                address: pick(row, "address", "Address"),
+                position: pick(row, "position", "Position"),
+                lastSessionTime: pick(row, "lastSessionTime", "LastSessionTime"),
+                alarmState: pick(row, "alarmState", "AlarmState") === true,
+                warnState: pick(row, "warnState", "WarnState") === true,
+                waybillState: pick(row, "waybillState", "WaybillState")
+            };
+        }
+
+        function tsSecToLocal(sec) {
+            if (!sec) return "—";
+            const n = Number(sec);
+            if (!Number.isFinite(n) || n <= 0) return "—";
+            const d = new Date(n > 3000000000 ? n : n * 1000);
+            return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString();
+        }
+
+        function statusFromRow(row) {
+            const temps = [row?.tmp1, row?.tmp2, row?.tmp3, row?.tmp4].map(asNumber).filter(v => v !== null);
+            const hums = [row?.hum1, row?.hum2].map(asNumber).filter(v => v !== null);
+
+            const badT = temps.some(v => v < 2 || v > 8);
+            const badH = hums.some(v => v < 30 || v > 70);
+
+            if (row?.alarmState || badT || badH) return { label: "ALARM", cls: "rt-bad" };
+            if (row?.warnState) return { label: "WARN", cls: "rt-warn" };
+            if (!temps.length && !hums.length) return { label: "NO DATA", cls: "rt-warn" };
+
+            return { label: "OK", cls: "rt-ok" };
+        }
+
+        function getJourneyState(row) {
+            const state = String(row?.waybillState ?? "").trim();
+            if (state === "1") return "Start delayed";
+            if (state === "2") return "In progress";
+            if (state === "3") return "Ended";
+            return "No journey";
+        }
+
+        function render(row) {
+            row = normalizeRow(row);
+
+            if (!row) {
+                host.innerHTML = `<div class="ud-rt-empty">Không có dữ liệu realtime.</div>`;
+                if (metricPreview) metricPreview.textContent = "Không có dữ liệu";
+                if (activeDeviceName) activeDeviceName.textContent = "—";
+                if (activeDeviceGuid) activeDeviceGuid.textContent = "Chưa chọn thiết bị";
+                return;
+            }
+
+            const st = statusFromRow(row);
+
+            const sensors = [
+                { key: "tmp1", label: "Nhiệt 1", unit: "°C", type: "temp" },
+                { key: "tmp2", label: "Nhiệt 2", unit: "°C", type: "temp" },
+                { key: "tmp3", label: "Nhiệt 3", unit: "°C", type: "temp" },
+                { key: "tmp4", label: "Nhiệt 4", unit: "°C", type: "temp" },
+                { key: "hum1", label: "Ẩm 1", unit: "%RH", type: "hum" },
+                { key: "hum2", label: "Ẩm 2", unit: "%RH", type: "hum" }
+            ];
+
+            const tiles = sensors
+                .map(s => {
+                    const raw = row?.[s.key];
+                    const val = asNumber(raw);
+                    if (val === null) return null;
+
+                    const bad = (s.type === "temp")
+                        ? (val < 2 || val > 8)
+                        : (val < 30 || val > 70);
+
+                    return { ...s, raw, val, vcls: bad ? "bad" : "ok" };
+                })
+                .filter(Boolean);
+
+            const sensorsHtml = tiles.length
+                ? `
+            <div class="rt-sensors">
+            <div class="rt-sensors-hd">
+            <div class="rt-sensors-title">Cảm biến</div>
+            <div class="rt-sensors-badge">${tiles.length} kênh</div>
+            </div>
+            <div class="rt-sensor-grid">
+            ${tiles.map(t => `
+            <div class="rt-sensor">
+            <div class="rt-k">${escapeHtml(t.label)}</div>
+            <div class="rt-v ${t.vcls}">
+            ${escapeHtml(fmt(row[t.key]))}
+            <span class="rt-unit">${escapeHtml(t.unit)}</span>
+            </div>
+            </div>
+            `).join("")}
+            </div>
+            </div>
+            `
+                : `
+            <div class="rt-sensors">
+            <div class="rt-sensors-hd">
+            <div class="rt-sensors-title">Cảm biến</div>
+            <div class="rt-sensors-badge">0 kênh</div>
+            </div>
+            <div class="ud-rt-empty">Elitech chưa trả dữ liệu cảm biến cho thiết bị này.</div>
+            </div>
+            `;
+
+            host.innerHTML = `
+            <div class="rt-card">
+            <div class="rt-top">
+            <div>
+            <div class="rt-name">${fmt(row.deviceName) !== "—" ? escapeHtml(fmt(row.deviceName)) : "Device"}</div>
+            <div class="rt-guid">${escapeHtml(fmt(row.deviceGuid))}</div>
+            </div>
+            <div class="rt-pill ${st.cls}">${st.label}</div>
+            </div>
+
+            <div class="rt-banner">
+            <div class="rt-banner-box">
+            <div class="rt-banner-k">Cập nhật session</div>
+            <div class="rt-banner-v">${escapeHtml(tsSecToLocal(row.lastSessionTime))}</div>
+            </div>
+            <div class="rt-banner-box">
+            <div class="rt-banner-k">Journey</div>
+            <div class="rt-banner-v">${escapeHtml(getJourneyState(row))}</div>
+            </div>
+            <div class="rt-banner-box">
+            <div class="rt-banner-k">Vị trí</div>
+            <div class="rt-banner-v">${escapeHtml(fmt(row.position))}</div>
+            </div>
+            </div>
+
+            <div class="rt-grid">
+            ${sensorsHtml}
+
+            <div class="rt-box">
+            <div class="rt-k">Nguồn</div>
+            <div class="rt-v">${escapeHtml(fmt(row.power))}</div>
+            </div>
+            <div class="rt-box">
+            <div class="rt-k">Tín hiệu</div>
+            <div class="rt-v">${escapeHtml(fmt(row.signal))}</div>
+            </div>
+
+            <div class="rt-box rt-full">
+            <div class="rt-k">Địa chỉ</div>
+            <div class="rt-v" style="font-size:1rem;">${escapeHtml(fmt(row.address))}</div>
+            </div>
+            </div>
+
+            <div class="rt-foot">
+            <span><i class="bi bi-clock"></i> ${escapeHtml(tsSecToLocal(row.lastSessionTime))}</span>
+            <span><i class="bi bi-upc-scan"></i> GUID: ${escapeHtml(fmt(row.deviceGuid))}</span>
+            </div>
+            </div>
+            `;
+
+            if (metricPreview) metricPreview.textContent = st.label;
+            if (activeDeviceName) activeDeviceName.textContent = fmt(row.deviceName) !== "—" ? fmt(row.deviceName) : "Device";
+            if (activeDeviceGuid) activeDeviceGuid.textContent = fmt(row.deviceGuid);
+        }
+
+        async function fetchRealtime(guid) {
+            const url = `/api/elitech/realtime?deviceGuids=${encodeURIComponent(guid)}`;
+            const res = await fetch(url, { credentials: "same-origin", headers: { "Accept": "application/json" } });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+
+            const json = await res.json();
+            const rows = Array.isArray(json?.data)
+                ? json.data
+                : Array.isArray(json?.Data)
+                    ? json.Data
+                    : [];
+
+            return rows.length ? normalizeRow(rows[0]) : null;
+        }
+
+        let timer = null;
+
+        async function load() {
+            const guid = (sel?.value || "").trim();
+
+            if (!guid) {
+                render(null);
+                return;
+            }
+
+            markActiveDevice(guid);
+
+            if (metricPreview) metricPreview.textContent = "Đang tải…";
+            if (metricNow) metricNow.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            host.style.opacity = ".92";
+
+            try {
+                const row = await fetchRealtime(guid);
+                render(row);
+
+                if (last) last.textContent = new Date().toLocaleTimeString();
+
+                markActiveDevice(guid);
+            } catch (e) {
+                host.innerHTML = `<div class="ud-rt-empty">Không tải được realtime: ${escapeHtml(e.message || "Kiểm tra API / quyền user.")}</div>`;
+                if (metricPreview) metricPreview.textContent = "Lỗi tải dữ liệu";
+            } finally {
+                host.style.opacity = "1";
+            }
+        }
+
+        if (!sel || !host) return;
+
+        renderDeviceList();
+
+        if (deviceSearch) {
+            deviceSearch.addEventListener("input", renderDeviceList);
+        }
+
+        if (items.length === 0) {
+            host.innerHTML = `<div class="ud-rt-empty">Tài khoản chưa được gán thiết bị nào.</div>`;
+            sel.innerHTML = "";
+            if (metricPreview) metricPreview.textContent = "Chưa có thiết bị";
+            return;
+        }
+
+        sel.innerHTML = items.map(x => `<option value="${escapeHtml(x.guid)}">${escapeHtml(x.name)} — ${escapeHtml(x.guid)}</option>`).join("");
+
+        sel.addEventListener("change", () => {
+            renderDeviceList();
+            load();
+        });
+
+        if (btn) btn.addEventListener("click", load);
+
+        load();
+
+        timer = setInterval(load, 30000);
+        window.addEventListener("beforeunload", () => timer && clearInterval(timer));
+    })();
+</script>

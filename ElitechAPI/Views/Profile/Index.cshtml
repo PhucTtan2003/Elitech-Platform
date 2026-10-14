@@ -1,0 +1,817 @@
+﻿@model Elitech.Models.AccountViewModel
+@using System.Linq
+@using System.Collections.Generic
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "_Layout";
+
+    var phoneValues = new List<string>();
+
+    if (Model.Phones != null && Model.Phones.Count > 0)
+    {
+        phoneValues.AddRange(Model.Phones);
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.Phone))
+    {
+        phoneValues.Add(Model.Phone);
+    }
+
+    phoneValues = phoneValues
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Select(x => x.Trim())
+        .Where(x => x != "...")
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Take(5)
+        .ToList();
+
+    while (phoneValues.Count < 5)
+    {
+        phoneValues.Add("");
+    }
+
+    var hasExtraPhone = phoneValues.Skip(1).Any(x => !string.IsNullOrWhiteSpace(x));
+}
+
+<style>
+    /* ===== Profile Page (match Elitech vibe) ===== */
+    .pf-wrap {
+        max-width: 980px;
+        margin: 24px auto;
+        padding: 0 14px;
+    }
+
+    .pf-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .pf-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pf-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 24px;
+        background: linear-gradient(180deg, var(--elx-navy), var(--elx-navy-800));
+        box-shadow: 0 18px 45px rgba(15,35,78,.35);
+        border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .pf-title {
+        margin: 0;
+        font-weight: 900;
+        letter-spacing: -.02em;
+        font-size: 1.55rem;
+    }
+
+    .pf-sub {
+        margin: 2px 0 0;
+        color: var(--elx-muted);
+        font-weight: 600;
+        font-size: .92rem;
+    }
+
+    .pf-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .pf-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.78);
+        border: 1px solid rgba(226,232,240,.95);
+        box-shadow: 0 12px 28px rgba(15,35,78,.10);
+        font-weight: 800;
+        font-size: .85rem;
+        color: #0f172a;
+        backdrop-filter: blur(16px) saturate(170%);
+    }
+
+        .pf-badge i {
+            opacity: .9;
+        }
+
+    .pf-grid {
+        display: grid;
+        grid-template-columns: 1.2fr .8fr;
+        gap: 16px;
+        margin-top: 14px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .pf-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pf-badges {
+            justify-content: flex-start;
+        }
+    }
+
+    .pf-card {
+        background: var(--elx-card);
+        border: 1px solid var(--elx-border);
+        border-radius: 22px;
+        box-shadow: var(--elx-shadow-soft);
+        backdrop-filter: blur(18px) saturate(170%);
+        overflow: hidden;
+        position: relative;
+    }
+
+        .pf-card::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: radial-gradient(700px 220px at 10% 0%, rgba(245,130,32,.18), transparent 60%), radial-gradient(700px 220px at 90% 0%, rgba(13,71,161,.18), transparent 60%);
+            pointer-events: none;
+        }
+
+    .pf-card-inner {
+        position: relative;
+        padding: 18px 18px 16px;
+    }
+
+    .pf-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .pf-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-weight: 900;
+        font-size: 1.05rem;
+        letter-spacing: -.01em;
+        color: #0f172a;
+    }
+
+    .phone-mode {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .mode-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #111;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+        .mode-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .mode-btn.active {
+            background: #111;
+            color: #fff;
+            border-color: #111;
+            box-shadow: 0 14px 28px rgba(17,24,39,.16);
+        }
+
+    .phone-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .phone-summary {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .phone-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid rgba(16,185,129,.22);
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+        .phone-chip.empty {
+            background: #f8fafc;
+            color: #64748b;
+            border-color: rgba(148,163,184,.22);
+        }
+
+    .pf-mini {
+        font-size: .82rem;
+        color: var(--elx-muted);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .pf-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(15,23,42,.92);
+        color: #e5edff;
+        border: 1px solid rgba(148,163,184,.55);
+        font-weight: 800;
+        font-size: .78rem;
+    }
+
+        .pf-chip .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 0 0 rgba(34,197,94,.55);
+            animation: pfPulse 1.6s infinite;
+        }
+
+    @@keyframes pfPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(34,197,94,.55);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(34,197,94,0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(34,197,94,0);
+        }
+    }
+
+    .pf-form {
+        display: grid;
+        gap: 12px;
+    }
+
+    .pf-row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    @@media (max-width: 768px) {
+        .pf-row2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .pf-label {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: .86rem;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .pf-input {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(148,163,184,.55);
+        background: rgba(255,255,255,.88);
+        padding: 10px 12px;
+        outline: none;
+        font-weight: 700;
+        color: #0f172a;
+        box-shadow: 0 10px 26px rgba(15,35,78,.06);
+    }
+
+        .pf-input:focus {
+            border-color: rgba(59,130,246,.55);
+            box-shadow: 0 0 0 4px rgba(59,130,246,.14), 0 10px 26px rgba(15,35,78,.08);
+        }
+
+        .pf-input[disabled] {
+            opacity: .55;
+            background: rgba(241,245,249,.92);
+            cursor: not-allowed;
+            filter: grayscale(.15);
+        }
+
+    .pf-help {
+        margin-top: 8px;
+        color: var(--elx-muted);
+        font-size: .82rem;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+
+    .pf-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .pf-btn {
+        border: 0;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 16px 32px rgba(15,35,78,.18);
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .pf-btn-primary {
+        color: #0b1220;
+        background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.72));
+        border: 1px solid rgba(255,255,255,.45);
+    }
+
+        .pf-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 20px 44px rgba(15,35,78,.22);
+        }
+
+    .pf-btn-outline {
+        background: rgba(255,255,255,.75);
+        border: 1px solid rgba(226,232,240,.95);
+        color: #0f172a;
+        font-weight: 900;
+    }
+
+    .pf-alert {
+        border-radius: 18px;
+        padding: 12px 14px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: rgba(255,255,255,.78);
+        box-shadow: 0 14px 30px rgba(15,35,78,.12);
+        backdrop-filter: blur(16px) saturate(170%);
+        font-weight: 800;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+        .pf-alert.ok {
+            border-color: rgba(34,197,94,.35);
+        }
+
+        .pf-alert.err {
+            border-color: rgba(239,68,68,.35);
+        }
+
+        .pf-alert i {
+            margin-top: 2px;
+        }
+
+        .pf-alert .t {
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .pf-alert .d {
+            margin: 2px 0 0;
+            font-weight: 700;
+            color: var(--elx-muted);
+        }
+
+    .pf-side {
+        display: grid;
+        gap: 16px;
+    }
+
+    .pf-preview {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 18px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: rgba(255,255,255,.72);
+        box-shadow: 0 14px 30px rgba(15,35,78,.12);
+    }
+
+    .pf-avatarBig {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.45);
+        box-shadow: 0 16px 34px rgba(15,35,78,.22);
+        background: linear-gradient(180deg, rgba(245,130,32,.9), rgba(13,71,161,.9));
+        display: grid;
+        place-items: center;
+        color: #fff;
+        flex: 0 0 auto;
+    }
+
+        .pf-avatarBig img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    .pf-avatarMeta {
+        line-height: 1.2;
+    }
+
+        .pf-avatarMeta .u {
+            font-weight: 900;
+        }
+
+        .pf-avatarMeta .r {
+            color: var(--elx-muted);
+            font-weight: 800;
+            font-size: .82rem;
+        }
+
+    .pf-note {
+        padding: 14px 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(226,232,240,.95);
+        background: rgba(255,255,255,.72);
+        box-shadow: 0 14px 30px rgba(15,35,78,.10);
+        color: #0f172a;
+        font-weight: 800;
+        font-size: .9rem;
+    }
+
+        .pf-note small {
+            display: block;
+            margin-top: 6px;
+            color: var(--elx-muted);
+            font-weight: 700;
+            font-size: .82rem;
+        }
+</style>
+
+<div class="pf-wrap">
+
+    <div class="pf-hero">
+        <div class="pf-hero-left">
+            <div class="pf-icon"><i class="bi bi-person-gear"></i></div>
+            <div>
+                <h1 class="pf-title">Profile & Settings</h1>
+                <p class="pf-sub">Cập nhật thông tin cá nhân • số điện thoại SMS • đổi mật khẩu</p>
+            </div>
+        </div>
+
+        <div class="pf-badges">
+            <span class="pf-badge"><i class="bi bi-shield-check"></i> Secure Profile</span>
+            <span class="pf-badge"><i class="bi bi-database-check"></i> Policy-Smarttech</span>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="pf-alert ok">
+            <i class="bi bi-check-circle-fill" style="color:#16a34a;"></i>
+            <div>
+                <p class="t">Cập nhật thành công</p>
+                <p class="d">@TempData["Success"]</p>
+            </div>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="pf-alert err">
+            <i class="bi bi-exclamation-triangle-fill" style="color:#ef4444;"></i>
+            <div>
+                <p class="t">Có lỗi</p>
+                <p class="d">@TempData["Error"]</p>
+            </div>
+        </div>
+    }
+
+    <form method="post" enctype="multipart/form-data" onsubmit="return beforeSubmit()">
+        @Html.AntiForgeryToken()
+
+        <div class="pf-grid">
+
+            <!-- LEFT: Profile form -->
+            <div class="pf-card">
+                <div class="pf-card-inner">
+                    <div class="pf-card-head">
+                        <div>
+                            <h3 class="pf-card-title"><i class="bi bi-person-vcard"></i> Thông tin cá nhân</h3>
+                            <p class="pf-mini">Bạn có thể cập nhật họ tên, email và tối đa 5 số điện thoại nhận SMS.</p>
+                        </div>
+
+                        <span class="pf-chip"><span class="dot"></span> Logged in</span>
+                    </div>
+
+                    <div class="pf-form">
+                        <div class="pf-row2">
+                            <div>
+                                <label class="pf-label">Username</label>
+                                <input class="pf-input" value="@Model.Username" disabled />
+                            </div>
+                            <div>
+                                <label class="pf-label">Role</label>
+                                <input class="pf-input" value="@Model.Role" disabled />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="pf-label">Họ tên</label>
+                            <input class="pf-input" name="fullName" value="@Model.FullName" placeholder="Nguyễn Văn A" />
+                        </div>
+
+                        <div class="pf-row2">
+                            <div>
+                                <label class="pf-label">Email</label>
+                                <input class="pf-input" name="email" value="@Model.Email" placeholder="email@example.com" />
+                            </div>
+
+                            <div>
+                                <label class="pf-label">Số điện thoại nhận SMS</label>
+
+                                <div class="phone-mode">
+                                    <button type="button" class="mode-btn" id="btnPhoneOne">
+                                        Chọn 1 số
+                                    </button>
+                                    <button type="button" class="mode-btn" id="btnPhoneMulti">
+                                        Chọn nhiều số
+                                    </button>
+                                </div>
+
+                                <input type="hidden" name="phone" id="phoneAll" />
+                                <input type="hidden" name="phones" id="phonesAll" />
+                                <input type="hidden" name="phoneNumbers" id="phoneNumbersAll" />
+
+                                <div id="phoneList" class="phone-list">
+                                    <input class="pf-input phone-item"
+                                           value="@phoneValues[0]"
+                                           placeholder="Số chính, ví dụ 0987654321"
+                                           inputmode="tel"
+                                           autocomplete="tel"
+                                    @(Model.SmsSubActive ? "" : "disabled") />
+
+                                    <input class="pf-input phone-item extra-phone"
+                                           value="@phoneValues[1]"
+                                           placeholder="Số phụ 1"
+                                           inputmode="tel"
+                                           autocomplete="tel"
+                                    @(Model.SmsSubActive ? "" : "disabled") />
+
+                                    <input class="pf-input phone-item extra-phone"
+                                           value="@phoneValues[2]"
+                                           placeholder="Số phụ 2"
+                                           inputmode="tel"
+                                           autocomplete="tel"
+                                    @(Model.SmsSubActive ? "" : "disabled") />
+
+                                    <input class="pf-input phone-item extra-phone"
+                                           value="@phoneValues[3]"
+                                           placeholder="Số phụ 3"
+                                           inputmode="tel"
+                                           autocomplete="tel"
+                                    @(Model.SmsSubActive ? "" : "disabled") />
+
+                                    <input class="pf-input phone-item extra-phone"
+                                           value="@phoneValues[4]"
+                                           placeholder="Số phụ 4"
+                                           inputmode="tel"
+                                           autocomplete="tel"
+                                    @(Model.SmsSubActive ? "" : "disabled") />
+                                </div>
+
+                                <div class="phone-summary" id="phoneSummary"></div>
+
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Password + Preview -->
+            <div class="pf-side">
+
+                <div class="pf-card">
+                    <div class="pf-card-inner">
+                        <div class="pf-card-head">
+                            <div>
+                                <h3 class="pf-card-title"><i class="bi bi-key"></i> Đổi mật khẩu</h3>
+                                <p class="pf-mini">Để trống nếu không muốn đổi mật khẩu.</p>
+                            </div>
+                            <span class="pf-badge" style="box-shadow:none;background:rgba(255,255,255,.68);">
+                                <i class="bi bi-lock-fill"></i> Password hashed
+                            </span>
+                        </div>
+
+                        <div class="pf-form">
+                            <div>
+                                <label class="pf-label">Mật khẩu hiện tại</label>
+                                <input class="pf-input" type="password" name="currentPassword" autocomplete="current-password" />
+                            </div>
+
+                            <div>
+                                <label class="pf-label">Mật khẩu mới</label>
+                                <input class="pf-input" type="password" name="newPassword" autocomplete="new-password" />
+                            </div>
+
+                            <div>
+                                <label class="pf-label">Nhập lại mật khẩu mới</label>
+                                <input class="pf-input" type="password" name="confirmNewPassword" autocomplete="new-password" />
+                            </div>
+
+                            <div class="pf-help">Mật khẩu mới tối thiểu 6 ký tự.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pf-preview">
+                    <div class="pf-avatarBig">
+                        <i class="bi bi-person-fill" style="font-size:1.2rem"></i>
+                    </div>
+                    <div class="pf-avatarMeta">
+                        <div class="u">@Model.Username</div>
+                        <div class="r">@Model.Role • Elitech</div>
+                    </div>
+                </div>
+
+               
+            </div>
+        </div>
+
+        <div class="pf-actions">
+            <a class="pf-btn pf-btn-outline" href="javascript:history.back()">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <button type="submit" class="pf-btn pf-btn-primary">
+                <i class="bi bi-save2"></i> Lưu thay đổi
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPhoneMode = @(hasExtraPhone ? 5 : 1);
+
+        function cleanPhoneValue(v) {
+            const s = String(v || "").trim();
+            if (!s || s === "...") return "";
+            return s;
+        }
+
+        function getPhoneInputs() {
+            return Array.from(document.querySelectorAll(".phone-item"));
+        }
+
+        function getVisiblePhones() {
+            const inputs = getPhoneInputs();
+
+            return inputs
+                .filter((input, index) => currentPhoneMode === 5 || index === 0)
+                .map(input => cleanPhoneValue(input.value))
+                .filter(Boolean)
+                .filter((value, index, arr) => arr.indexOf(value) === index);
+        }
+
+        function renderPhoneSummary() {
+            const box = document.getElementById("phoneSummary");
+            if (!box) return;
+
+            const phones = getVisiblePhones();
+
+            if (!phones.length) {
+                box.innerHTML = `<span class="phone-chip empty">Chưa có số điện thoại</span>`;
+                return;
+            }
+
+            box.innerHTML = phones.map((p, i) => `
+                        <span class="phone-chip">
+                            <i class="bi bi-telephone-fill"></i>
+                            ${i === 0 ? "Số chính" : "Số phụ " + i}: ${escapeHtml(p)}
+                        </span>
+                    `).join("");
+        }
+
+        function setPhoneMode(mode) {
+            currentPhoneMode = mode === 5 ? 5 : 1;
+
+            const btnOne = document.getElementById("btnPhoneOne");
+            const btnMulti = document.getElementById("btnPhoneMulti");
+
+            if (btnOne) btnOne.classList.toggle("active", currentPhoneMode === 1);
+            if (btnMulti) btnMulti.classList.toggle("active", currentPhoneMode === 5);
+
+            const inputs = getPhoneInputs();
+
+            inputs.forEach((input, index) => {
+                if (index === 0) {
+                    input.style.display = "block";
+                    return;
+                }
+
+                input.style.display = currentPhoneMode === 5 ? "block" : "none";
+
+                if (currentPhoneMode === 1) {
+                    input.value = "";
+                }
+            });
+
+            renderPhoneSummary();
+        }
+
+        function beforeSubmit() {
+            const phones = getVisiblePhones();
+            const csv = phones.join(",");
+
+            const phoneAll = document.getElementById("phoneAll");
+            const phonesAll = document.getElementById("phonesAll");
+            const phoneNumbersAll = document.getElementById("phoneNumbersAll");
+
+            if (phoneAll) phoneAll.value = csv;
+            if (phonesAll) phonesAll.value = csv;
+            if (phoneNumbersAll) phoneNumbersAll.value = csv;
+
+            return true;
+        }
+
+        window.beforeSubmit = beforeSubmit;
+
+        function escapeHtml(s) {
+            return String(s ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+        (function smsRealtime() {
+            if (!window.signalR) return;
+
+            const conn = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/sms")
+                .withAutomaticReconnect()
+                .build();
+
+            conn.on("sms.updated", (data) => {
+                const currentUser = "@Model.Username";
+
+                if (!data || data.username !== currentUser) return;
+
+                document.querySelectorAll(".phone-item").forEach(i => {
+                    i.disabled = !data.smsEnabled;
+                });
+
+                if (!data.smsEnabled) {
+                    alert("SMS đã bị hủy. Vui lòng đăng ký lại.");
+                }
+            });
+
+            conn.start().catch(() => { });
+        })();
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const btnOne = document.getElementById("btnPhoneOne");
+            const btnMulti = document.getElementById("btnPhoneMulti");
+
+            if (btnOne) btnOne.addEventListener("click", () => setPhoneMode(1));
+            if (btnMulti) btnMulti.addEventListener("click", () => setPhoneMode(5));
+
+            getPhoneInputs().forEach(input => {
+                input.addEventListener("input", renderPhoneSummary);
+                input.addEventListener("change", renderPhoneSummary);
+            });
+
+            setPhoneMode(currentPhoneMode);
+        });
+    </script>
+}

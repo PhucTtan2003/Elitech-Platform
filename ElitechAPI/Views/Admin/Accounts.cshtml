@@ -1,0 +1,1120 @@
+﻿@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<style>
+    :root {
+        --o: #F58220;
+        --o2: #E36F15;
+        --b: #0D47A1;
+        --b2: #1E88E5;
+        --bg: #f5f7fb;
+        --ink: #0f172a;
+        --mut: #64748b;
+        --card: #ffffff;
+        --border: rgba(226,232,240,.95);
+        --shadow: 0 8px 18px rgba(15,23,42,.06);
+        --r: 16px;
+        --ok: #10B981;
+        --warn: #F59E0B;
+        --crit: #EF4444;
+        --info: #3B82F6;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--ink);
+    }
+
+        body::before {
+            display: none;
+        }
+
+    .accx {
+        font-family: Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+        padding: 14px 14px 24px;
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+
+    /* ===== Top ===== */
+    .accx-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 6px 0 12px;
+    }
+
+    .accx-title h1 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: .01em;
+    }
+
+    .accx-title p {
+        margin: 4px 0 0;
+        color: var(--mut);
+        font-weight: 700;
+        font-size: .9rem;
+    }
+
+    .accx-pills {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid var(--border);
+        box-shadow: none;
+        backdrop-filter: none;
+        font-weight: 800;
+        font-size: .8rem;
+        color: var(--ink);
+    }
+
+        .pill i {
+            color: var(--o2);
+        }
+
+    /* ===== Layout ===== */
+    .accx-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        align-items: start;
+    }
+
+    @@media (min-width:1024px) {
+        .accx-grid {
+            grid-template-columns: 420px 1fr;
+        }
+    }
+
+    /* ===== Cards ===== */
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .card-hd {
+        padding: 14px 14px 10px;
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+        .card-hd h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 900;
+        }
+
+        .card-hd .sub {
+            margin-top: 4px;
+            color: var(--mut);
+            font-weight: 700;
+            font-size: .88rem;
+            line-height: 1.25rem;
+        }
+
+    .card-bd {
+        padding: 14px;
+        background: #fff;
+    }
+
+    /* ===== Inputs ===== */
+    label {
+        font-weight: 800;
+        font-size: .86rem;
+        color: rgba(15,23,42,.92);
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .row2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    @@media (min-width:680px) {
+        .row2 {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .input, .select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 11px 12px;
+        font-weight: 800;
+        background: #fff;
+        outline: none;
+        box-shadow: none;
+    }
+
+        .input:focus, .select:focus {
+            border-color: rgba(245,130,32,.65);
+            box-shadow: 0 0 0 3px rgba(245,130,32,.12);
+        }
+
+    .help {
+        margin-top: 6px;
+        color: var(--mut);
+        font-weight: 650;
+        font-size: .82rem;
+        line-height: 1.2rem;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+        padding: 11px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        font-weight: 900;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: none;
+        transition: background .12s ease, opacity .12s ease;
+        user-select: none;
+        color: var(--ink);
+    }
+
+        .btn:hover {
+            background: #f8fafc;
+            transform: none;
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .btn.primary {
+            border: 1px solid rgba(245,130,32,.35);
+            background: rgba(245,130,32,.14);
+            color: #7a3a00;
+        }
+
+        .btn.outline {
+            border-color: rgba(13,71,161,.25);
+            background: rgba(13,71,161,.06);
+            color: rgba(13,71,161,.92);
+        }
+
+        .btn.soft {
+            border-color: rgba(15,23,42,.10);
+            background: #f8fafc;
+            color: rgba(15,23,42,.92);
+        }
+
+        .btn.danger {
+            border-color: rgba(239,68,68,.35);
+            background: rgba(239,68,68,.10);
+            color: #991b1b;
+        }
+
+    /* ===== Chips ===== */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: .18rem .6rem;
+        border-radius: 9999px;
+        font-size: .75rem;
+        font-weight: 900;
+        border: 1px solid var(--border);
+        background: #fff;
+        white-space: nowrap;
+    }
+
+        .chip.ok {
+            color: #059669;
+        }
+
+        .chip.crit {
+            color: #b91c1c;
+        }
+
+        .chip.info {
+            color: #1d4ed8;
+        }
+
+        .chip.warn {
+            color: #d97706;
+        }
+
+    /* ===== List table ===== */
+    .list-wrap {
+        margin-top: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        overflow: auto;
+        max-height: 560px;
+        background: #fff;
+    }
+
+    .tbl {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: .92rem;
+        min-width: 520px;
+    }
+
+        .tbl th, .tbl td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .tbl thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 900;
+        }
+
+        .tbl tr:hover td {
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .tbl tr.is-selected td {
+            background: rgba(13,71,161,.06);
+        }
+
+    /* ===== Modebar ===== */
+    .modebar {
+        padding: 12px 14px;
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .mode-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #f8fafc;
+        font-weight: 900;
+        font-size: .84rem;
+    }
+
+        .mode-pill .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+            background: var(--info);
+        }
+
+        .mode-pill.is-create .dot {
+            background: var(--ok);
+        }
+
+        .mode-pill.is-edit .dot {
+            background: var(--warn);
+        }
+
+    /* ===== Actions: dễ bấm ===== */
+    .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 12px;
+        align-items: stretch;
+    }
+
+    @@media (min-width:680px) {
+        .actions {
+            grid-template-columns: 1fr 1fr;
+        }
+
+            .actions .btn {
+                justify-content: center;
+            }
+    }
+
+    @@media (min-width:1200px) {
+        .actions {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    }
+
+    @@media (min-width:1024px) {
+        .actions {
+            position: sticky;
+            bottom: 10px;
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            backdrop-filter: none;
+        }
+    }
+
+    /* ===== Toast ===== */
+    .toast {
+        position: fixed;
+        right: 18px;
+        top: 18px;
+        z-index: 9999;
+        min-width: 260px;
+        max-width: 440px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        display: none;
+        cursor: pointer;
+        backdrop-filter: none;
+        overflow: hidden;
+    }
+
+        .toast.show {
+            display: block;
+        }
+
+    .toast-title {
+        font-weight: 900;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .toast-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+    }
+
+        .toast-dot.ok {
+            background: var(--ok);
+        }
+
+        .toast-dot.err {
+            background: var(--crit);
+        }
+
+        .toast-dot.warn {
+            background: var(--warn);
+        }
+
+    .toast-msg {
+        font-size: .86rem;
+        color: #334155;
+        line-height: 1.25rem;
+        font-weight: 700;
+    }
+
+    /* ===== Meta ===== */
+    .meta {
+        color: var(--mut);
+        font-size: .82rem;
+        font-weight: 800;
+    }
+</style>
+
+<div class="toast" id="toast">
+    <div class="toast-title">
+        <span class="toast-dot ok" id="toastDot"></span>
+        <span id="toastTitle">Thông báo</span>
+    </div>
+    <div class="toast-msg" id="toastMsg"></div>
+</div>
+
+<div class="accx">
+    <div class="accx-top">
+        <div class="accx-title">
+            <h1>Quản lý tài khoản</h1>
+            <p>Thêm / Sửa / Xóa • Reset mật khẩu • Bật/Tắt Active — API: <b>/api/admin/accounts</b></p>
+        </div>
+        <div class="accx-pills">
+            <span class="pill"><i class="bi bi-shield-lock"></i> Admin only</span>
+            <span class="pill"><i class="bi bi-database-lock"></i> Password hashed</span>
+            <span class="pill"><i class="bi bi-clock-history"></i> @DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy")</span>
+        </div>
+    </div>
+
+    <div class="accx-grid">
+
+        <!-- LEFT: LIST -->
+        <div class="card">
+            <div class="card-hd">
+                <div>
+                    <h3>Danh sách tài khoản</h3>
+                    <div class="sub">Bấm 1 dòng để vào <b>Edit</b>. Gõ tìm kiếm để lọc nhanh.</div>
+                </div>
+                <div class="meta" id="listMeta">—</div>
+            </div>
+
+            <div class="card-bd">
+                <div class="row2">
+                    <div>
+                        <label>Tìm kiếm (client)</label>
+                        <input class="input" id="q" placeholder="username / email / full name / phone" />
+                        <div class="help">Tìm trong dữ liệu đã load (không gọi server). Muốn lọc server thì đổi Role và bấm Reload.</div>
+                    </div>
+                    <div>
+                        <label>Lọc role (server)</label>
+                        <select class="select" id="roleFilter">
+                            <option value="">Tất cả</option>
+                            <option value="1">Admin</option>
+                            <option value="2">User</option>
+                            <option value="3">Staff</option> 
+                        </select>
+                        <div class="help">Bấm Reload để gọi: <b>GET /api/admin/accounts?role=</b></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px;">
+                    <button class="btn primary" id="btnReload">
+                        <i class="bi bi-arrow-repeat"></i> Reload
+                    </button>
+                    <button class="btn soft" id="btnQuickCreate">
+                        <i class="bi bi-person-plus"></i> Quick Create
+                    </button>
+                    <span class="meta" id="listHint">Chưa tải dữ liệu.</span>
+                </div>
+
+                <div class="list-wrap" id="tableWrap" style="display:none;">
+                    <table class="tbl">
+                        <thead>
+                            <tr>
+                                <th style="width:54px;">#</th>
+                                <th style="width:220px;">Username</th>
+                                <th style="width:100px;">Role</th>
+                                <th style="width:120px;">Active</th>
+                                <th>Info</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="help" style="margin-top:10px;">
+                    Mẹo: Enter trong ô search để lọc • Click row để chọn • Clear form để quay về Create.
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: FORM -->
+        <div class="card">
+            <div class="modebar">
+                <div class="mode-pill is-create" id="modePill">
+                    <span class="dot"></span>
+                    <span id="modeText">Create mode</span>
+                </div>
+                <div class="meta">
+                    Selected: <b id="selectedUsername">-</b>
+                </div>
+            </div>
+
+            <div class="card-bd">
+                <div class="row2">
+                    <div>
+                        <label>Username</label>
+                        <input class="input" id="username" placeholder="vd: admin2 / user01" />
+                        <div class="help">Edit mode sẽ khóa Username (key route backend).</div>
+                    </div>
+                    <div>
+                        <label>Role</label>
+                        <select class="select" id="role">
+                            <option value="3">Staff</option>
+                            <option value="2">User</option>
+                            <option value="1">Admin</option>
+                        </select>
+                        <div class="help">Role: 1=Admin, 2=User, 3=Staff</div>
+                    </div>
+                </div>
+
+                <div class="row2" style="margin-top:10px;">
+                    <div>
+                        <label>Active</label>
+                        <select class="select" id="isActive">
+                            <option value="true">Active</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Password (Create / Reset)</label>
+                        <input class="input" id="password" type="password" placeholder="Create: bắt buộc • Edit: để trống nếu không reset" />
+                        <div class="help">Reset password sẽ gọi endpoint riêng: <b>/reset-password</b></div>
+                    </div>
+                </div>
+
+                <div class="row2" style="margin-top:10px;">
+                    <div>
+                        <label>Full name</label>
+                        <input class="input" id="fullName" placeholder="Họ tên" />
+                    </div>
+                    <div>
+                        <label>Email</label>
+                        <input class="input" id="email" placeholder="email@@..." />
+                    </div>
+                </div>
+
+                <div class="row2" style="margin-top:10px;">
+                    <div>
+                        <label>Phone</label>
+                        <input class="input" id="phone" placeholder="SĐT" />
+                    </div>
+                    <div></div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn primary" id="btnSave">
+                        <i class="bi bi-check2-circle"></i> Save (Create/Update)
+                    </button>
+
+                    <button class="btn outline" id="btnResetPw" disabled>
+                        <i class="bi bi-key"></i> Reset password
+                    </button>
+
+                    <button class="btn outline" id="btnToggleActive" disabled>
+                        <i class="bi bi-toggle2-on"></i> Toggle Active
+                    </button>
+
+                    <button class="btn danger" id="btnDelete" disabled>
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+
+                    <button class="btn" id="btnClear">
+                        <i class="bi bi-eraser"></i> Clear
+                    </button>
+                </div>
+
+                <div class="help" id="formHint" style="margin-top:10px;">
+                    Create: nhập <b>username + password</b> rồi Save.
+                    Edit: click account bên trái, sửa role/active/profile rồi Save.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ===== Toast =====
+        const toast = document.getElementById('toast');
+        const toastDot = document.getElementById('toastDot');
+        const toastTitle = document.getElementById('toastTitle');
+        const toastMsg = document.getElementById('toastMsg');
+
+        function showToast(type, title, msg){
+            toast.classList.add('show');
+            toastTitle.textContent = title || 'Thông báo';
+            toastMsg.textContent = msg || '';
+            toastDot.classList.remove('ok','err','warn');
+            toastDot.classList.add(type === 'ok' ? 'ok' : (type === 'warn' ? 'warn' : 'err'));
+            clearTimeout(window.__accx_toast_t);
+            window.__accx_toast_t = setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+        toast.addEventListener('click', () => toast.classList.remove('show'));
+
+        function escapeHtml(s){
+            return String(s ?? '').replace(/[&<>"']/g, m => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[m]));
+        }
+
+        function setLoading(btn, isLoading, idleHtml, loadingHtml){
+            if (!btn) return;
+            btn.disabled = !!isLoading;
+            btn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+            btn.innerHTML = isLoading ? loadingHtml : idleHtml;
+        }
+
+        // ===== State =====
+        let accounts = [];
+        let selected = null;
+
+        // ===== UI refs =====
+        const $q = document.getElementById('q');
+        const $roleFilter = document.getElementById('roleFilter');
+        const $btnReload = document.getElementById('btnReload');
+        const $btnQuickCreate = document.getElementById('btnQuickCreate');
+        const $listHint = document.getElementById('listHint');
+        const $listMeta = document.getElementById('listMeta');
+        const $tableWrap = document.getElementById('tableWrap');
+        const $tbody = document.getElementById('tbody');
+
+        const $modePill = document.getElementById('modePill');
+        const $modeText = document.getElementById('modeText');
+        const $selectedUsername = document.getElementById('selectedUsername');
+
+        const $username = document.getElementById('username');
+        const $role = document.getElementById('role');
+        const $isActive = document.getElementById('isActive');
+        const $password = document.getElementById('password');
+        const $fullName = document.getElementById('fullName');
+        const $email = document.getElementById('email');
+        const $phone = document.getElementById('phone');
+
+        const $btnSave = document.getElementById('btnSave');
+        const $btnResetPw = document.getElementById('btnResetPw');
+        const $btnToggleActive = document.getElementById('btnToggleActive');
+        const $btnDelete = document.getElementById('btnDelete');
+        const $btnClear = document.getElementById('btnClear');
+
+        function setModeCreate(){
+            selected = null;
+
+            $modePill.classList.remove('is-edit');
+            $modePill.classList.add('is-create');
+            $modeText.textContent = 'Create mode';
+
+            $selectedUsername.textContent = '-';
+            $btnResetPw.disabled = true;
+            $btnToggleActive.disabled = true;
+            $btnDelete.disabled = true;
+
+            $username.disabled = false;
+            $username.value = '';
+            $password.value = '';
+            $role.value = '2';
+            $isActive.value = 'true';
+            $fullName.value = '';
+            $email.value = '';
+            $phone.value = '';
+
+            // clear selected row highlight
+            document.querySelectorAll('#tbody tr.is-selected').forEach(x => x.classList.remove('is-selected'));
+        }
+
+        function setModeEdit(a){
+            selected = a;
+
+            $modePill.classList.remove('is-create');
+            $modePill.classList.add('is-edit');
+            $modeText.textContent = 'Edit mode';
+
+            $selectedUsername.textContent = a.username || '-';
+            $btnResetPw.disabled = false;
+            $btnToggleActive.disabled = false;
+            $btnDelete.disabled = false;
+
+            $username.disabled = true;
+            $username.value = a.username || '';
+            $role.value = String(a.role ?? 2);
+            $isActive.value = String(!!a.isActive);
+
+            $password.value = '';
+            $fullName.value = a.fullName || '';
+            $email.value = a.email || '';
+            $phone.value = a.phone || '';
+        }
+
+        function renderTable(){
+            const kw = ($q.value || '').trim().toLowerCase();
+
+            const filtered = accounts.filter(a => {
+                if (!kw) return true;
+                const blob = `${a.username||''} ${a.fullName||''} ${a.email||''} ${a.phone||''}`.toLowerCase();
+                return blob.includes(kw);
+            });
+
+            if (!filtered.length){
+                $tableWrap.style.display = 'none';
+                $tbody.innerHTML = '';
+                $listHint.textContent = 'Không có dữ liệu phù hợp.';
+                $listMeta.textContent = '0';
+                return;
+            }
+
+            $tableWrap.style.display = 'block';
+            $listHint.textContent = `Hiển thị ${filtered.length}/${accounts.length} accounts.`;
+            $listMeta.textContent = `${accounts.length} accounts`;
+
+            $tbody.innerHTML = filtered.map((a,i) => {
+                const activeChip = a.isActive ? `<span class="chip ok"><i class="bi bi-check2-circle"></i> Active</span>` : `<span class="chip crit"><i class="bi bi-x-circle"></i> Disabled</span>`;
+                const roleChip = {
+                    1: `<span class="chip info">👑 Admin</span>`,
+                    2: `<span class="chip">👤 User</span>`,
+                    3: `<span class="chip warn">👨‍💼 Staff</span>`
+                }[a.role] || `<span class="chip">Unknown</span>`;
+
+                const info = [
+                    a.fullName ? `👤 ${escapeHtml(a.fullName)}` : '',
+                    a.email ? `✉️ ${escapeHtml(a.email)}` : '',
+                    a.phone ? `📞 ${escapeHtml(a.phone)}` : ''
+                ].filter(Boolean).join(' • ') || '-';
+
+                const isSelected = selected && (String(selected.username||'').toLowerCase() === String(a.username||'').toLowerCase());
+                return `
+                  <tr data-username="${escapeHtml(a.username)}" class="${isSelected ? 'is-selected' : ''}">
+                    <td>${i+1}</td>
+                    <td style="font-weight:1000">${escapeHtml(a.username)}</td>
+                    <td>${roleChip}</td>
+                    <td>${activeChip}</td>
+                    <td>${info}</td>
+                  </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadAccounts(){
+            const role = ($roleFilter.value || '').trim();
+
+            const qs = new URLSearchParams();
+            if (role) qs.set('role', role);
+
+            setLoading($btnReload, true,
+                '<i class="bi bi-arrow-repeat"></i> Reload',
+                '<i class="bi bi-arrow-repeat"></i> Loading...'
+            );
+            $listHint.textContent = 'Đang tải...';
+
+            try{
+                const res = await fetch('/api/admin/accounts?' + qs.toString(), { method:'GET' });
+                const json = await res.json().catch(() => null);
+
+                if (!res.ok || !json || json.code !== 0){
+                    const msg = json?.message ?? `Load accounts thất bại (HTTP ${res.status})`;
+                    showToast('err', 'Load fail', msg);
+                    $listHint.textContent = msg;
+                    accounts = [];
+                    renderTable();
+                    return;
+                }
+
+                accounts = json.data || [];
+                if (!accounts.length){
+                    $listHint.textContent = 'Danh sách rỗng.';
+                    $tableWrap.style.display = 'none';
+                    $tbody.innerHTML = '';
+                    $listMeta.textContent = '0';
+                    showToast('warn', 'Không có account', 'Collection Accounts đang rỗng.');
+                    return;
+                }
+
+                // keep selected if exists
+                if (selected?.username){
+                    const keep = accounts.find(x => (x.username||'').toLowerCase() === (selected.username||'').toLowerCase());
+                    if (keep) selected = keep;
+                    else selected = null;
+                }
+
+                showToast('ok', 'Loaded', `Tổng: ${accounts.length}`);
+                renderTable();
+            }catch(e){
+                showToast('err','Lỗi mạng / server','Không gọi được /api/admin/accounts');
+                $listHint.textContent = 'Lỗi mạng / server.';
+            }finally{
+                setLoading($btnReload, false,
+                    '<i class="bi bi-arrow-repeat"></i> Reload',
+                    '<i class="bi bi-arrow-repeat"></i> Loading...'
+                );
+            }
+        }
+
+        // ===== Events =====
+        $btnReload.addEventListener('click', loadAccounts);
+        $roleFilter.addEventListener('change', loadAccounts);
+
+        $q.addEventListener('input', () => renderTable());
+        $q.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); renderTable(); }
+        });
+
+        $tbody.addEventListener('click', (e) => {
+            const tr = e.target.closest('tr[data-username]');
+            if (!tr) return;
+
+            const u = (tr.getAttribute('data-username') || '').toLowerCase();
+            const a = accounts.find(x => (x.username || '').toLowerCase() === u);
+            if (!a) return;
+
+            // highlight
+            document.querySelectorAll('#tbody tr.is-selected').forEach(x => x.classList.remove('is-selected'));
+            tr.classList.add('is-selected');
+
+            setModeEdit(a);
+            showToast('ok','Edit mode', `Selected: ${a.username}`);
+        });
+
+        $btnClear.addEventListener('click', () => {
+            setModeCreate();
+            showToast('warn','Clear form','Đã chuyển về Create mode.');
+        });
+
+        $btnQuickCreate.addEventListener('click', () => {
+            setModeCreate();
+            $username.focus();
+            showToast('warn','Quick Create','Nhập username + password rồi bấm Save.');
+        });
+
+        // ===== Save (Create or Update) =====
+        $btnSave.addEventListener('click', async () => {
+            const payload = {
+                username: ($username.value || '').trim(),
+                password: ($password.value || '').trim(),
+                role: Number($role.value || 2),
+                isActive: String($isActive.value) === 'true',
+                fullName: ($fullName.value || '').trim(),
+                email: ($email.value || '').trim(),
+                phone: ($phone.value || '').trim()
+            };
+
+            if ($modeText.textContent.includes('Create')){
+                if (!payload.username){
+                    showToast('err','Thiếu username','Vui lòng nhập username.');
+                    $username.focus(); return;
+                }
+                if (!payload.password){
+                    showToast('err','Thiếu password','Create cần password.');
+                    $password.focus(); return;
+                }
+
+                setLoading($btnSave, true,
+                    '<i class="bi bi-check2-circle"></i> Save (Create/Update)',
+                    '<i class="bi bi-arrow-repeat"></i> Saving...'
+                );
+
+                try{
+                    const res = await fetch('/api/admin/accounts', {
+                        method:'POST',
+                        headers:{ 'Content-Type':'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const json = await res.json().catch(() => null);
+                    if (!res.ok || !json || json.code !== 0){
+                        const msg = json?.message ?? `Create fail (HTTP ${res.status})`;
+                        showToast('err','Create fail', msg);
+                        return;
+                    }
+
+                    showToast('ok','Created', payload.username);
+                    await loadAccounts();
+
+                    const a = accounts.find(x => (x.username||'').toLowerCase() === payload.username.toLowerCase());
+                    if (a){
+                        setModeEdit(a);
+                        // re-highlight
+                        const tr = document.querySelector(`#tbody tr[data-username="${CSS.escape(a.username)}"]`);
+                        tr?.classList.add('is-selected');
+                    }
+                }catch{
+                    showToast('err','Lỗi mạng / server','Create fail');
+                }finally{
+                    setLoading($btnSave, false,
+                        '<i class="bi bi-check2-circle"></i> Save (Create/Update)',
+                        '<i class="bi bi-arrow-repeat"></i> Saving...'
+                    );
+                }
+            } else {
+                const u = selected?.username || payload.username;
+                if (!u){
+                    showToast('err','No selected','Chưa chọn account để sửa.');
+                    return;
+                }
+
+                const updatePayload = {
+                    role: payload.role,
+                    isActive: payload.isActive,
+                    fullName: payload.fullName,
+                    email: payload.email,
+                    phone: payload.phone
+                };
+
+                setLoading($btnSave, true,
+                    '<i class="bi bi-check2-circle"></i> Save (Create/Update)',
+                    '<i class="bi bi-arrow-repeat"></i> Saving...'
+                );
+
+                try{
+                    const res = await fetch('/api/admin/accounts/' + encodeURIComponent(u), {
+                        method:'PUT',
+                        headers:{ 'Content-Type':'application/json' },
+                        body: JSON.stringify(updatePayload)
+                    });
+
+                    const json = await res.json().catch(() => null);
+                    if (!res.ok || !json || json.code !== 0){
+                        const msg = json?.message ?? `Update fail (HTTP ${res.status})`;
+                        showToast('err','Update fail', msg);
+                        return;
+                    }
+
+                    showToast('ok','Updated', u);
+                    await loadAccounts();
+                    const a = accounts.find(x => (x.username||'').toLowerCase() === u.toLowerCase());
+                    if (a) setModeEdit(a);
+                }catch{
+                    showToast('err','Lỗi mạng / server','Update fail');
+                }finally{
+                    setLoading($btnSave, false,
+                        '<i class="bi bi-check2-circle"></i> Save (Create/Update)',
+                        '<i class="bi bi-arrow-repeat"></i> Saving...'
+                    );
+                }
+            }
+        });
+
+        // ===== Reset password =====
+        $btnResetPw.addEventListener('click', async () => {
+            const u = selected?.username;
+            const newPassword = ($password.value || '').trim();
+
+            if (!u){ showToast('err','No selected','Chưa chọn account.'); return; }
+            if (!newPassword){
+                showToast('err','Thiếu password','Nhập password mới vào ô Password rồi bấm Reset.');
+                $password.focus(); return;
+            }
+
+            setLoading($btnResetPw, true,
+                '<i class="bi bi-key"></i> Reset password',
+                '<i class="bi bi-arrow-repeat"></i> Resetting...'
+            );
+
+            try{
+                const res = await fetch('/api/admin/accounts/' + encodeURIComponent(u) + '/reset-password', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/json' },
+                    body: JSON.stringify({ newPassword })
+                });
+
+                const json = await res.json().catch(() => null);
+                if (!res.ok || !json || json.code !== 0){
+                    const msg = json?.message ?? `Reset fail (HTTP ${res.status})`;
+                    showToast('err','Reset fail', msg);
+                    return;
+                }
+
+                showToast('ok','Reset OK', u);
+                $password.value = '';
+            }catch{
+                showToast('err','Lỗi mạng / server','Reset password fail');
+            }finally{
+                setLoading($btnResetPw, false,
+                    '<i class="bi bi-key"></i> Reset password',
+                    '<i class="bi bi-arrow-repeat"></i> Resetting...'
+                );
+            }
+        });
+
+        // ===== Toggle active =====
+        $btnToggleActive.addEventListener('click', async () => {
+            const u = selected?.username;
+            if (!u){ showToast('err','No selected','Chưa chọn account.'); return; }
+
+            const next = !(!!selected.isActive);
+
+            setLoading($btnToggleActive, true,
+                '<i class="bi bi-toggle2-on"></i> Toggle Active',
+                '<i class="bi bi-arrow-repeat"></i> Updating...'
+            );
+
+            try{
+                const res = await fetch('/api/admin/accounts/' + encodeURIComponent(u) + '/active?active=' + (next ? 'true' : 'false'), {
+                    method:'PATCH'
+                });
+
+                const json = await res.json().catch(() => null);
+                if (!res.ok || !json || json.code !== 0){
+                    const msg = json?.message ?? `Toggle fail (HTTP ${res.status})`;
+                    showToast('err','Toggle fail', msg);
+                    return;
+                }
+
+                showToast('ok','Active changed', `${u} => ${next ? 'Active' : 'Disabled'}`);
+                await loadAccounts();
+                const a = accounts.find(x => (x.username||'').toLowerCase() === u.toLowerCase());
+                if (a) setModeEdit(a);
+            }catch{
+                showToast('err','Lỗi mạng / server','Toggle fail');
+            }finally{
+                setLoading($btnToggleActive, false,
+                    '<i class="bi bi-toggle2-on"></i> Toggle Active',
+                    '<i class="bi bi-arrow-repeat"></i> Updating...'
+                );
+            }
+        });
+
+        // ===== Delete =====
+        $btnDelete.addEventListener('click', async () => {
+            const u = selected?.username;
+            if (!u){ showToast('err','No selected','Chưa chọn account.'); return; }
+
+            if (!confirm('Xóa account "' + u + '" ?')) return;
+
+            setLoading($btnDelete, true,
+                '<i class="bi bi-trash"></i> Delete',
+                '<i class="bi bi-arrow-repeat"></i> Deleting...'
+            );
+
+            try{
+                const res = await fetch('/api/admin/accounts/' + encodeURIComponent(u), { method:'DELETE' });
+                const json = await res.json().catch(() => null);
+
+                if (!res.ok || !json || json.code !== 0){
+                    const msg = json?.message ?? `Delete fail (HTTP ${res.status})`;
+                    showToast('err','Delete fail', msg);
+                    return;
+                }
+
+                showToast('ok','Deleted', u);
+                setModeCreate();
+                await loadAccounts();
+            }catch{
+                showToast('err','Lỗi mạng / server','Delete fail');
+            }finally{
+                setLoading($btnDelete, false,
+                    '<i class="bi bi-trash"></i> Delete',
+                    '<i class="bi bi-arrow-repeat"></i> Deleting...'
+                );
+            }
+        });
+
+        // init
+        setModeCreate();
+        loadAccounts();
+    </script>
+}

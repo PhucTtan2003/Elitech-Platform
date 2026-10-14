@@ -1,0 +1,1649 @@
+﻿@{
+    ViewData["Title"] = "SMS định kỳ nhiệt độ";
+    Layout = "_Layout";
+}
+
+<style>
+    :root {
+        --sms-o: #F58220;
+        --sms-o2: #E36F15;
+        --sms-b: #2563eb;
+        --sms-ok: #10b981;
+        --sms-warn: #f59e0b;
+        --sms-danger: #ef4444;
+        --sms-ink: #0f172a;
+        --sms-mut: #64748b;
+        --sms-card: rgba(255,255,255,.92);
+        --sms-line: rgba(148,163,184,.25);
+        --sms-shadow: 0 24px 70px rgba(15,23,42,.12);
+        --sms-r: 26px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: radial-gradient(900px 520px at 10% 0%, rgba(245,130,32,.18), transparent 62%), radial-gradient(820px 500px at 92% 12%, rgba(37,99,235,.12), transparent 56%), linear-gradient(180deg, #f8fafc 0%, #eef3fb 100%);
+        color: var(--sms-ink);
+    }
+
+    .sms-page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 20px 18px 36px;
+    }
+
+    .sms-hero {
+        border-radius: 32px;
+        padding: 22px;
+        background: radial-gradient(120% 160% at 12% 8%, rgba(245,130,32,.24), transparent 56%), radial-gradient(120% 160% at 92% 18%, rgba(37,99,235,.13), transparent 52%), linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.58));
+        border: 1px solid var(--sms-line);
+        box-shadow: var(--sms-shadow);
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .sms-hero::after {
+            content: "";
+            position: absolute;
+            inset: -80% -45%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+            transform: rotate(18deg);
+            animation: shine 8s linear infinite;
+            pointer-events: none;
+        }
+
+    @@keyframes shine {
+        0% {
+            transform: translateX(-18%) rotate(18deg);
+        }
+
+        100% {
+            transform: translateX(18%) rotate(18deg);
+        }
+    }
+
+    .sms-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .sms-icon {
+        width: 74px;
+        height: 74px;
+        border-radius: 24px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 31px;
+        background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.5), transparent 45%), linear-gradient(135deg, var(--sms-o), var(--sms-o2));
+        box-shadow: 0 20px 52px rgba(245,130,32,.28);
+    }
+
+    .sms-title {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 1000;
+        letter-spacing: -.03em;
+    }
+
+    .sms-sub {
+        margin-top: 6px;
+        color: var(--sms-mut);
+        font-weight: 850;
+        line-height: 1.35rem;
+    }
+
+    .sms-hero-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .sms-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,.75);
+        border: 1px solid var(--sms-line);
+        box-shadow: 0 12px 28px rgba(15,23,42,.08);
+        color: #334155;
+        font-weight: 950;
+        font-size: .84rem;
+        white-space: nowrap;
+    }
+
+    .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        box-shadow: 0 0 0 4px rgba(148,163,184,.16);
+    }
+
+        .dot.ok {
+            background: var(--sms-ok);
+            box-shadow: 0 0 0 4px rgba(16,185,129,.14);
+        }
+
+        .dot.warn {
+            background: var(--sms-warn);
+            box-shadow: 0 0 0 4px rgba(245,158,11,.14);
+        }
+
+        .dot.bad {
+            background: var(--sms-danger);
+            box-shadow: 0 0 0 4px rgba(239,68,68,.14);
+        }
+
+    .sms-grid {
+        display: grid;
+        grid-template-columns: 420px 1fr;
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .sms-card {
+        background: var(--sms-card);
+        border: 1px solid rgba(226,232,240,.95);
+        border-radius: var(--sms-r);
+        box-shadow: var(--sms-shadow);
+        backdrop-filter: blur(14px);
+        overflow: hidden;
+        position: relative;
+    }
+
+        .sms-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--sms-o), rgba(37,99,235,.58), rgba(16,185,129,.55));
+        }
+
+    .sms-card-head {
+        padding: 18px 18px 12px;
+        border-bottom: 1px solid rgba(226,232,240,.9);
+    }
+
+    .sms-card-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 1000;
+        letter-spacing: -.02em;
+    }
+
+    .sms-card-sub {
+        margin-top: 5px;
+        color: var(--sms-mut);
+        font-weight: 800;
+        font-size: .9rem;
+    }
+
+    .sms-card-body {
+        padding: 18px;
+    }
+
+    .status-box {
+        border-radius: 22px;
+        padding: 14px;
+        border: 1px solid rgba(148,163,184,.22);
+        background: rgba(248,250,252,.88);
+        margin-bottom: 14px;
+    }
+
+    .status-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .status-name {
+        font-weight: 1000;
+        font-size: 1rem;
+    }
+
+    .status-desc {
+        color: var(--sms-mut);
+        font-weight: 800;
+        font-size: .88rem;
+        margin-top: 4px;
+        line-height: 1.28rem;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-weight: 1000;
+        font-size: .78rem;
+        background: #fff;
+        border: 1px solid rgba(226,232,240,.95);
+        white-space: nowrap;
+    }
+
+        .badge.ok {
+            color: #047857;
+            background: #ecfdf5;
+            border-color: rgba(16,185,129,.25);
+        }
+
+        .badge.warn {
+            color: #92400e;
+            background: #fffbeb;
+            border-color: rgba(245,158,11,.25);
+        }
+
+        .badge.bad {
+            color: #991b1b;
+            background: #fef2f2;
+            border-color: rgba(239,68,68,.25);
+        }
+
+    .form-row {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 13px;
+    }
+
+    .form-label {
+        color: #334155;
+        font-weight: 1000;
+        font-size: .86rem;
+    }
+
+    .sms-input,
+    .sms-select {
+        width: 100%;
+        min-height: 44px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.28);
+        background: rgba(255,255,255,.96);
+        padding: 0 12px;
+        font-weight: 900;
+        color: #0f172a;
+        outline: none;
+        box-shadow: inset 0 0 0 1px rgba(226,232,240,.7);
+    }
+
+        .sms-input:focus,
+        .sms-select:focus {
+            border-color: rgba(245,130,32,.58);
+            box-shadow: 0 0 0 5px rgba(245,130,32,.18);
+        }
+
+    .sms-btn {
+        min-height: 44px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,.26);
+        background: rgba(255,255,255,.95);
+        padding: 0 14px;
+        font-weight: 1000;
+        color: #0f172a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        box-shadow: 0 12px 28px rgba(2,6,23,.08);
+        transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .sms-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 44px rgba(2,6,23,.12);
+        }
+
+        .sms-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .sms-btn.primary {
+            border: 0;
+            color: #111;
+            background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.35), transparent 45%), linear-gradient(180deg, var(--sms-o), var(--sms-o2));
+            box-shadow: 0 16px 44px rgba(245,130,32,.22);
+        }
+
+        .sms-btn.blue {
+            border: 0;
+            color: #fff;
+            background: linear-gradient(180deg, #3b82f6, #2563eb);
+            box-shadow: 0 16px 44px rgba(37,99,235,.18);
+        }
+
+        .sms-btn.danger {
+            border: 0;
+            color: #fff;
+            background: linear-gradient(180deg, #ef4444, #dc2626);
+            box-shadow: 0 16px 44px rgba(239,68,68,.20);
+        }
+
+        .sms-btn.success {
+            border: 0;
+            color: #fff;
+            background: linear-gradient(180deg, #22c55e, #16a34a);
+            box-shadow: 0 16px 44px rgba(34,197,94,.18);
+        }
+
+        .sms-btn.mini {
+            min-height: 36px;
+            border-radius: 14px;
+            padding: 0 12px;
+            font-size: .78rem;
+        }
+
+    .btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .time-builder {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+        .time-builder input {
+            flex: 1;
+        }
+
+    .time-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 34px;
+        margin-top: 8px;
+    }
+
+    .time-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: #fff7ed;
+        color: #9a3412;
+        border: 1px solid rgba(245,130,32,.28);
+        font-weight: 1000;
+        font-size: .86rem;
+    }
+
+        .time-chip button {
+            border: 0;
+            background: transparent;
+            color: #dc2626;
+            font-weight: 1000;
+            cursor: pointer;
+        }
+
+    .phone-helper {
+        color: var(--sms-mut);
+        font-weight: 800;
+        font-size: .82rem;
+        line-height: 1.25rem;
+    }
+
+    .phone-actions {
+        margin-top: 4px;
+    }
+
+    .phone-choice {
+        cursor: pointer;
+        user-select: none;
+    }
+
+        .phone-choice input {
+            accent-color: var(--sms-o);
+            width: 16px;
+            height: 16px;
+        }
+
+        .phone-choice.is-checked {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: rgba(16,185,129,.30);
+        }
+
+    .switch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-radius: 18px;
+        padding: 12px;
+        background: rgba(248,250,252,.9);
+        border: 1px solid rgba(226,232,240,.9);
+        margin-bottom: 14px;
+    }
+
+    .switch-label {
+        font-weight: 1000;
+    }
+
+    .switch-desc {
+        color: var(--sms-mut);
+        font-weight: 800;
+        font-size: .82rem;
+        margin-top: 3px;
+    }
+
+    .switch {
+        width: 56px;
+        height: 32px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        position: relative;
+        cursor: pointer;
+        transition: .16s ease;
+        flex: 0 0 auto;
+    }
+
+        .switch::after {
+            content: "";
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: #fff;
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            transition: .16s ease;
+            box-shadow: 0 8px 18px rgba(15,23,42,.18);
+        }
+
+        .switch.on {
+            background: var(--sms-ok);
+        }
+
+            .switch.on::after {
+                left: 27px;
+            }
+
+    .locked-panel {
+        display: none;
+        margin-bottom: 14px;
+        border-radius: 20px;
+        padding: 14px;
+        background: #fef2f2;
+        border: 1px solid rgba(239,68,68,.22);
+        color: #991b1b;
+        font-weight: 900;
+        line-height: 1.35rem;
+    }
+
+        .locked-panel.show {
+            display: block;
+        }
+
+    .table-wrap {
+        overflow: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    th, td {
+        padding: 13px 14px;
+        border-bottom: 1px solid rgba(226,232,240,.95);
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    th {
+        color: #64748b;
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-weight: 1000;
+        background: rgba(248,250,252,.92);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    td {
+        font-weight: 900;
+        color: #0f172a;
+        font-size: .9rem;
+    }
+
+    .row-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .muted {
+        color: var(--sms-mut);
+        font-weight: 850;
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-weight: 900;
+    }
+
+    .empty {
+        padding: 34px;
+        text-align: center;
+        color: var(--sms-mut);
+        font-weight: 900;
+    }
+
+    .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        display: none;
+        z-index: 99999;
+        padding: 13px 16px;
+        max-width: 520px;
+        border-radius: 16px;
+        color: #fff;
+        background: #0f172a;
+        box-shadow: 0 22px 70px rgba(2,6,23,.28);
+        font-weight: 950;
+    }
+
+        .toast.bad {
+            background: #dc2626;
+        }
+
+    @@media (max-width: 1100px) {
+        .sms-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sms-hero-right {
+            align-items: flex-start;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .sms-page {
+            padding: 14px 12px 28px;
+        }
+
+        .sms-hero-left {
+            align-items: flex-start;
+        }
+
+        .sms-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+        }
+
+        .sms-title {
+            font-size: 1.35rem;
+        }
+
+        .time-builder {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sms-btn {
+            width: 100%;
+        }
+
+            .sms-btn.mini {
+                width: auto;
+            }
+    }
+</style>
+
+<div class="sms-page">
+    <section class="sms-hero">
+        <div class="sms-hero-left">
+            <div class="sms-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <h1 class="sms-title">SMS định kỳ nhiệt độ</h1>
+                <div class="sms-sub">
+                    Cài giờ gửi tự động mỗi ngày. Đến đúng giờ, hệ thống lấy nhiệt độ gần nhất của thiết bị rồi gửi SMS.
+                </div>
+            </div>
+        </div>
+
+        <div class="sms-hero-right">
+            <div class="sms-pill" id="statusPill">
+                <span class="dot warn"></span>
+                Đang kiểm tra quyền SMS...
+            </div>
+            <div class="sms-pill" id="phonePill">
+                <span class="dot"></span>
+                Phone: —
+            </div>
+        </div>
+    </section>
+
+    <div class="sms-grid">
+        <aside class="sms-card">
+            <div class="sms-card-head">
+                <h2 class="sms-card-title">Cài đặt lịch gửi</h2>
+                <div class="sms-card-sub">Chọn thiết bị, chọn số nhận SMS, thêm các mốc giờ như 07:00, 15:00, 22:30.</div>
+            </div>
+
+            <div class="sms-card-body">
+                <div id="lockedPanel" class="locked-panel"></div>
+
+                <div class="status-box">
+                    <div class="status-main">
+                        <div>
+                            <div class="status-name" id="accountName">Tài khoản: —</div>
+                            <div class="status-desc" id="accountReason">Đang tải trạng thái SMS...</div>
+                        </div>
+                        <div id="accountBadge" class="badge warn">CHECKING</div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" class="sms-btn mini blue" id="btnRefresh">
+                            <i class="bi bi-arrow-repeat"></i> Làm mới
+                        </button>
+
+                        <button type="button" class="sms-btn mini danger" id="btnUnsubscribe">
+                            Hủy SMS
+                        </button>
+                    </div>
+                </div>
+
+                <form id="af" method="post" style="display:none;">
+                    @Html.AntiForgeryToken()
+                </form>
+
+                <div class="form-row" id="verifyBox">
+                    <label class="form-label">Xác thực số điện thoại</label>
+                    <input id="phoneInput" class="sms-input" placeholder="VD: 0987654321" autocomplete="tel" />
+
+                    <div class="btn-row">
+                        <button type="button" class="sms-btn blue" id="btnSendOtp">
+                            Gửi OTP
+                        </button>
+                    </div>
+
+                    <input id="otpInput" class="sms-input" placeholder="Nhập mã OTP" inputmode="numeric" />
+
+                    <div class="btn-row">
+                        <button type="button" class="sms-btn success" id="btnVerifyOtp">
+                            Xác thực OTP
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">Thiết bị</label>
+                    <select id="deviceSelect" class="sms-select">
+                        <option value="">Đang tải thiết bị...</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">Số điện thoại nhận SMS</label>
+
+                    <div class="phone-helper">
+                        Chọn 1 hoặc nhiều số đã lưu trong Profile. Khi tới giờ, hệ thống sẽ gửi SMS tới tất cả số đã chọn.
+                    </div>
+
+                    <div class="btn-row phone-actions">
+                        <button type="button" class="sms-btn mini blue" id="btnSelectFirstPhone">
+                            Chọn 1 số
+                        </button>
+
+                        <button type="button" class="sms-btn mini success" id="btnSelectAllPhones">
+                            Chọn tất cả
+                        </button>
+
+                        <button type="button" class="sms-btn mini" id="btnClearPhones">
+                            Bỏ chọn
+                        </button>
+                    </div>
+
+                    <div class="time-chips" id="phoneChoices">
+                        <span class="muted">Đang tải số điện thoại...</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">Giờ gửi mỗi ngày</label>
+                    <div class="time-builder">
+                        <input id="timeInput" class="sms-input" type="time" value="07:00" />
+                        <button type="button" class="sms-btn primary" id="btnAddTime">
+                            + Thêm giờ
+                        </button>
+                    </div>
+                    <div class="time-chips" id="timeChips"></div>
+                </div>
+
+                <div class="switch-row">
+                    <div>
+                        <div class="switch-label">Bật lịch này</div>
+                        <div class="switch-desc">Tắt nếu muốn lưu lịch nhưng tạm ngừng gửi.</div>
+                    </div>
+                    <div id="enabledSwitch" class="switch on"></div>
+                </div>
+
+                <input type="hidden" id="editingId" />
+
+                <div class="btn-row">
+                    <button type="button" class="sms-btn primary" id="btnSave">
+                        <i class="bi bi-save"></i> Lưu lịch
+                    </button>
+
+                    <button type="button" class="sms-btn" id="btnReset">
+                        Tạo mới
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="sms-card">
+            <div class="sms-card-head">
+                <h2 class="sms-card-title">Danh sách lịch đã cài</h2>
+                <div class="sms-card-sub">Mỗi dòng là một thiết bị + nhiều mốc giờ gửi trong ngày + danh sách số nhận SMS.</div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Thiết bị</th>
+                            <th>GUID</th>
+                            <th>Số nhận</th>
+                            <th>Giờ gửi</th>
+                            <th>Trạng thái</th>
+                            <th>Cập nhật</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTb">
+                        <tr>
+                            <td colspan="7" class="empty">Đang tải lịch...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    (() => {
+        const els = {
+            statusPill: document.getElementById("statusPill"),
+            phonePill: document.getElementById("phonePill"),
+            accountName: document.getElementById("accountName"),
+            accountReason: document.getElementById("accountReason"),
+            accountBadge: document.getElementById("accountBadge"),
+            lockedPanel: document.getElementById("lockedPanel"),
+
+            verifyBox: document.getElementById("verifyBox"),
+            phoneInput: document.getElementById("phoneInput"),
+            otpInput: document.getElementById("otpInput"),
+            btnSendOtp: document.getElementById("btnSendOtp"),
+            btnVerifyOtp: document.getElementById("btnVerifyOtp"),
+            btnUnsubscribe: document.getElementById("btnUnsubscribe"),
+            btnRefresh: document.getElementById("btnRefresh"),
+
+            deviceSelect: document.getElementById("deviceSelect"),
+
+            phoneChoices: document.getElementById("phoneChoices"),
+            btnSelectFirstPhone: document.getElementById("btnSelectFirstPhone"),
+            btnSelectAllPhones: document.getElementById("btnSelectAllPhones"),
+            btnClearPhones: document.getElementById("btnClearPhones"),
+
+            timeInput: document.getElementById("timeInput"),
+            btnAddTime: document.getElementById("btnAddTime"),
+            timeChips: document.getElementById("timeChips"),
+            enabledSwitch: document.getElementById("enabledSwitch"),
+            editingId: document.getElementById("editingId"),
+            btnSave: document.getElementById("btnSave"),
+            btnReset: document.getElementById("btnReset"),
+
+            scheduleTb: document.getElementById("scheduleTb"),
+            toast: document.getElementById("toast")
+        };
+
+        let accountStatus = null;
+        let devices = [];
+        let schedules = [];
+        let times = ["07:00", "15:00"];
+        let selectedPhones = [];
+        let enabled = true;
+        let toastTimer = null;
+
+        function token() {
+            const el = document.querySelector('#af input[name="__RequestVerificationToken"]');
+            return el ? el.value : "";
+        }
+
+        function esc(v) {
+            return String(v ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function showToast(message, bad = false) {
+            if (!els.toast) {
+                console.log(message);
+                return;
+            }
+
+            els.toast.textContent = message || "";
+            els.toast.classList.toggle("bad", !!bad);
+            els.toast.style.display = "block";
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                els.toast.style.display = "none";
+            }, 2800);
+        }
+
+        function getProp(obj, ...names) {
+            for (const n of names) {
+                if (obj && obj[n] !== undefined && obj[n] !== null) return obj[n];
+            }
+            return null;
+        }
+
+        function fmtDate(v) {
+            if (!v) return "—";
+
+            const d = new Date(v);
+            if (Number.isNaN(d.getTime())) {
+                return String(v).replace("T", " ").replace("Z", "");
+            }
+
+            return d.toISOString().replace("T", " ").replace("Z", "").slice(0, 19);
+        }
+
+        function normalizePhones(arr) {
+            return Array.from(new Set((arr || [])
+                .map(x => String(x || "").trim())
+                .filter(Boolean)));
+        }
+
+        function accountPhones() {
+            const list = Array.isArray(accountStatus?.phoneNumbers)
+                ? accountStatus.phoneNumbers
+                : [];
+
+            if (list.length) return normalizePhones(list);
+
+            return normalizePhones([accountStatus?.phone]);
+        }
+
+        function schedulePhones(x) {
+            const phones = getProp(x, "phoneNumbers", "PhoneNumbers");
+
+            if (Array.isArray(phones) && phones.length) {
+                return normalizePhones(phones);
+            }
+
+            const single = getProp(x, "phone", "Phone");
+            return normalizePhones([single]);
+        }
+
+        async function getJson(url) {
+            const res = await fetch(url, {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
+            const text = await res.text();
+
+            let json = null;
+            try {
+                json = text ? JSON.parse(text) : {};
+            } catch {
+                throw new Error(text || `HTTP ${res.status}`);
+            }
+
+            if (!res.ok) {
+                throw new Error(json.message || json.reason || text || `HTTP ${res.status}`);
+            }
+
+            return json;
+        }
+
+        async function postForm(url, data) {
+            const anti = token();
+            const body = new URLSearchParams();
+
+            Object.keys(data || {}).forEach(k => body.append(k, data[k]));
+            body.append("__RequestVerificationToken", anti);
+
+            const res = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "RequestVerificationToken": anti,
+                    "Accept": "application/json"
+                },
+                body
+            });
+
+            const text = await res.text();
+
+            let json = null;
+            try {
+                json = text ? JSON.parse(text) : {};
+            } catch {
+                throw new Error(text || `HTTP ${res.status}`);
+            }
+
+            if (!res.ok) {
+                throw new Error(json.message || json.reason || text || `HTTP ${res.status}`);
+            }
+
+            return json;
+        }
+
+        async function postJson(url, data) {
+            const res = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(data || {})
+            });
+
+            const text = await res.text();
+
+            let json = null;
+            try {
+                json = text ? JSON.parse(text) : {};
+            } catch {
+                throw new Error(text || `HTTP ${res.status}`);
+            }
+
+            if (!res.ok) {
+                throw new Error(json.message || json.reason || text || `HTTP ${res.status}`);
+            }
+
+            return json;
+        }
+
+        function normalizeTime(v) {
+            const s = String(v || "").trim();
+            if (!s) return "";
+
+            const parts = s.split(":");
+            if (parts.length < 2) return "";
+
+            const h = Number(parts[0]);
+            const m = Number(parts[1]);
+
+            if (!Number.isInteger(h) || !Number.isInteger(m)) return "";
+            if (h < 0 || h > 23 || m < 0 || m > 59) return "";
+
+            return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        }
+
+        function setTimes(next) {
+            times = Array.from(
+                new Set((next || []).map(normalizeTime).filter(Boolean))
+            ).sort();
+
+            renderTimeChips();
+        }
+
+        function renderTimeChips() {
+            if (!els.timeChips) return;
+
+            if (!times.length) {
+                els.timeChips.innerHTML = `<span class="muted">Chưa có giờ gửi nào</span>`;
+                return;
+            }
+
+            els.timeChips.innerHTML = times.map(t => `
+                    <span class="time-chip">
+                        ${esc(t)}
+                        <button type="button" data-remove-time="${esc(t)}">×</button>
+                    </span>
+                `).join("");
+        }
+
+        function setSelectedPhones(next) {
+            const allowed = accountPhones();
+            const allowedSet = new Set(allowed);
+
+            selectedPhones = normalizePhones(next).filter(p => allowedSet.has(p));
+
+            renderPhoneChoices();
+        }
+
+        function renderPhoneChoices() {
+            if (!els.phoneChoices) return;
+
+            const phones = accountPhones();
+
+            if (!phones.length) {
+                selectedPhones = [];
+                els.phoneChoices.innerHTML = `<span class="muted">Chưa có số điện thoại trong Profile</span>`;
+                return;
+            }
+
+            selectedPhones = selectedPhones.filter(p => phones.includes(p));
+
+            if (!selectedPhones.length) {
+                selectedPhones = [phones[0]];
+            }
+
+            els.phoneChoices.innerHTML = phones.map(p => {
+                const checked = selectedPhones.includes(p);
+
+                return `
+                        <label class="time-chip phone-choice ${checked ? "is-checked" : ""}">
+                            <input type="checkbox" class="phone-check" value="${esc(p)}" ${checked ? "checked" : ""}>
+                            <span class="mono">${esc(p)}</span>
+                        </label>
+                    `;
+            }).join("");
+        }
+
+        function setEnabled(v) {
+            enabled = !!v;
+
+            if (els.enabledSwitch) {
+                els.enabledSwitch.classList.toggle("on", enabled);
+            }
+        }
+
+        function setFormDisabled(disabled) {
+            [
+                els.deviceSelect,
+                els.timeInput,
+                els.btnAddTime,
+                els.btnSave,
+                els.btnReset,
+                els.btnSelectFirstPhone,
+                els.btnSelectAllPhones,
+                els.btnClearPhones
+            ].forEach(x => {
+                if (x) x.disabled = !!disabled;
+            });
+
+            document.querySelectorAll(".phone-check").forEach(x => {
+                x.disabled = !!disabled;
+            });
+
+            if (els.enabledSwitch) {
+                if (disabled) {
+                    els.enabledSwitch.style.pointerEvents = "none";
+                    els.enabledSwitch.style.opacity = ".55";
+                } else {
+                    els.enabledSwitch.style.pointerEvents = "";
+                    els.enabledSwitch.style.opacity = "";
+                }
+            }
+        }
+
+        function renderStatus() {
+            const s = accountStatus || {};
+            const can = !!s.canUsePeriodicSms;
+            const phones = accountPhones();
+
+            if (els.accountName) {
+                els.accountName.textContent = `Tài khoản: ${s.username || "—"}`;
+            }
+
+            if (els.accountReason) {
+                els.accountReason.textContent = s.reason || "Không đọc được trạng thái SMS.";
+            }
+
+            if (els.phonePill) {
+                const phoneText = phones.length ? `${phones.length} số: ${phones.join(", ")}` : "—";
+                els.phonePill.innerHTML = `<span class="dot ${phones.length ? "ok" : "warn"}"></span> Phone: ${esc(phoneText)}`;
+            }
+
+            renderPhoneChoices();
+
+            if (can) {
+                if (els.statusPill) {
+                    els.statusPill.innerHTML = `<span class="dot ok"></span> SMS định kỳ đang hoạt động`;
+                }
+
+                if (els.accountBadge) {
+                    els.accountBadge.className = "badge ok";
+                    els.accountBadge.textContent = "ACTIVE";
+                }
+
+                if (els.lockedPanel) {
+                    els.lockedPanel.classList.remove("show");
+                    els.lockedPanel.textContent = "";
+                }
+
+                setFormDisabled(false);
+            } else {
+                const status = String(s.status || "OFF").toUpperCase();
+                const bad = !s.smsSelfRegisterAllowed;
+
+                if (els.statusPill) {
+                    els.statusPill.innerHTML = `<span class="dot ${bad ? "bad" : "warn"}"></span> ${esc(s.reason || "Chưa sẵn sàng")}`;
+                }
+
+                if (els.accountBadge) {
+                    els.accountBadge.className = bad ? "badge bad" : "badge warn";
+                    els.accountBadge.textContent = bad ? "ADMIN LOCKED" : status;
+                }
+
+                if (els.lockedPanel) {
+                    els.lockedPanel.classList.add("show");
+                    els.lockedPanel.textContent = s.reason || "Bạn chưa thể dùng SMS định kỳ.";
+                }
+
+                setFormDisabled(true);
+            }
+
+            if (els.verifyBox) {
+                if (s.phoneVerified && phones.length) {
+                    els.verifyBox.style.display = "none";
+                    if (els.phoneInput) els.phoneInput.value = phones[0] || "";
+                } else {
+                    els.verifyBox.style.display = "";
+                }
+            }
+        }
+
+        function renderDevices() {
+            if (!els.deviceSelect) return;
+
+            if (!devices.length) {
+                els.deviceSelect.innerHTML = `<option value="">Bạn chưa có thiết bị được gán</option>`;
+                return;
+            }
+
+            const currentValue = els.deviceSelect.value;
+
+            els.deviceSelect.innerHTML = devices.map((d, index) => {
+                const guid = d.deviceGuid || d.DeviceGuid || "";
+                const name = d.deviceName || d.DeviceName || guid;
+                const selected = currentValue
+                    ? (currentValue === guid ? "selected" : "")
+                    : (index === 0 ? "selected" : "");
+
+                return `<option value="${esc(guid)}" data-name="${esc(name)}" ${selected}>
+                        ${esc(name)} • ${esc(guid)}
+                    </option>`;
+            }).join("");
+
+            if (!els.deviceSelect.value && devices[0]) {
+                const firstGuid = devices[0].deviceGuid || devices[0].DeviceGuid || "";
+                els.deviceSelect.value = firstGuid;
+            }
+        }
+
+        function statusBadge(x) {
+            const isEnabled = !!getProp(x, "enabled", "Enabled");
+
+            if (isEnabled) return `<span class="badge ok">🟢 Đang bật</span>`;
+            return `<span class="badge warn">🟠 Đang tắt</span>`;
+        }
+
+        function renderSchedules() {
+            if (!els.scheduleTb) return;
+
+            if (!schedules.length) {
+                els.scheduleTb.innerHTML = `<tr><td colspan="7" class="empty">Chưa có lịch SMS định kỳ nào.</td></tr>`;
+                return;
+            }
+
+            els.scheduleTb.innerHTML = schedules.map(x => {
+                const id = getProp(x, "id", "Id") || "";
+                const deviceGuid = getProp(x, "deviceGuid", "DeviceGuid") || "";
+                const deviceName = getProp(x, "deviceName", "DeviceName") || deviceGuid;
+                const phones = schedulePhones(x);
+                const scheduleTimes = getProp(x, "scheduleTimes", "ScheduleTimes") || [];
+                const updatedAt = getProp(x, "updatedAtUtc", "UpdatedAtUtc");
+
+                const phoneText = phones.length ? phones.join(", ") : "—";
+                const timeText = Array.isArray(scheduleTimes) && scheduleTimes.length
+                    ? scheduleTimes.join(", ")
+                    : "—";
+
+                return `
+                        <tr>
+                            <td>${esc(deviceName)}</td>
+                            <td><span class="mono">${esc(deviceGuid)}</span></td>
+                            <td><span class="mono">${esc(phoneText)}</span></td>
+                            <td><span class="mono">${esc(timeText)}</span></td>
+                            <td>${statusBadge(x)}</td>
+                            <td>${esc(fmtDate(updatedAt))}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button type="button" class="sms-btn mini" data-act="edit" data-id="${esc(id)}">Sửa</button>
+                                    <button type="button" class="sms-btn mini blue" data-act="test" data-id="${esc(id)}">Test gửi</button>
+                                    <button type="button" class="sms-btn mini danger" data-act="delete" data-id="${esc(id)}">Xóa</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+            }).join("");
+        }
+
+        function resetForm() {
+            if (els.editingId) els.editingId.value = "";
+            if (els.deviceSelect) els.deviceSelect.value = "";
+
+            setTimes(["07:00", "15:00"]);
+            setSelectedPhones(accountPhones().slice(0, 1));
+            setEnabled(true);
+        }
+
+        function selectedDeviceName() {
+            const opt = els.deviceSelect?.options[els.deviceSelect.selectedIndex];
+            return opt ? opt.getAttribute("data-name") || opt.textContent || "" : "";
+        }
+
+        async function loadStatus() {
+            try {
+                accountStatus = await getJson("/SmsPeriodic/status");
+
+                selectedPhones = selectedPhones.filter(p => accountPhones().includes(p));
+
+                if (!selectedPhones.length && accountPhones().length) {
+                    selectedPhones = [accountPhones()[0]];
+                }
+
+                renderStatus();
+            } catch (err) {
+                accountStatus = {
+                    ok: false,
+                    username: "—",
+                    phone: null,
+                    phoneNumbers: [],
+                    phoneVerified: false,
+                    smsSelfRegisterAllowed: false,
+                    smsAlertEnabled: false,
+                    smsSubActive: false,
+                    status: "OFF",
+                    canUsePeriodicSms: false,
+                    reason: err.message || "Không tải được trạng thái SMS."
+                };
+
+                renderStatus();
+                showToast(accountStatus.reason, true);
+            }
+        }
+
+        async function loadDevices() {
+            try {
+                if (els.deviceSelect) {
+                    els.deviceSelect.innerHTML = `<option value="">Đang tải thiết bị...</option>`;
+                }
+
+                const json = await getJson("/api/elitech/my-devices");
+
+                if (json.code && json.code !== 0) {
+                    throw new Error(json.message || "API my-devices lỗi");
+                }
+
+                devices = Array.isArray(json.data) ? json.data : [];
+
+                renderDevices();
+
+                if (!devices.length) {
+                    showToast("Tài khoản này chưa được gán thiết bị.", true);
+                }
+            } catch (err) {
+                devices = [];
+
+                if (els.deviceSelect) {
+                    els.deviceSelect.innerHTML = `<option value="">Không tải được thiết bị</option>`;
+                }
+
+                showToast(err.message || "Không tải được thiết bị", true);
+            }
+        }
+
+        async function loadSchedules() {
+            try {
+                if (els.scheduleTb) {
+                    els.scheduleTb.innerHTML = `<tr><td colspan="7" class="empty">Đang tải lịch...</td></tr>`;
+                }
+
+                const json = await getJson("/api/elitech/sms-temperature-schedules");
+
+                schedules = Array.isArray(json.data) ? json.data : [];
+
+                renderSchedules();
+            } catch (err) {
+                schedules = [];
+
+                if (els.scheduleTb) {
+                    els.scheduleTb.innerHTML = `<tr><td colspan="7" class="empty">Không tải được lịch SMS định kỳ.</td></tr>`;
+                }
+
+                showToast(err.message || "Không tải được lịch SMS", true);
+            }
+        }
+
+        async function loadAll() {
+            await Promise.all([
+                loadStatus(),
+                loadDevices(),
+                loadSchedules()
+            ]);
+        }
+
+        els.btnRefresh?.addEventListener("click", loadAll);
+
+        els.btnSelectFirstPhone?.addEventListener("click", () => {
+            const phones = accountPhones();
+            setSelectedPhones(phones.length ? [phones[0]] : []);
+        });
+
+        els.btnSelectAllPhones?.addEventListener("click", () => {
+            setSelectedPhones(accountPhones());
+        });
+
+        els.btnClearPhones?.addEventListener("click", () => {
+            setSelectedPhones([]);
+        });
+
+        els.phoneChoices?.addEventListener("change", e => {
+            const ck = e.target.closest(".phone-check");
+            if (!ck) return;
+
+            const phone = ck.value;
+
+            if (ck.checked) {
+                setSelectedPhones([...selectedPhones, phone]);
+            } else {
+                setSelectedPhones(selectedPhones.filter(x => x !== phone));
+            }
+        });
+
+        els.btnSendOtp?.addEventListener("click", async () => {
+            const phone = (els.phoneInput?.value || "").trim();
+
+            if (!phone) {
+                showToast("Vui lòng nhập số điện thoại.", true);
+                return;
+            }
+
+            try {
+                els.btnSendOtp.disabled = true;
+
+                const r = await postForm("/Sms/send-code", { phone });
+
+                if (r.ok === false) {
+                    showToast(r.message || "Gửi OTP thất bại", true);
+                    return;
+                }
+
+                showToast(r.message || "Đã gửi OTP.");
+            } catch (err) {
+                showToast(err.message || "Gửi OTP thất bại", true);
+            } finally {
+                els.btnSendOtp.disabled = false;
+            }
+        });
+
+        els.btnVerifyOtp?.addEventListener("click", async () => {
+            const code = (els.otpInput?.value || "").trim();
+
+            if (!code) {
+                showToast("Vui lòng nhập mã OTP.", true);
+                return;
+            }
+
+            try {
+                els.btnVerifyOtp.disabled = true;
+
+                const r = await postForm("/Sms/verify", { code });
+
+                if (r.ok === false) {
+                    showToast(r.message || "Xác thực thất bại", true);
+                    return;
+                }
+
+                showToast(r.message || "Xác thực thành công.");
+                await loadStatus();
+            } catch (err) {
+                showToast(err.message || "Xác thực thất bại", true);
+            } finally {
+                els.btnVerifyOtp.disabled = false;
+            }
+        });
+
+        els.btnUnsubscribe?.addEventListener("click", async () => {
+            if (!confirm("Bạn muốn hủy dịch vụ SMS? Sau khi hủy, lịch định kỳ sẽ không gửi nữa.")) return;
+
+            try {
+                els.btnUnsubscribe.disabled = true;
+
+                const r = await postForm("/Sms/unsubscribe", {});
+
+                showToast(r.message || "Đã hủy SMS.");
+
+                await Promise.all([
+                    loadStatus(),
+                    loadSchedules()
+                ]);
+            } catch (err) {
+                showToast(err.message || "Hủy SMS thất bại", true);
+            } finally {
+                els.btnUnsubscribe.disabled = false;
+            }
+        });
+
+        els.btnAddTime?.addEventListener("click", () => {
+            const t = normalizeTime(els.timeInput?.value);
+
+            if (!t) {
+                showToast("Giờ không hợp lệ.", true);
+                return;
+            }
+
+            setTimes([...times, t]);
+        });
+
+        els.timeChips?.addEventListener("click", e => {
+            const btn = e.target.closest("button[data-remove-time]");
+            if (!btn) return;
+
+            const t = btn.getAttribute("data-remove-time");
+            setTimes(times.filter(x => x !== t));
+        });
+
+        els.enabledSwitch?.addEventListener("click", () => {
+            if (els.btnSave?.disabled) return;
+            setEnabled(!enabled);
+        });
+
+        els.btnReset?.addEventListener("click", resetForm);
+
+        els.btnSave?.addEventListener("click", async () => {
+            const deviceGuid = els.deviceSelect?.value || "";
+
+            if (!accountStatus?.canUsePeriodicSms) {
+                showToast(accountStatus?.reason || "Bạn chưa thể dùng SMS định kỳ.", true);
+                return;
+            }
+
+            if (!deviceGuid) {
+                showToast("Vui lòng chọn thiết bị.", true);
+                return;
+            }
+
+            if (!selectedPhones.length) {
+                showToast("Vui lòng chọn ít nhất 1 số điện thoại nhận SMS.", true);
+                return;
+            }
+
+            if (!times.length) {
+                showToast("Vui lòng thêm ít nhất 1 giờ gửi.", true);
+                return;
+            }
+
+            const payload = {
+                deviceGuid,
+                deviceName: selectedDeviceName(),
+                phoneNumbers: selectedPhones,
+                phone: selectedPhones[0] || "",
+                scheduleTimes: times,
+                enabled
+            };
+
+            try {
+                els.btnSave.disabled = true;
+
+                const r = await postJson("/api/elitech/sms-temperature-schedules", payload);
+
+                if (r.code && r.code !== 0) {
+                    showToast(r.message || "Lưu lịch thất bại", true);
+                    return;
+                }
+
+                showToast("Đã lưu lịch SMS định kỳ.");
+
+                resetForm();
+
+                await Promise.all([
+                    loadSchedules(),
+                    loadStatus()
+                ]);
+            } catch (err) {
+                showToast(err.message || "Lưu lịch thất bại", true);
+            } finally {
+                els.btnSave.disabled = false;
+                renderStatus();
+            }
+        });
+
+        els.scheduleTb?.addEventListener("click", async e => {
+            const btn = e.target.closest("button[data-act]");
+            if (!btn) return;
+
+            const act = btn.getAttribute("data-act");
+            const id = btn.getAttribute("data-id");
+
+            if (!id) return;
+
+            const row = schedules.find(x => String(getProp(x, "id", "Id") || "") === id);
+
+            if (act === "edit") {
+                if (!row) return;
+
+                const deviceGuid = getProp(row, "deviceGuid", "DeviceGuid") || "";
+                const scheduleTimes = getProp(row, "scheduleTimes", "ScheduleTimes") || [];
+                const isEnabled = !!getProp(row, "enabled", "Enabled");
+                const phones = schedulePhones(row);
+
+                if (els.editingId) els.editingId.value = id;
+                if (els.deviceSelect) els.deviceSelect.value = deviceGuid;
+
+                setTimes(scheduleTimes);
+                setSelectedPhones(phones.length ? phones : accountPhones().slice(0, 1));
+                setEnabled(isEnabled);
+
+                showToast("Đã đưa lịch vào form để sửa.");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                return;
+            }
+
+            if (act === "test") {
+                if (!confirm("Gửi test SMS ngay bây giờ?")) return;
+
+                try {
+                    btn.disabled = true;
+
+                    await postJson(`/api/elitech/sms-temperature-schedules/${encodeURIComponent(id)}/test-send`, {});
+
+                    showToast("Đã chạy test gửi. Kiểm tra log SMS.");
+                } catch (err) {
+                    showToast(err.message || "Test gửi thất bại", true);
+                } finally {
+                    btn.disabled = false;
+                }
+
+                return;
+            }
+
+            if (act === "delete") {
+                if (!confirm("Xóa lịch SMS định kỳ này?")) return;
+
+                try {
+                    btn.disabled = true;
+
+                    const res = await fetch(`/api/elitech/sms-temperature-schedules/${encodeURIComponent(id)}`, {
+                        method: "DELETE",
+                        credentials: "same-origin",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    });
+
+                    const text = await res.text();
+
+                    let json = null;
+                    try {
+                        json = text ? JSON.parse(text) : {};
+                    } catch {
+                        json = null;
+                    }
+
+                    if (!res.ok) {
+                        throw new Error(json?.message || json?.reason || text || `HTTP ${res.status}`);
+                    }
+
+                    showToast("Đã xóa lịch.");
+
+                    await loadSchedules();
+                } catch (err) {
+                    showToast(err.message || "Xóa lịch thất bại", true);
+                } finally {
+                    btn.disabled = false;
+                }
+
+                return;
+            }
+        });
+
+        setTimes(times);
+        setEnabled(enabled);
+        loadAll();
+    })();
+</script>

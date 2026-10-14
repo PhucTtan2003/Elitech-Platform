@@ -1,0 +1,1179 @@
+﻿@using Elitech.Models
+@{
+    ViewData["Title"] = "⚠️ Alert Thresholds";
+    var devices = ViewBag.Devices as List<Elitech.Models.ElitechDeviceAssignment> ?? new();
+}
+
+<style>
+    :root {
+        --brand: #F58220;
+        --brand-600: #e36f15;
+        --brand-50: #fff6ec;
+        --ink: #0b1220;
+        --muted: #64748b;
+        --page: #fafafa;
+        --glass: rgba(255,255,255,.82);
+        --glass2: rgba(255,255,255,.92);
+        --stroke: rgba(15,23,42,.10);
+        --stroke2: rgba(15,23,42,.08);
+        --shadow: 0 18px 52px rgba(2,6,23,.12);
+        --shadow2: 0 10px 24px rgba(2,6,23,.10);
+        --radius: 18px;
+        --ok: #10B981;
+        --warn: #F59E0B;
+        --crit: #EF4444;
+        --ring: rgba(245,130,32,.22);
+        --ring2: rgba(59,130,246,.18);
+        --ring3: rgba(16,185,129,.16);
+    }
+
+    body {
+        background: radial-gradient(900px 520px at -10% -10%, var(--brand-50) 0%, transparent 60%), radial-gradient(900px 520px at 110% 120%, #fef3c7 0%, transparent 60%), radial-gradient(900px 520px at 60% 0%, rgba(59,130,246,.10) 0%, transparent 60%), linear-gradient(180deg,#fff,var(--page));
+    }
+
+    .wrap {
+        min-height: 100vh;
+        padding: 22px 24px 28px;
+        color: var(--ink);
+        position: relative;
+    }
+
+        .wrap:before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+            mix-blend-mode: soft-light;
+            opacity: .75;
+        }
+
+        .wrap > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    /* ===== Hero ===== */
+    .hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 16px 16px;
+        border-radius: 22px;
+        background: radial-gradient(120% 140% at 10% 10%, rgba(245,130,32,.20), transparent 55%), radial-gradient(110% 140% at 90% 18%, rgba(59,130,246,.12), transparent 52%), linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.50));
+        border: 1px solid rgba(148,163,184,.22);
+        box-shadow: 0 18px 52px rgba(2,6,23,.10);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    .hero-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .hero-ico {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: radial-gradient(120% 120% at 20% 15%, rgba(255,255,255,.55), transparent 45%), linear-gradient(180deg, var(--brand), var(--brand-600));
+        box-shadow: 0 18px 46px rgba(245,130,32,.30);
+        border: 1px solid rgba(255,255,255,.22);
+        position: relative;
+        overflow: hidden;
+        flex: 0 0 auto;
+    }
+
+        .hero-ico:after {
+            content: "";
+            position: absolute;
+            inset: -45%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.30), transparent);
+            transform: rotate(22deg);
+            animation: shine 2.8s linear infinite;
+            opacity: .9;
+        }
+
+    @@keyframes shine {
+        0% {
+            transform: translateX(-40%) rotate(22deg);
+        }
+
+        100% {
+            transform: translateX(40%) rotate(22deg);
+        }
+    }
+
+    .title {
+        font-weight: 950;
+        letter-spacing: -.02em;
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .muted {
+        color: var(--muted);
+        font-weight: 800;
+    }
+
+    .hero-right {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: .48rem .78rem;
+        border-radius: 999px;
+        font-weight: 900;
+        font-size: .78rem;
+        background: rgba(255,255,255,.70);
+        border: 1px solid rgba(148,163,184,.22);
+        box-shadow: 0 10px 24px rgba(2,6,23,.06);
+        white-space: nowrap;
+        backdrop-filter: blur(10px);
+    }
+
+        .chip b {
+            font-weight: 950;
+        }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        box-shadow: 0 0 0 4px rgba(148,163,184,.14);
+    }
+
+        .dot.ok {
+            background: var(--ok);
+            box-shadow: 0 0 0 4px rgba(16,185,129,.14);
+        }
+
+    .btn-primary {
+        background: linear-gradient(180deg,var(--brand),var(--brand-600));
+        border: 0;
+        border-radius: 12px;
+        font-weight: 950;
+        padding: 10px 14px;
+        box-shadow: 0 10px 26px rgba(245,130,32,.22);
+        color: #fff;
+        transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 40px rgba(245,130,32,.26);
+            filter: saturate(1.05);
+        }
+
+    .btn-ghost {
+        background: rgba(255,255,255,.85);
+        border: 1px solid rgba(148,163,184,.32);
+        border-radius: 12px;
+        font-weight: 900;
+        padding: 10px 14px;
+        color: #0f172a;
+        transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+        box-shadow: 0 10px 24px rgba(2,6,23,.06);
+        backdrop-filter: blur(10px);
+    }
+
+        .btn-ghost:hover {
+            transform: translateY(-1px);
+            background: #fff;
+            box-shadow: 0 14px 34px rgba(2,6,23,.10);
+        }
+
+    .btn-danger {
+        border-color: rgba(239,68,68,.28);
+        color: #b91c1c;
+        background: rgba(255,255,255,.85);
+    }
+
+        .btn-danger:hover {
+            background: rgba(239,68,68,.06);
+        }
+
+    /* ===== Page grid (device cards grid) ===== */
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 14px;
+    }
+
+    @@media (min-width:1100px) {
+        .grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* Device card */
+    .card {
+        background: var(--glass);
+        border: 1px solid var(--stroke2);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+        position: relative;
+        transform: translateZ(0);
+        transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 26px 70px rgba(2,6,23,.12);
+            border-color: rgba(245,130,32,.22);
+        }
+
+        .card:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(245,130,32,.85), rgba(59,130,246,.55), rgba(16,185,129,.45));
+            opacity: .85;
+        }
+
+    .device-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 14px 10px;
+    }
+
+    .device-name {
+        font-weight: 950;
+        letter-spacing: -.01em;
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 950;
+        border: 1px solid transparent;
+        background: rgba(255,255,255,.75);
+        box-shadow: 0 10px 24px rgba(2,6,23,.06);
+        white-space: nowrap;
+    }
+
+    .pill-ok {
+        background: #d1fae5;
+        color: #065f46;
+        border-color: #a7f3d0
+    }
+
+    .pill-off {
+        background: #f1f5f9;
+        color: #475569;
+        border-color: #e2e8f0
+    }
+
+    .pill-warn {
+        background: #fef3c7;
+        color: #92400e;
+        border-color: #fde68a
+    }
+
+    .pill-crit {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca
+    }
+
+    .box {
+        padding: 0 14px 14px;
+    }
+
+    /* ===== NEW: two-column channel layout (Temp / Hum) ===== */
+    .channels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-items: start;
+    }
+
+    @@media (max-width: 860px) {
+        .channels {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .panel {
+        border-radius: 18px;
+        padding: 12px;
+        background: rgba(255,255,255,.72);
+        border: 1px solid rgba(148,163,184,.18);
+        box-shadow: 0 10px 24px rgba(2,6,23,.06);
+        overflow: hidden;
+        position: relative;
+    }
+
+        .panel:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 3px;
+            opacity: .9;
+        }
+
+        .panel.temp:before {
+            background: linear-gradient(90deg, rgba(245,130,32,.85), rgba(245,130,32,.15));
+        }
+
+        .panel.hum:before {
+            background: linear-gradient(90deg, rgba(59,130,246,.85), rgba(59,130,246,.15));
+        }
+
+    .panel-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 950;
+        letter-spacing: -.01em;
+    }
+
+        .panel-title .ico {
+            width: 34px;
+            height: 34px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: rgba(255,255,255,.70);
+            border: 1px solid rgba(148,163,184,.22);
+            box-shadow: 0 10px 22px rgba(2,6,23,.06);
+        }
+
+    .panel.temp .panel-title .ico {
+        color: var(--brand-600);
+    }
+
+    .panel.hum .panel-title .ico {
+        color: #2563eb;
+    }
+
+    .panel-sub {
+        font-size: 12px;
+        font-weight: 850;
+        color: #64748b;
+    }
+
+    .stack {
+        display: grid;
+        gap: 10px;
+    }
+
+    .chan {
+        border-radius: 14px;
+        padding: 10px;
+        background: rgba(255,255,255,.82);
+        border: 1px solid rgba(148,163,184,.18);
+        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+
+        .chan:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 34px rgba(2,6,23,.08);
+            border-color: rgba(245,130,32,.18);
+        }
+
+    .chan-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .chan-name {
+        font-size: 12px;
+        font-weight: 950;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mini-badge {
+        font-size: 11px;
+        font-weight: 950;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,.22);
+        background: rgba(255,255,255,.75);
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    .row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .lab {
+        font-size: 11px;
+        font-weight: 950;
+        color: #64748b;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+    }
+
+    .inp {
+        width: 100%;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(148,163,184,.32);
+        padding: 0 12px;
+        background: rgba(255,255,255,.92);
+        color: var(--ink);
+        font-weight: 850;
+        outline: none;
+        transition: box-shadow .12s ease, border-color .12s ease, transform .12s ease;
+    }
+
+    .panel.temp .inp:focus {
+        border-color: rgba(245,130,32,.50);
+        box-shadow: 0 0 0 4px var(--ring);
+        transform: translateY(-1px);
+    }
+
+    .panel.hum .inp:focus {
+        border-color: rgba(59,130,246,.45);
+        box-shadow: 0 0 0 4px var(--ring2);
+        transform: translateY(-1px);
+    }
+
+    .sep {
+        height: 1px;
+        background: rgba(226,232,240,.90);
+        margin: 12px 0;
+    }
+
+    /* Settings panel */
+    .engine {
+        border-radius: 18px;
+        padding: 12px;
+        background: rgba(255,255,255,.72);
+        border: 1px solid rgba(148,163,184,.18);
+        box-shadow: 0 10px 24px rgba(2,6,23,.06);
+        margin-top: 12px;
+    }
+
+    .engine-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .engine-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 950;
+    }
+
+        .engine-title .ico {
+            width: 34px;
+            height: 34px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: #0f172a;
+            background: rgba(255,255,255,.70);
+            border: 1px solid rgba(148,163,184,.22);
+            box-shadow: 0 10px 22px rgba(2,6,23,.06);
+        }
+
+    .row3 {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 10px;
+    }
+
+    @@media (max-width:520px) {
+        .row3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 12px;
+    }
+
+    .help {
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 850;
+        color: #64748b;
+        line-height: 1.35rem;
+    }
+
+    /* Toast */
+    .toastx {
+        position: fixed;
+        right: 18px;
+        top: 18px;
+        z-index: 2000;
+        min-width: 260px;
+        max-width: 380px;
+        pointer-events: none;
+    }
+
+        .toastx .t {
+            pointer-events: auto;
+            border-radius: 16px;
+            padding: 12px 14px;
+            box-shadow: 0 18px 46px rgba(2,6,23,.20);
+            margin-bottom: 10px;
+            color: #fff;
+            background: rgba(17,24,39,.94);
+            border: 1px solid rgba(255,255,255,.08);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            position: relative;
+            animation: toastIn .18s ease forwards;
+            transform: translateY(-6px);
+            opacity: 0;
+        }
+
+            .toastx .t:after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 3px;
+                background: linear-gradient(90deg, rgba(245,130,32,.9), rgba(59,130,246,.65), rgba(16,185,129,.65));
+                animation: toastProg 3.6s linear forwards;
+                transform-origin: left;
+                opacity: .9;
+            }
+
+    @@keyframes toastProg {
+        from {
+            transform: scaleX(1);
+        }
+
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    @@keyframes toastIn {
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Reduced motion */
+    @@media (prefers-reduced-motion: reduce) {
+        .hero-ico:after, .toastx .t, .toastx .t:after {
+            animation: none !important;
+        }
+
+        .card, .btn-primary, .btn-ghost, .inp, .chan {
+            transition: none !important;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .wrap {
+            padding: 18px 14px 22px;
+        }
+
+        .hero-right {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+    /* ===================== Micro Animations ===================== */
+    @@keyframes popIn {
+        0%
+
+    {
+        opacity: 0;
+        transform: translateY(10px) scale(.985);
+        filter: blur(2px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+
+    }
+
+    @@keyframes floaty {
+        0%
+
+    {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-2px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes bop {
+        0%
+
+    {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(.99);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+    }
+
+    @@keyframes pulseRing {
+        0%
+
+    {
+        box-shadow: 0 0 0 0 rgba(245,130,32,.0);
+    }
+
+    40% {
+        box-shadow: 0 0 0 6px rgba(245,130,32,.16);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(245,130,32,.0);
+    }
+
+    }
+
+    @@keyframes shakeTiny {
+        0%
+
+    {
+        transform: translateY(-1px)
+    }
+
+    30% {
+        transform: translateY(-2px)
+    }
+
+    60% {
+        transform: translateY(-1px)
+    }
+
+    100% {
+        transform: translateY(-1px)
+    }
+
+    }
+
+    /* Apply enter animation */
+    .card.is-enter {
+        animation: popIn .42s cubic-bezier(.2,.9,.2,1) both;
+        will-change: transform, opacity, filter;
+    }
+
+    /* Make panels a bit more alive */
+    .panel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 48px rgba(2,6,23,.12);
+    }
+
+    .panel {
+        transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    /* Channels hover */
+    .chan {
+        transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+    }
+
+        .chan:hover {
+            transform: translateY(-2px);
+        }
+
+    /* Input micro bounce on focus */
+    .inp:focus {
+        animation: shakeTiny .18s ease;
+    }
+
+    /* Button click pulse */
+    .btn-primary.is-pulse,
+    .btn-ghost.is-pulse {
+        animation: bop .28s ease, pulseRing .55s ease;
+    }
+
+    /* Rule pill change bop */
+    .pill.is-bop {
+        animation: bop .22s ease;
+    }
+
+    /* Optional: hero icon floaty */
+    .hero-ico {
+        animation: floaty 4.2s ease-in-out infinite;
+    }
+
+    /* Respect reduced motion */
+    @@media (prefers-reduced-motion: reduce) {
+        .card.is-enter, .btn-primary.is-pulse, .btn-ghost.is-pulse, .pill.is-bop, .hero-ico
+
+    {
+        animation: none !important;
+    }
+
+    }
+</style>
+
+<div class="wrap">
+
+    <div class="hero">
+        <div class="hero-left">
+            <div class="hero-ico"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <h2 class="title">Alert Thresholds</h2>
+                <div class="muted">Cài Đặt Temperature / Humidity cho thiết bị. Nhập xong bấm Save.</div>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <span class="chip"><span class="dot ok"></span> Assigned: <b class="mono">@devices.Count</b></span>
+            <button class="btn-ghost" id="btnReload"><i class="bi bi-arrow-repeat"></i> Reload</button>
+        </div>
+    </div>
+
+    <div class="grid" id="grid">
+        @if (devices.Count == 0)
+        {
+            <div class="card p-3">
+                <div class="muted">Bạn chưa được gán thiết bị nào.</div>
+            </div>
+        }
+        else
+        {
+            foreach (var d in devices)
+            {
+                <div class="card" data-guid="@d.DeviceGuid" data-name="@d.DeviceName">
+                    <div class="device-head">
+                        <div>
+                            <div class="device-name">@(!string.IsNullOrWhiteSpace(d.DeviceName) ? d.DeviceName : "Device")</div>
+                            <div class="muted mono" style="font-size:12px">@d.DeviceGuid</div>
+                        </div>
+                        <div>
+                            <span class="pill pill-off" data-pill><span class="dot"></span> Rule: —</span>
+                        </div>
+                    </div>
+
+                    <div class="box">
+
+                        <!-- ✅ NEW LAYOUT: Temperature | Humidity -->
+                        <div class="channels">
+
+                            <!-- Temperature panel -->
+                            <div class="panel temp">
+                                <div class="panel-hd">
+                                    <div class="panel-title">
+                                        <span class="ico"><i class="bi bi-thermometer-half"></i></span>
+                                        <div>
+                                            <div>Temperature</div>
+                                            <div class="panel-sub">TMP1..TMP4 • °C</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="stack">
+                                    <div class="chan">
+                                        <div class="chan-hd">
+                                            <div class="chan-name">TMP1</div>
+                                            <span class="mini-badge">°C</span>
+                                        </div>
+                                        <div class="row2">
+                                            <input class="inp" data-k="t1min" placeholder="Min (°C)" inputmode="decimal">
+                                            <input class="inp" data-k="t1max" placeholder="Max (°C)" inputmode="decimal">
+                                        </div>
+                                    </div>
+
+                                    <div class="chan">
+                                        <div class="chan-hd">
+                                            <div class="chan-name">TMP2</div>
+                                            <span class="mini-badge">°C</span>
+                                        </div>
+                                        <div class="row2">
+                                            <input class="inp" data-k="t2min" placeholder="Min (°C)" inputmode="decimal">
+                                            <input class="inp" data-k="t2max" placeholder="Max (°C)" inputmode="decimal">
+                                        </div>
+                                    </div>
+
+                                    <div class="chan">
+                                        <div class="chan-hd">
+                                            <div class="chan-name">TMP3</div>
+                                            <span class="mini-badge">°C</span>
+                                        </div>
+                                        <div class="row2">
+                                            <input class="inp" data-k="t3min" placeholder="Min (°C)" inputmode="decimal">
+                                            <input class="inp" data-k="t3max" placeholder="Max (°C)" inputmode="decimal">
+                                        </div>
+                                    </div>
+
+                                    <div class="chan">
+                                        <div class="chan-hd">
+                                            <div class="chan-name">TMP4</div>
+                                            <span class="mini-badge">°C</span>
+                                        </div>
+                                        <div class="row2">
+                                            <input class="inp" data-k="t4min" placeholder="Min (°C)" inputmode="decimal">
+                                            <input class="inp" data-k="t4max" placeholder="Max (°C)" inputmode="decimal">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Humidity panel -->
+                            <div class="panel hum">
+                                <div class="panel-hd">
+                                    <div class="panel-title">
+                                        <span class="ico"><i class="bi bi-droplet"></i></span>
+                                        <div>
+                                            <div>Humidity</div>
+                                            <div class="panel-sub">HUM1..HUM2 • %RH</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="stack">
+                                    <div class="chan">
+                                        <div class="chan-hd">
+                                            <div class="chan-name">HUM1</div>
+                                            <span class="mini-badge">%RH</span>
+                                        </div>
+                                        <div class="row2">
+                                            <input class="inp" data-k="h1min" placeholder="Min (%RH)" inputmode="decimal">
+                                            <input class="inp" data-k="h1max" placeholder="Max (%RH)" inputmode="decimal">
+                                        </div>
+                                    </div>
+
+                                    <div class="chan">
+                                        <div class="chan-hd">
+                                            <div class="chan-name">HUM2</div>
+                                            <span class="mini-badge">%RH</span>
+                                        </div>
+                                        <div class="row2">
+                                            <input class="inp" data-k="h2min" placeholder="Min (%RH)" inputmode="decimal">
+                                            <input class="inp" data-k="h2max" placeholder="Max (%RH)" inputmode="decimal">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Engine / Save -->
+                        <div class="engine">
+                            <div class="engine-hd">
+                                <div class="engine-title">
+                                    <span class="ico"><i class="bi bi-gear"></i></span>
+                                    <div>
+                                        <div style="font-weight:950">Engine</div>
+                                        <div class="panel-sub">Debounce / Cooldown / Enabled</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row3">
+                                <div>
+                                    <div class="lab">Debounce hits</div>
+                                    <input class="inp" data-k="debounce" placeholder="2" inputmode="numeric">
+                                </div>
+                                <div>
+                                    <div class="lab">Cooldown (sec)</div>
+                                    <input class="inp" data-k="cooldown" placeholder="180" inputmode="numeric">
+                                </div>
+                                <div>
+                                    <div class="lab">Enabled</div>
+                                    <select class="inp" data-k="enabled">
+                                        <option value="true">On</option>
+                                        <option value="false">Off</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="actions">
+                                <button class="btn-primary" data-save><i class="bi bi-cloud-check"></i> Save</button>
+                                <button class="btn-ghost btn-danger" data-clear><i class="bi bi-eraser"></i> Clear</button>
+                            </div>
+
+                            <div class="help">
+                                Lưu theo <b>user + deviceGuid</b>. Để trống nghĩa là không áp ngưỡng kênh đó.
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="toastx" id="toastx"></div>
+</div>
+
+
+<script>
+
+    (function(){
+      const toastBox = document.getElementById('toastx');
+
+      function toast(msg){
+        const el = document.createElement('div');
+        el.className = 't';
+        el.textContent = msg;
+        toastBox.appendChild(el);
+        setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .2s'; }, 2500);
+        setTimeout(()=>{ el.remove(); }, 2900);
+      }
+
+      function numOrNull(v){
+        if(v == null) return null;
+        const s = String(v).trim().replace(',', '.');
+        if(!s) return null;
+        const n = Number(s);
+        return Number.isFinite(n) ? n : null;
+      }
+      function intOr(v, def){
+        const s = String(v ?? '').trim();
+        if(!s) return def;
+        const n = parseInt(s, 10);
+        return Number.isFinite(n) ? n : def;
+      }
+
+      async function loadRules(){
+        const res = await fetch('/api/elitech/alerts/rules');
+        if(!res.ok){ toast('Không load được rules'); return; }
+        const json = await res.json();
+        const list = json?.data ?? [];
+
+        // map by guid
+        const map = new Map();
+        for(const r of list){
+          map.set((r.deviceGuid || '').toLowerCase(), r);
+        }
+
+        document.querySelectorAll('[data-guid]').forEach(card=>{
+          const guid = (card.getAttribute('data-guid') || '').toLowerCase();
+          const rule = map.get(guid);
+          const pill = card.querySelector('[data-pill]');
+
+          if(!rule){
+            pill.textContent = 'Rule: —';
+            pill.className = 'pill pill-off';
+            return;
+          }
+
+          pill.textContent = rule.enabled ? 'Rule: ON' : 'Rule: OFF';
+          pill.className = rule.enabled ? 'pill pill-ok' : 'pill pill-off';
+
+          // fill inputs
+          const t = rule.tempRanges || [];
+          const h = rule.humRanges || [];
+
+          setKV(card,'t1min', t?.[0]?.min); setKV(card,'t1max', t?.[0]?.max);
+          setKV(card,'t2min', t?.[1]?.min); setKV(card,'t2max', t?.[1]?.max);
+          setKV(card,'t3min', t?.[2]?.min); setKV(card,'t3max', t?.[2]?.max);
+          setKV(card,'t4min', t?.[3]?.min); setKV(card,'t4max', t?.[3]?.max);
+
+          setKV(card,'h1min', h?.[0]?.min); setKV(card,'h1max', h?.[0]?.max);
+          setKV(card,'h2min', h?.[1]?.min); setKV(card,'h2max', h?.[1]?.max);
+
+          setKV(card,'debounce', rule.debounceHits ?? 2);
+          setKV(card,'cooldown', rule.cooldownSeconds ?? 180);
+          setKV(card,'enabled', String(rule.enabled ?? true));
+        });
+
+        toast('Loaded rules');
+      }
+
+      function setKV(card, key, val){
+        const el = card.querySelector(`[data-k="${key}"]`);
+        if(!el) return;
+        if(el.tagName === 'SELECT') el.value = (val == null ? 'true' : String(val));
+        else el.value = (val == null ? '' : String(val));
+      }
+
+      function getKV(card, key){
+        const el = card.querySelector(`[data-k="${key}"]`);
+        return el ? el.value : '';
+      }
+
+      async function saveRule(card){
+        const guid = card.getAttribute('data-guid');
+        const name = card.getAttribute('data-name');
+
+        const tempRanges = [
+          { min: numOrNull(getKV(card,'t1min')), max: numOrNull(getKV(card,'t1max')) },
+          { min: numOrNull(getKV(card,'t2min')), max: numOrNull(getKV(card,'t2max')) },
+          { min: numOrNull(getKV(card,'t3min')), max: numOrNull(getKV(card,'t3max')) },
+          { min: numOrNull(getKV(card,'t4min')), max: numOrNull(getKV(card,'t4max')) },
+        ];
+        const humRanges = [
+          { min: numOrNull(getKV(card,'h1min')), max: numOrNull(getKV(card,'h1max')) },
+          { min: numOrNull(getKV(card,'h2min')), max: numOrNull(getKV(card,'h2max')) },
+        ];
+
+        const payload = {
+          deviceGuid: guid,
+          deviceName: name,
+          tempRanges,
+          humRanges,
+          debounceHits: intOr(getKV(card,'debounce'), 2),
+          cooldownSeconds: intOr(getKV(card,'cooldown'), 180),
+          enabled: (getKV(card,'enabled') === 'true')
+        };
+
+    const res = await fetch('/api/elitech/alerts/rules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      let errText = `Save thất bại (${res.status})`;
+      let detail = null;
+
+      try {
+        // cố gắng đọc JSON lỗi từ backend
+        const err = await res.json();
+        detail = err;
+        if (err?.message) errText += `: ${err.message}`;
+      } catch {
+        // fallback nếu backend không trả JSON
+        const t = await res.text();
+        if (t) errText += `: ${t}`;
+      }
+
+      // phân loại lỗi phổ biến để đọc phát hiểu ngay
+      switch (res.status) {
+        case 400:
+          errText = '❌ Dữ liệu gửi lên không hợp lệ (400)';
+          break;
+        case 401:
+          errText = '🔒 Bạn chưa đăng nhập hoặc session hết hạn (401)';
+          break;
+        case 403:
+          errText = '⛔ Thiết bị này chưa được gán cho bạn (403)';
+          break;
+        case 404:
+          errText = '❓ API không tồn tại (404)';
+          break;
+        case 500:
+          errText = '💥 Lỗi server (500)';
+          break;
+      }
+
+      toast(errText);
+
+      // log chi tiết cho dev
+      console.error('Save rule failed', {
+        status: res.status,
+        payload,
+        detail
+      });
+
+      return;
+    }
+
+    // OK
+    toast('Saved ✅');
+
+        const pill = card.querySelector('[data-pill]');
+        pill.textContent = payload.enabled ? 'Rule: ON' : 'Rule: OFF';
+        pill.className = payload.enabled ? 'pill pill-ok' : 'pill pill-off';
+
+        toast('Saved ✅');
+      }
+
+      function clearCard(card){
+        ['t1min','t1max','t2min','t2max','t3min','t3max','t4min','t4max','h1min','h1max','h2min','h2max'].forEach(k=>setKV(card,k,''));
+        setKV(card,'debounce', 2);
+        setKV(card,'cooldown', 180);
+        setKV(card,'enabled', 'true');
+      }
+
+      document.getElementById('btnReload')?.addEventListener('click', loadRules);
+
+      document.querySelectorAll('[data-save]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const card = btn.closest('[data-guid]');
+          if(card) saveRule(card);
+        });
+      });
+
+      document.querySelectorAll('[data-clear]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const card = btn.closest('[data-guid]');
+          if(card) { clearCard(card); toast('Cleared'); }
+        });
+      });
+
+      // init
+      loadRules();
+    })();
+</script>

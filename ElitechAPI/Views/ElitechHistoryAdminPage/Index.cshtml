@@ -1,0 +1,1824 @@
+﻿@{
+    ViewData["Title"] = "Elitech - Admin History Center";
+    Layout = "_Layout";
+
+    // View này chỉ dành cho Admin/Staff
+    var theme = "admin";
+}
+
+<style>
+    :root {
+        --adm-bg: #f4f7fb;
+        --adm-bg-deep: #07111f;
+        --adm-panel: rgba(255,255,255,.92);
+        --adm-panel-solid: #ffffff;
+        --adm-soft: #f8fafc;
+        --adm-soft-2: #eef4ff;
+        --adm-line: rgba(148,163,184,.22);
+        --adm-line-2: rgba(59,130,246,.20);
+        --adm-text: #0f172a;
+        --adm-muted: #64748b;
+        --adm-muted-2: #94a3b8;
+        --adm-blue: #2563eb;
+        --adm-blue-2: #60a5fa;
+        --adm-cyan: #22d3ee;
+        --adm-green: #22c55e;
+        --adm-amber: #f59e0b;
+        --adm-red: #ef4444;
+        --adm-violet: #8b5cf6;
+        --adm-orange: #f58220;
+        --adm-dark: #08121f;
+        --adm-shadow-lg: 0 26px 70px rgba(15,23,42,.14);
+        --adm-shadow-md: 0 18px 42px rgba(15,23,42,.10);
+        --adm-shadow-sm: 0 8px 22px rgba(15,23,42,.07);
+        --adm-radius-2xl: 30px;
+        --adm-radius-xl: 24px;
+        --adm-radius-lg: 18px;
+        --adm-radius-md: 14px;
+        --adm-radius-sm: 12px;
+        --adm-glow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+
+    @@keyframes hxPulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .48; transform: scale(.88); }
+    }
+
+    @@keyframes hxFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+
+    body {
+        margin: 0;
+        padding: 0;
+        color: var(--adm-text);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        overflow-x: hidden;
+    }
+
+    .hx-admin-page,
+    .hx-admin-page * {
+        box-sizing: border-box;
+    }
+
+    .hx-admin-page {
+        max-width: 1600px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        color: var(--adm-text);
+    }
+
+    .hx-admin-shell {
+        display: grid;
+        gap: 18px;
+    }
+
+    .hx-admin-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--adm-radius-2xl);
+        background:
+            linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,255,255,.86)),
+            radial-gradient(420px 240px at 18% 0%, rgba(96,165,250,.28), transparent 70%),
+            radial-gradient(460px 250px at 82% 10%, rgba(245,130,32,.18), transparent 70%);
+        border: 1px solid rgba(255,255,255,.62);
+        box-shadow: var(--adm-shadow-lg);
+        padding: 22px;
+    }
+
+    .hx-admin-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(90deg, transparent 0%, rgba(255,255,255,.50) 48%, transparent 100%),
+            repeating-linear-gradient(90deg, rgba(37,99,235,.04) 0 1px, transparent 1px 72px);
+        pointer-events: none;
+    }
+
+    .hx-hero-inner {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 20px;
+        align-items: stretch;
+    }
+
+    .hx-hero-main {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .hx-logo {
+        width: 68px;
+        height: 68px;
+        border-radius: 22px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 30px;
+        background: linear-gradient(135deg, var(--adm-orange), var(--adm-blue));
+        box-shadow: 0 22px 44px rgba(37,99,235,.24), inset 0 1px 0 rgba(255,255,255,.36);
+        border: 1px solid rgba(255,255,255,.42);
+        flex: 0 0 auto;
+        animation: hxFloat 4s ease-in-out infinite;
+    }
+
+    .hx-title-wrap {
+        min-width: 0;
+    }
+
+    .hx-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+        padding: 0 11px;
+        border-radius: 999px;
+        background: rgba(37,99,235,.08);
+        color: #1d4ed8;
+        border: 1px solid rgba(37,99,235,.12);
+        font-weight: 900;
+        font-size: .76rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .hx-kicker-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--adm-green);
+        box-shadow: 0 0 0 6px rgba(34,197,94,.12);
+        animation: hxPulse 1.5s ease-in-out infinite;
+    }
+
+    .hx-title {
+        margin: 10px 0 0;
+        font-size: clamp(1.5rem, 1.1rem + 1.65vw, 2.45rem);
+        line-height: 1.08;
+        font-weight: 980;
+        letter-spacing: -.045em;
+        color: #0f172a;
+    }
+
+    .hx-sub {
+        margin-top: 10px;
+        max-width: 820px;
+        color: var(--adm-muted);
+        font-size: .97rem;
+        line-height: 1.58;
+        font-weight: 650;
+    }
+
+    .hx-hero-side {
+        min-width: 320px;
+        display: grid;
+        gap: 12px;
+        align-content: space-between;
+        justify-items: end;
+    }
+
+    .hx-badge-row,
+    .hx-hero-actions,
+    .hx-badges,
+    .hx-actions {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .hx-hero-actions {
+        justify-content: flex-end;
+    }
+
+    .hx-pill,
+    .hx-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid var(--adm-line);
+        background: rgba(255,255,255,.72);
+        color: #0f172a;
+        font-size: .78rem;
+        font-weight: 900;
+        letter-spacing: .01em;
+        white-space: nowrap;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.64);
+    }
+
+    .hx-pill-admin {
+        color: #7c2d12;
+        background: rgba(245,130,32,.12);
+        border-color: rgba(245,130,32,.22);
+    }
+
+    .hx-pill-ok {
+        color: #166534;
+        background: rgba(34,197,94,.12);
+        border-color: rgba(34,197,94,.20);
+    }
+
+    .hx-pill-blue {
+        color: #1d4ed8;
+        background: rgba(37,99,235,.10);
+        border-color: rgba(37,99,235,.18);
+    }
+
+    .hx-status {
+        min-height: 44px;
+        border-radius: 16px;
+        padding: 0 14px;
+        color: #0f172a;
+        background: #ffffff;
+        box-shadow: var(--adm-shadow-sm);
+    }
+
+    .hx-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--adm-muted);
+        font-size: .86rem;
+        font-weight: 800;
+    }
+
+    .hx-meta-card {
+        display: grid;
+        gap: 8px;
+        justify-items: end;
+    }
+
+    .hx-btn {
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 13px;
+        border: 1px solid var(--adm-line);
+        background: #ffffff;
+        color: #0f172a;
+        cursor: pointer;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+        box-shadow: var(--adm-shadow-sm);
+        text-decoration: none;
+    }
+
+    .hx-btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(37,99,235,.26);
+        box-shadow: 0 16px 30px rgba(15,23,42,.12);
+        background: #f8fafc;
+    }
+
+    .hx-primary {
+        color: #fff;
+        border: none;
+        background: linear-gradient(135deg, var(--adm-orange), #fb923c);
+        box-shadow: 0 14px 30px rgba(245,130,32,.24);
+    }
+
+    .hx-primary:hover {
+        color: #fff;
+        background: linear-gradient(135deg, #ea580c, var(--adm-orange));
+    }
+
+    .hx-danger {
+        color: #fff;
+        border: none;
+        background: linear-gradient(135deg, #ef4444, #f97316);
+        box-shadow: 0 14px 30px rgba(239,68,68,.22);
+    }
+
+    .hx-outline {
+        background: #ffffff;
+    }
+
+    .hx-sm {
+        min-height: 38px;
+        padding: 0 12px;
+        font-size: .82rem;
+    }
+
+    .hx-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .hx-kpi {
+        position: relative;
+        overflow: hidden;
+        min-height: 126px;
+        padding: 18px;
+        border-radius: var(--adm-radius-xl);
+        background: rgba(255,255,255,.94);
+        border: 1px solid rgba(255,255,255,.64);
+        box-shadow: var(--adm-shadow-md);
+    }
+
+    .hx-kpi::before {
+        content: "";
+        position: absolute;
+        inset: auto -28px -38px auto;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(37,99,235,.08);
+    }
+
+    .hx-kpi:nth-child(2)::before { background: rgba(245,130,32,.10); }
+    .hx-kpi:nth-child(3)::before { background: rgba(239,68,68,.09); }
+    .hx-kpi:nth-child(4)::before { background: rgba(34,197,94,.09); }
+
+    .hx-kpi-top {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .hx-kpi-label {
+        color: var(--adm-muted);
+        font-size: .82rem;
+        font-weight: 900;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+    }
+
+    .hx-kpi-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        background: rgba(37,99,235,.10);
+        color: var(--adm-blue);
+        border: 1px solid rgba(37,99,235,.12);
+        flex: 0 0 auto;
+    }
+
+    .hx-kpi:nth-child(2) .hx-kpi-icon { background: rgba(245,130,32,.12); color: #c2410c; border-color: rgba(245,130,32,.14); }
+    .hx-kpi:nth-child(3) .hx-kpi-icon { background: rgba(239,68,68,.10); color: #dc2626; border-color: rgba(239,68,68,.14); }
+    .hx-kpi:nth-child(4) .hx-kpi-icon { background: rgba(34,197,94,.11); color: #16a34a; border-color: rgba(34,197,94,.14); }
+
+    .hx-num {
+        position: relative;
+        margin-top: 12px;
+        color: #0f172a;
+        font-size: 1.42rem;
+        line-height: 1.15;
+        font-weight: 980;
+        letter-spacing: -.035em;
+        overflow-wrap: anywhere;
+    }
+
+    .hx-kpi-foot {
+        position: relative;
+        margin-top: 8px;
+        color: var(--adm-muted);
+        font-size: .8rem;
+        font-weight: 760;
+    }
+
+    .hx-grid {
+        display: grid;
+        grid-template-columns: 410px minmax(0,1fr);
+        gap: 18px;
+        align-items: start;
+    }
+
+    .hx-left,
+    .hx-right {
+        min-width: 0;
+        display: grid;
+        gap: 18px;
+    }
+
+    .hx-card {
+        min-width: 0;
+        overflow: hidden;
+        border-radius: var(--adm-radius-xl);
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(255,255,255,.62);
+        box-shadow: var(--adm-shadow-md);
+    }
+
+    .hx-card-head {
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(148,163,184,.14);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        flex-wrap: wrap;
+        background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,250,252,.82));
+    }
+
+    .hx-card-head h3 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1rem;
+        font-weight: 960;
+        letter-spacing: -.02em;
+        color: #0f172a;
+    }
+
+    .hx-card-head h3 i {
+        color: var(--adm-blue);
+    }
+
+    .hx-card-body {
+        padding: 18px;
+        min-width: 0;
+    }
+
+    .hx-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .hx-field,
+    .hx-row2,
+    .hx-row3,
+    .hx-auto,
+    .hx-badges,
+    .hx-table-wrap {
+        min-width: 0;
+    }
+
+    .hx-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 7px;
+        color: #0f172a;
+        font-weight: 900;
+        font-size: .84rem;
+        letter-spacing: .01em;
+    }
+
+    .hx-label small {
+        color: var(--adm-muted-2);
+        font-weight: 800;
+    }
+
+    .hx-input {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        height: 45px;
+        padding: 0 12px;
+        border-radius: var(--adm-radius-sm);
+        border: 1px solid rgba(148,163,184,.28);
+        background: #ffffff;
+        color: #0f172a;
+        outline: none;
+        font-weight: 720;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+        transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    .hx-input:focus {
+        border-color: rgba(37,99,235,.42);
+        box-shadow: var(--adm-glow);
+        background: white;
+    }
+
+    .hx-input::placeholder { color: #94a3b8; }
+
+    select.hx-input option {
+        color: #0f172a;
+        background: #ffffff;
+    }
+
+    input[type="datetime-local"] {
+        color-scheme: light;
+    }
+
+    .hx-row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .hx-row3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
+
+    .hx-actions {
+        justify-content: flex-start;
+    }
+
+    .hx-sep {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(148,163,184,.24), transparent);
+        margin: 2px 0;
+    }
+
+    .hx-auto {
+        display: grid;
+        grid-template-columns: minmax(0,1fr) 110px auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .hx-switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #0f172a;
+        font-size: .84rem;
+        font-weight: 850;
+        min-width: 0;
+    }
+
+    .hx-switch input {
+        accent-color: var(--adm-blue);
+        transform: translateY(-.5px);
+    }
+
+    .hx-help,
+    .hx-hint,
+    .hx-note,
+    .hx-api,
+    .hx-muted {
+        color: var(--adm-muted);
+        font-size: .82rem;
+        line-height: 1.48;
+        font-weight: 700;
+    }
+
+    .hx-help {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(37,99,235,.06);
+        border: 1px solid rgba(37,99,235,.10);
+        color: #334155;
+    }
+
+    .hx-admin-mini {
+        display: grid;
+        gap: 10px;
+    }
+
+    .hx-mini-item {
+        display: grid;
+        grid-template-columns: 38px minmax(0,1fr);
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid rgba(148,163,184,.16);
+    }
+
+    .hx-mini-item i {
+        width: 38px;
+        height: 38px;
+        border-radius: 13px;
+        display: grid;
+        place-items: center;
+        color: #1d4ed8;
+        background: rgba(37,99,235,.08);
+    }
+
+    .hx-mini-title {
+        color: #0f172a;
+        font-weight: 930;
+        font-size: .9rem;
+    }
+
+    .hx-mini-text {
+        margin-top: 3px;
+        color: var(--adm-muted);
+        font-size: .8rem;
+        line-height: 1.45;
+        font-weight: 720;
+    }
+
+    .hx-loading {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 13px;
+        background: rgba(37,99,235,.10);
+        border: 1px solid rgba(37,99,235,.16);
+        color: #1d4ed8;
+        font-weight: 900;
+        font-size: .84rem;
+    }
+
+    .hx-chart {
+        position: relative;
+        height: 480px;
+        width: 100%;
+        border-radius: 20px;
+        background:
+            linear-gradient(180deg, #ffffff, #f8fafc),
+            repeating-linear-gradient(0deg, rgba(148,163,184,.06) 0 1px, transparent 1px 36px);
+        border: 1px solid rgba(148,163,184,.20);
+        padding: 10px;
+    }
+
+    .hx-table-wrap {
+        max-height: 520px;
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(148,163,184,.18);
+        background: #ffffff;
+    }
+
+    .hx-table {
+        width: 100%;
+        min-width: 980px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+        color: #334155;
+    }
+
+    .hx-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #eef4ff;
+        color: #0f172a;
+        font-weight: 950;
+        text-align: left;
+        border-bottom: 1px solid rgba(148,163,184,.22);
+        white-space: nowrap;
+    }
+
+    .hx-table th,
+    .hx-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(148,163,184,.10);
+        vertical-align: top;
+    }
+
+    .hx-table tbody tr:nth-child(odd) { background: rgba(248,250,252,.78); }
+    .hx-table tbody tr:hover { background: rgba(37,99,235,.07); }
+    .hx-table td { color: #0f172a; word-break: break-word; }
+
+    .hx-api {
+        margin-top: 12px;
+        min-height: 22px;
+    }
+
+    .hx-toasty {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 9999;
+        display: grid;
+        gap: 10px;
+        width: min(390px, calc(100vw - 28px));
+        pointer-events: none;
+    }
+
+    .hx-toasty > * { pointer-events: auto; }
+
+    .hx-admin-page main,
+    .hx-admin-page .container,
+    .hx-admin-page .container-lg,
+    .hx-admin-page .container-xl,
+    .hx-admin-page .container-xxl {
+        max-width: 100% !important;
+    }
+
+    @@media (max-width: 1280px) {
+        .hx-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .hx-grid { grid-template-columns: 1fr; }
+    }
+
+    @@media (max-width: 980px) {
+        .hx-admin-page {
+            padding: 14px;
+            max-width: 100% !important;
+        }
+
+        .hx-hero-inner {
+            grid-template-columns: 1fr;
+        }
+
+        .hx-hero-side {
+            min-width: 0;
+            justify-items: start;
+        }
+
+        .hx-hero-actions {
+            justify-content: flex-start;
+        }
+
+        .hx-row2,
+        .hx-row3,
+        .hx-kpi-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .hx-auto {
+            grid-template-columns: 1fr;
+        }
+
+        .hx-actions,
+        .hx-hero-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hx-btn { width: 100%; }
+        .hx-chart { height: 340px; }
+        .hx-table { min-width: 860px; }
+
+        main, .container, .container-lg, .container-xl, .elx-main,
+        .container-sm, .container-md, .container-xxl {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .hx-admin-page { padding: 10px !important; }
+        .hx-admin-hero,
+        .hx-card,
+        .hx-kpi { border-radius: 20px; }
+        .hx-admin-hero,
+        .hx-card-body { padding: 14px; }
+        .hx-card-head { padding: 14px; }
+        .hx-hero-main { align-items: flex-start; }
+        .hx-logo { width: 54px; height: 54px; border-radius: 17px; font-size: 24px; }
+        .hx-chart { height: 270px; padding: 6px; }
+        .hx-table { min-width: 760px; }
+    }
+
+    /* =========================================================
+       FIX WHITE BACKGROUND - CHỈ ÁP DỤNG TRONG TRANG HISTORY
+       Không ảnh hưởng Header / Navbar / Footer của _Layout
+    ========================================================= */
+
+    /* Chỉ đổi nền vùng nội dung trang này */
+    .hx-admin-page {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+        /* Vùng shell bên trong */
+        .hx-admin-page .hx-admin-shell {
+            background: #ffffff !important;
+        }
+
+        /* Hero */
+        .hx-admin-page .hx-admin-hero {
+            background: #ffffff !important;
+            border: 1px solid rgba(226, 232, 240, 0.95) !important;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08) !important;
+        }
+
+            .hx-admin-page .hx-admin-hero::before {
+                background: linear-gradient(90deg, transparent 0%, rgba(248,250,252,.65) 48%, transparent 100%), repeating-linear-gradient(90deg, rgba(37,99,235,.025) 0 1px, transparent 1px 72px) !important;
+            }
+
+        /* KPI + Card */
+        .hx-admin-page .hx-kpi,
+        .hx-admin-page .hx-card {
+            background: #ffffff !important;
+            border: 1px solid rgba(226, 232, 240, 0.95) !important;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
+        }
+
+        .hx-admin-page .hx-card-head {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+        }
+
+        /* Chart */
+        .hx-admin-page .hx-chart {
+            background: #ffffff !important;
+            border: 1px solid rgba(226, 232, 240, 0.95) !important;
+        }
+
+        /* Table */
+        .hx-admin-page .hx-table-wrap {
+            background: #ffffff !important;
+            border: 1px solid rgba(226, 232, 240, 0.95) !important;
+        }
+
+        .hx-admin-page .hx-table thead th {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+        }
+
+        .hx-admin-page .hx-table tbody tr:nth-child(odd) {
+            background: #ffffff !important;
+        }
+
+        .hx-admin-page .hx-table tbody tr:nth-child(even) {
+            background: #f8fafc !important;
+        }
+
+        .hx-admin-page .hx-table tbody tr:hover {
+            background: rgba(37, 99, 235, 0.06) !important;
+        }
+
+        /* Input */
+        .hx-admin-page .hx-input {
+            background: #ffffff !important;
+            border-color: rgba(203, 213, 225, 0.95) !important;
+        }
+
+        /* Help box / mini item */
+        .hx-admin-page .hx-help,
+        .hx-admin-page .hx-mini-item {
+            background: #f8fafc !important;
+            border-color: rgba(226, 232, 240, 0.95) !important;
+        }
+
+</style>
+
+<script>
+
+    window.__ELITECH_HISTORY__ = {
+        scope: "admin",
+        isAdmin: true,
+        baseUrl: '@Url.Content("~/")',
+        historyApiUrl: '@Url.Content("~/api/admin/elitech/history")',
+        devicesApiUrl: '@Url.Content("~/api/elitech/all-devices")',
+        exportPdfUrl: '@Url.Content("~/export/pdf")'
+    };
+</script>
+
+<link rel="stylesheet" href="~/css/elitech-history.css" asp-append-version="true" /> 
+
+<style id="hx-white-final-fix">
+    .hx-admin-page {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+        .hx-admin-page .hx-admin-shell {
+            background: #ffffff !important;
+        }
+
+        .hx-admin-page .hx-admin-hero,
+        .hx-admin-page .hx-kpi,
+        .hx-admin-page .hx-card,
+        .hx-admin-page .hx-chart,
+        .hx-admin-page .hx-table-wrap {
+            background: #ffffff !important;
+            border-color: rgba(226, 232, 240, 0.95) !important;
+        }
+
+        .hx-admin-page .hx-card-head {
+            background: #ffffff !important;
+        }
+
+        .hx-admin-page .hx-table thead th {
+            background: #f8fafc !important;
+        }
+
+        .hx-admin-page .hx-input {
+            background: #ffffff !important;
+        }
+
+        .hx-admin-page .hx-help,
+        .hx-admin-page .hx-mini-item {
+            background: #f8fafc !important;
+        }
+</style>
+
+<div class="hx-admin-page hx hx-wrap">
+    <div class="hx-admin-shell">
+
+        <section class="hx-admin-hero">
+            <div class="hx-hero-inner">
+                <div class="hx-hero-main">
+                    <div class="hx-logo">
+                        <i class="bi bi-activity"></i>
+                    </div>
+
+                    <div class="hx-title-wrap">
+                        <div class="hx-kicker">
+                            <span class="hx-kicker-dot"></span>
+                            Admin Operations Center
+                        </div>
+                        <h1 class="hx-title">Elitech – Lịch sử thiết bị</h1>
+                        <div class="hx-sub">
+                            Màn hình giám sát dành cho Admin/Staff: xem toàn bộ thiết bị, truy vấn lịch sử theo thời gian, kiểm tra trend nhiệt độ/độ ẩm, xuất CSV/PDF và hỗ trợ vận hành nhanh trên cùng một dashboard.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hx-hero-side">
+                    <div class="hx-badge-row">
+                        <span class="hx-pill hx-pill-admin"><i class="bi bi-shield-lock"></i> Admin / Staff</span>
+                        <span class="hx-pill hx-pill-blue"><i class="bi bi-clock"></i> UTC+7</span>
+                        <span class="hx-pill hx-pill-ok"><i class="bi bi-wifi"></i> API Ready</span>
+                    </div>
+
+                    <div class="hx-meta-card">
+                        <div class="hx-meta-line">
+                            <span>Cập nhật:</span>
+                            <b id="nowText">—</b>
+                        </div>
+                        <div class="hx-status" id="status">Sẵn sàng truy vấn</div>
+                    </div>
+
+                    <div class="hx-hero-actions">
+                        <button id="btnExportPdf" class="hx-btn hx-danger" type="button">
+                            <i class="bi bi-file-earmark-pdf"></i> Xuất PDF
+                        </button>
+                        <button class="hx-btn hx-outline" type="button" onclick="document.getElementById('btnFetch')?.click()">
+                            <i class="bi bi-arrow-repeat"></i> Refresh chart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="hx-kpi-grid" aria-label="Admin quick metrics">
+            <div class="hx-kpi">
+                <div class="hx-kpi-top">
+                    <div>
+                        <div class="hx-kpi-label">Nhiệt độ TB</div>
+                        <div class="hx-num" id="avgTemp">—</div>
+                    </div>
+                    <div class="hx-kpi-icon"><i class="bi bi-thermometer-half"></i></div>
+                </div>
+                <div class="hx-kpi-foot">Tính theo kênh nhiệt đang chọn</div>
+            </div>
+
+            <div class="hx-kpi">
+                <div class="hx-kpi-top">
+                    <div>
+                        <div class="hx-kpi-label">Cao nhất</div>
+                        <div class="hx-num" id="maxTemp">—</div>
+                    </div>
+                    <div class="hx-kpi-icon"><i class="bi bi-thermometer-high"></i></div>
+                </div>
+                <div class="hx-kpi-foot">Điểm nhiệt cao nhất trong khoảng lọc</div>
+            </div>
+
+            <div class="hx-kpi">
+                <div class="hx-kpi-top">
+                    <div>
+                        <div class="hx-kpi-label">Thấp nhất</div>
+                        <div class="hx-num" id="minTemp">—</div>
+                    </div>
+                    <div class="hx-kpi-icon"><i class="bi bi-thermometer-low"></i></div>
+                </div>
+                <div class="hx-kpi-foot">Điểm nhiệt thấp nhất trong khoảng lọc</div>
+            </div>
+
+            <div class="hx-kpi">
+                <div class="hx-kpi-top">
+                    <div>
+                        <div class="hx-kpi-label">Độ ẩm gần nhất</div>
+                        <div class="hx-num" id="lastHum">—</div>
+                    </div>
+                    <div class="hx-kpi-icon"><i class="bi bi-droplet-half"></i></div>
+                </div>
+                <div class="hx-kpi-foot">Theo kênh độ ẩm đang chọn</div>
+            </div>
+        </section>
+
+        <section class="hx-grid">
+            <aside class="hx-left">
+                <div class="hx-card">
+                    <div class="hx-card-head">
+                        <h3><i class="bi bi-sliders2-vertical"></i> Bộ lọc Admin</h3>
+                        <div class="hx-hint">Toàn quyền chọn thiết bị, thời gian và kênh dữ liệu.</div>
+                    </div>
+
+                    <div class="hx-card-body">
+                        <form id="qForm" class="hx-form">
+                            <div class="hx-field">
+                                <label class="hx-label" for="deviceGuid">
+                                    Thiết bị <small>GUID</small>
+                                </label>
+
+                                <input class="hx-input" id="deviceGuid" placeholder="Nhập GUID hoặc chọn từ danh sách toàn bộ thiết bị…" />
+
+                                <div style="height:8px"></div>
+
+                                <select class="hx-input" id="devicePick">
+                                    <option value="">— Đang tải danh sách thiết bị… —</option>
+                                </select>
+
+                                <div class="hx-help">
+                                    Admin/Staff có thể chọn toàn bộ thiết bị đã có trong hệ thống hoặc dán GUID trực tiếp để truy vấn nhanh.
+                                </div>
+                            </div>
+
+                            <div class="hx-row2">
+                                <div class="hx-field">
+                                    <label class="hx-label" for="from">Từ <small>local</small></label>
+                                    <input type="datetime-local" class="hx-input" id="from" />
+                                </div>
+
+                                <div class="hx-field">
+                                    <label class="hx-label" for="to">Đến <small>local</small></label>
+                                    <input type="datetime-local" class="hx-input" id="to" />
+                                </div>
+                            </div>
+
+                            <div class="hx-row3">
+                                <div class="hx-field">
+                                    <label class="hx-label" for="quick">Khoảng nhanh</label>
+                                    <select id="quick" class="hx-input">
+                                        <option value="1">1 giờ</option>
+                                        <option value="6">6 giờ</option>
+                                        <option value="24" selected>24 giờ</option>
+                                        <option value="72">3 ngày</option>
+                                        <option value="240">10 ngày</option>
+                                    </select>
+                                </div>
+
+                                <div class="hx-field">
+                                    <label class="hx-label" for="tempChan">Kênh nhiệt</label>
+                                    <select id="tempChan" class="hx-input">
+                                        <option value="1" selected>tmp1</option>
+                                        <option value="2">tmp2</option>
+                                        <option value="3">tmp3</option>
+                                        <option value="4">tmp4</option>
+                                    </select>
+                                </div>
+
+                                <div class="hx-field">
+                                    <label class="hx-label" for="humChan">Kênh ẩm</label>
+                                    <select id="humChan" class="hx-input">
+                                        <option value="1" selected>hum1</option>
+                                        <option value="2">hum2</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="hx-actions">
+                                <button class="hx-btn hx-primary" id="btnFetch" type="submit">
+                                    <i class="bi bi-cloud-download"></i> Lấy dữ liệu
+                                </button>
+                                <button class="hx-btn hx-outline" type="button" id="btnClear">
+                                    <i class="bi bi-eraser"></i> Xoá bộ lọc
+                                </button>
+                            </div>
+
+                            <div class="hx-sep"></div>
+
+                            <div class="hx-auto">
+                                <div class="hx-switch">
+                                    <input class="form-check-input" type="checkbox" id="autoToggle">
+                                    <label for="autoToggle">Tự động cập nhật</label>
+                                </div>
+
+                                <select id="autoInterval" class="hx-input hx-auto-sel">
+                                    <option value="0">Tắt</option>
+                                    <option value="60" selected>1 phút</option>
+                                    <option value="300">5 phút</option>
+                                </select>
+
+                                <span class="hx-pill" id="autoCountdown">—</span>
+                            </div>
+
+                            <div class="hx-loading" id="loading">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Đang tải dữ liệu từ Elitech API…
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="hx-card">
+                    <div class="hx-card-head">
+                        <h3><i class="bi bi-command"></i> Phạm vi vận hành</h3>
+                        <span class="hx-pill" id="deviceText">—</span>
+                    </div>
+
+                    <div class="hx-card-body">
+                        <div class="hx-admin-mini">
+                            <div class="hx-mini-item">
+                                <i class="bi bi-hdd-network"></i>
+                                <div>
+                                    <div class="hx-mini-title">Nguồn thiết bị</div>
+                                    <div class="hx-mini-text">Danh sách lấy từ endpoint toàn bộ thiết bị dành cho Admin/Staff.</div>
+                                </div>
+                            </div>
+
+                            <div class="hx-mini-item">
+                                <i class="bi bi-shield-check"></i>
+                                <div>
+                                    <div class="hx-mini-title">Quyền truy cập</div>
+                                    <div class="hx-mini-text">View này nên được khóa bằng <b>[Authorize(Roles = "Admin,Staff")]</b> ở controller.</div>
+                                </div>
+                            </div>
+
+                            <div class="hx-mini-item">
+                                <i class="bi bi-database-check"></i>
+                                <div>
+                                    <div class="hx-mini-title">Giới hạn truy vấn</div>
+                                    <div class="hx-mini-text">Backend vẫn nên giữ giới hạn ngày và số điểm trả về để tránh quá tải API.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="hx-right">
+                <div class="hx-card">
+                    <div class="hx-card-head">
+                        <h3><i class="bi bi-graph-up-arrow"></i> Trend chart vận hành</h3>
+                        <div class="hx-badges">
+                            <span class="hx-pill" id="pointCount">0 điểm</span>
+                            <span class="hx-pill" id="rangeText">—</span>
+                        </div>
+                    </div>
+
+                    <div class="hx-card-body">
+                        <div class="hx-chart">
+                            <canvas id="chartTemp"></canvas>
+                        </div>
+                        <div class="hx-note" style="margin-top:12px;">
+                            * Chart dùng cho Admin/Staff để rà nhanh biến động nhiệt độ/độ ẩm theo thiết bị, hỗ trợ quan sát sự cố và đối chiếu dữ liệu vận hành.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hx-card">
+                    <div class="hx-card-head">
+                        <h3><i class="bi bi-table"></i> Bảng dữ liệu lịch sử</h3>
+                        <button class="hx-btn hx-outline hx-sm" id="btnExport" type="button">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Xuất CSV
+                        </button>
+                    </div>
+
+                    <div class="hx-card-body">
+                        <div class="hx-table-wrap">
+                            <table class="hx-table" id="tbl">
+                                <thead>
+                                    <tr>
+                                        <th>Time (UTC+7)</th>
+                                        <th>tmp1</th>
+                                        <th>tmp2</th>
+                                        <th>tmp3</th>
+                                        <th>tmp4</th>
+                                        <th>hum1</th>
+                                        <th>hum2</th>
+                                        <th>signal</th>
+                                        <th>power</th>
+                                        <th>address</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="hx-api" id="apiMsg"></div>
+                    </div>
+                </div>
+            </main>
+        </section>
+    </div>
+</div>
+
+<div class="hx-toasty" id="toasty"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".hx-admin-page")?.setAttribute("data-elitech-theme", "@theme");
+
+        const fallbackScope = "admin";
+        const cfg = window.__ELITECH_HISTORY__ || {
+            scope: fallbackScope,
+            isAdmin: true,
+            baseUrl: '@Url.Content("~/")',
+            historyApiUrl: '@Url.Content("~/api/admin/elitech/history")',
+            devicesApiUrl: '@Url.Content("~/api/elitech/all-devices")',
+            exportPdfUrl: '@Url.Content("~/export/pdf")'
+        };
+
+        cfg.scope = cfg.scope || fallbackScope;
+        cfg.isAdmin = Boolean(cfg.isAdmin);
+        cfg.baseUrl = cfg.baseUrl || '@Url.Content("~/")';
+        cfg.historyApiUrl = cfg.historyApiUrl || '@Url.Content("~/api/admin/elitech/history")';
+        cfg.devicesApiUrl = cfg.devicesApiUrl || '@Url.Content("~/api/elitech/all-devices")';
+        cfg.exportPdfUrl = cfg.exportPdfUrl || '@Url.Content("~/export/pdf")';
+        window.__ELITECH_HISTORY__ = cfg;
+
+        const $ = (id) => document.getElementById(id);
+
+        const refs = {
+            form: $("qForm"),
+            deviceGuid: $("deviceGuid"),
+            devicePick: $("devicePick"),
+            from: $("from"),
+            to: $("to"),
+            quick: $("quick"),
+            tempChan: $("tempChan"),
+            humChan: $("humChan"),
+            btnFetch: $("btnFetch"),
+            btnClear: $("btnClear"),
+            btnExport: $("btnExport"),
+            btnExportPdf: $("btnExportPdf"),
+            autoToggle: $("autoToggle"),
+            autoInterval: $("autoInterval"),
+            autoCountdown: $("autoCountdown"),
+            loading: $("loading"),
+            status: $("status"),
+            apiMsg: $("apiMsg"),
+            toasty: $("toasty"),
+            nowText: $("nowText"),
+            pointCount: $("pointCount"),
+            rangeText: $("rangeText"),
+            deviceText: $("deviceText"),
+            avgTemp: $("avgTemp"),
+            maxTemp: $("maxTemp"),
+            minTemp: $("minTemp"),
+            lastHum: $("lastHum"),
+            tbody: $("tbody"),
+            chartCanvas: $("chartTemp"),
+            zoomTempToggle: $("zoomTempToggle"),
+            zoomRhToggle: $("zoomRhToggle"),
+            zoomTempBadge: $("zoomTempBadge"),
+            zoomRhBadge: $("zoomRhBadge")
+        };
+
+        let chart = null;
+        let lastRows = [];
+        let autoTimer = null;
+        let autoRemain = 0;
+
+        function setStatus(message, type = "info") {
+            if (refs.status) refs.status.textContent = message;
+            if (refs.apiMsg) {
+                refs.apiMsg.textContent = message;
+                refs.apiMsg.style.color = type === "error" ? "#dc2626" : type === "success" ? "#16a34a" : "#64748b";
+            }
+        }
+
+        function toast(message, type = "info") {
+            if (!refs.toasty) {
+                setStatus(message, type);
+                return;
+            }
+
+            const el = document.createElement("div");
+            const bg = type === "error"
+                ? "linear-gradient(135deg,#fee2e2,#fff)"
+                : type === "success"
+                    ? "linear-gradient(135deg,#dcfce7,#fff)"
+                    : "linear-gradient(135deg,#dbeafe,#fff)";
+            const color = type === "error" ? "#991b1b" : type === "success" ? "#166534" : "#1e3a8a";
+
+            el.style.cssText = `
+                border-radius:16px;
+                padding:12px 14px;
+                background:${bg};
+                color:${color};
+                border:1px solid rgba(148,163,184,.22);
+                box-shadow:0 18px 40px rgba(15,23,42,.16);
+                font-weight:850;
+                font-size:.86rem;
+            `;
+            el.textContent = message;
+            refs.toasty.appendChild(el);
+
+            setTimeout(() => {
+                el.style.opacity = "0";
+                el.style.transform = "translateY(6px)";
+                el.style.transition = "all .2s ease";
+            }, 2600);
+            setTimeout(() => el.remove(), 2950);
+        }
+
+        function setLoading(on) {
+            if (refs.loading) refs.loading.style.display = on ? "inline-flex" : "none";
+            if (refs.btnFetch) refs.btnFetch.disabled = on;
+        }
+
+        function updateNow() {
+            if (!refs.nowText) return;
+            refs.nowText.textContent = new Date().toLocaleString("vi-VN", {
+                hour12: false,
+                timeZone: "Asia/Ho_Chi_Minh"
+            });
+        }
+
+        function pad2(n) {
+            return String(n).padStart(2, "0");
+        }
+
+        function toDateTimeLocalValue(date) {
+            return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+        }
+
+        function applyQuickRange() {
+            const hours = Number(refs.quick?.value || 24);
+            const end = new Date();
+            const start = new Date(end.getTime() - hours * 60 * 60 * 1000);
+
+            if (refs.from) refs.from.value = toDateTimeLocalValue(start);
+            if (refs.to) refs.to.value = toDateTimeLocalValue(end);
+        }
+
+        function parseNumber(value) {
+            if (value === null || value === undefined) return null;
+            const match = String(value).replace(",", ".").match(/-?\d+(\.\d+)?/);
+            if (!match) return null;
+            const n = Number(match[0]);
+            return Number.isFinite(n) ? n : null;
+        }
+
+        function normalizeTime(value) {
+            if (value === null || value === undefined) return null;
+            const n = Number(value);
+            if (!Number.isFinite(n) || n <= 0) return null;
+            return n > 3_000_000_000 ? n : n * 1000;
+        }
+
+        function formatTime(value) {
+            const ms = normalizeTime(value);
+            if (!ms) return "—";
+            return new Date(ms).toLocaleString("vi-VN", {
+                hour12: false,
+                timeZone: "Asia/Ho_Chi_Minh"
+            });
+        }
+
+        function getTempKey() {
+            return `tmp${refs.tempChan?.value || "1"}`;
+        }
+
+        function getHumKey() {
+            return `hum${refs.humChan?.value || "1"}`;
+        }
+
+        function extractDeviceList(json) {
+            const raw = json?.data ?? json?.Data ?? [];
+            if (!Array.isArray(raw)) return [];
+
+            return raw
+                .map(x => {
+                    if (typeof x === "string") {
+                        return { deviceGuid: x, deviceName: x };
+                    }
+
+                    const deviceGuid = x?.deviceGuid ?? x?.DeviceGuid ?? x?.guid ?? x?.Guid ?? "";
+                    const deviceName = x?.deviceName ?? x?.DeviceName ?? x?.name ?? x?.Name ?? deviceGuid;
+
+                    return {
+                        deviceGuid: String(deviceGuid || "").trim(),
+                        deviceName: String(deviceName || deviceGuid || "").trim()
+                    };
+                })
+                .filter(x => x.deviceGuid)
+                .filter((x, idx, arr) => arr.findIndex(y => y.deviceGuid.toLowerCase() === x.deviceGuid.toLowerCase()) === idx)
+                .sort((a, b) => (a.deviceName || a.deviceGuid).localeCompare(b.deviceName || b.deviceGuid));
+        }
+
+        async function fetchJson(url) {
+            const res = await fetch(url, {
+                cache: "no-store",
+                credentials: "same-origin"
+            });
+
+            const text = await res.text();
+            let json = null;
+            try { json = text ? JSON.parse(text) : null; } catch { }
+
+            if (!res.ok) {
+                const detail = json?.message || json?.detail || json?.error || text || res.statusText;
+                const err = new Error(`HTTP ${res.status}: ${detail}`);
+                err.status = res.status;
+                err.payload = json;
+                throw err;
+            }
+
+            return json;
+        }
+
+        async function loadDeviceList() {
+            if (!refs.devicePick) return;
+
+            const endpoints = [cfg.devicesApiUrl];
+            if (cfg.isAdmin) endpoints.push('@Url.Content("~/api/elitech/device-guids")');
+
+            refs.devicePick.innerHTML = `<option value="">— Đang tải danh sách thiết bị… —</option>`;
+            setStatus("Đang tải danh sách thiết bị...", "info");
+
+            let devices = [];
+            let lastError = null;
+
+            for (const endpoint of endpoints.filter(Boolean)) {
+                try {
+                    console.log("LOAD HISTORY DEVICES:", endpoint, "scope =", cfg.scope);
+                    const json = await fetchJson(endpoint);
+                    devices = extractDeviceList(json);
+                    if (devices.length > 0) break;
+                } catch (err) {
+                    lastError = err;
+                    console.warn("Device endpoint failed:", endpoint, err);
+                }
+            }
+
+            if (!devices.length) {
+                refs.devicePick.innerHTML = `<option value="">— Không tải được danh sách thiết bị —</option>`;
+                setStatus(lastError ? lastError.message : "Không có thiết bị để hiển thị.", "error");
+                return;
+            }
+
+            refs.devicePick.innerHTML = `<option value="">— Chọn thiết bị —</option>` + devices.map(d => {
+                const label = d.deviceName && d.deviceName !== d.deviceGuid ? `${d.deviceName} • ${d.deviceGuid}` : d.deviceGuid;
+                return `<option value="${escapeHtml(d.deviceGuid)}">${escapeHtml(label)}</option>`;
+            }).join("");
+
+            if (!refs.deviceGuid?.value && devices[0]) {
+                refs.devicePick.value = devices[0].deviceGuid;
+                refs.deviceGuid.value = devices[0].deviceGuid;
+                if (refs.deviceText) refs.deviceText.textContent = devices[0].deviceName || devices[0].deviceGuid;
+            }
+
+            setStatus(`Đã tải ${devices.length} thiết bị.`, "success");
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function buildHistoryUrl() {
+            const deviceGuid = refs.deviceGuid?.value?.trim();
+            if (!deviceGuid) throw new Error("Vui lòng chọn thiết bị trước khi lấy lịch sử.");
+
+            const params = new URLSearchParams();
+            params.set("deviceGuid", deviceGuid);
+            params.set("limit", "500");
+
+            if (refs.from?.value) params.set("from", new Date(refs.from.value).toISOString());
+            if (refs.to?.value) params.set("to", new Date(refs.to.value).toISOString());
+
+            return `${cfg.historyApiUrl}?${params.toString()}`;
+        }
+
+        async function fetchHistory() {
+            try {
+                setLoading(true);
+                setStatus("Đang lấy dữ liệu lịch sử...", "info");
+
+                const url = buildHistoryUrl();
+                console.log("FETCH HISTORY:", url);
+
+                const json = await fetchJson(url);
+                const rows = Array.isArray(json?.data) ? json.data : Array.isArray(json?.Data) ? json.Data : [];
+
+                lastRows = rows
+                    .filter(x => x)
+                    .sort((a, b) => (Number(a.monitorTime ?? a.MonitorTime ?? 0) - Number(b.monitorTime ?? b.MonitorTime ?? 0)));
+
+                renderAll();
+                setStatus(`Lấy dữ liệu thành công: ${lastRows.length} điểm.`, "success");
+            } catch (err) {
+                console.error(err);
+                setStatus(err.message || "Lấy lịch sử thất bại.", "error");
+                toast(err.message || "Lấy lịch sử thất bại.", "error");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function renderAll() {
+            renderChart();
+            renderTable();
+            renderStats();
+        }
+
+        function renderChart() {
+            if (!refs.chartCanvas || !window.Chart) return;
+
+            const tempKey = getTempKey();
+            const humKey = getHumKey();
+
+            const tempData = lastRows
+                .map(x => ({ x: normalizeTime(x.monitorTime ?? x.MonitorTime), y: parseNumber(x[tempKey] ?? x[tempKey.toUpperCase?.()]) }))
+                .filter(p => p.x && p.y !== null);
+
+            const humData = lastRows
+                .map(x => ({ x: normalizeTime(x.monitorTime ?? x.MonitorTime), y: parseNumber(x[humKey] ?? x[humKey.toUpperCase?.()]) }))
+                .filter(p => p.x && p.y !== null);
+
+            const tempValues = tempData.map(x => x.y);
+            const humValues = humData.map(x => x.y);
+            const tempRange = calcRange(tempValues, 1.5);
+            const humRange = calcRange(humValues, 5);
+
+            if (refs.zoomTempBadge) refs.zoomTempBadge.textContent = tempRange ? `${tempRange.min} → ${tempRange.max} °C` : "°C —";
+            if (refs.zoomRhBadge) refs.zoomRhBadge.textContent = humRange ? `${humRange.min} → ${humRange.max} %RH` : "%RH —";
+
+            const useTempZoom = refs.zoomTempToggle ? refs.zoomTempToggle.checked : false;
+            const useHumZoom = refs.zoomRhToggle ? refs.zoomRhToggle.checked : false;
+
+            const data = {
+                datasets: [
+                    {
+                        label: tempKey,
+                        data: tempData,
+                        yAxisID: "yTemp",
+                        tension: 0.25,
+                        pointRadius: 1.8,
+                        borderWidth: 2
+                    },
+                    {
+                        label: humKey,
+                        data: humData,
+                        yAxisID: "yHum",
+                        tension: 0.25,
+                        pointRadius: 1.8,
+                        borderWidth: 2
+                    }
+                ]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: { position: "top" },
+                    tooltip: {
+                        callbacks: {
+                            title: items => items?.[0]?.parsed?.x ? formatTime(items[0].parsed.x) : ""
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: "time",
+                        time: { tooltipFormat: "yyyy-MM-dd HH:mm" },
+                        ticks: { maxRotation: 0, autoSkip: true }
+                    },
+                    yTemp: {
+                        position: "left",
+                        title: { display: true, text: "°C" },
+                        min: useTempZoom && tempRange ? tempRange.min : undefined,
+                        max: useTempZoom && tempRange ? tempRange.max : undefined
+                    },
+                    yHum: {
+                        position: "right",
+                        title: { display: true, text: "%RH" },
+                        grid: { drawOnChartArea: false },
+                        min: useHumZoom && humRange ? humRange.min : undefined,
+                        max: useHumZoom && humRange ? humRange.max : undefined
+                    }
+                }
+            };
+
+            if (chart) {
+                chart.data = data;
+                chart.options = options;
+                chart.update();
+            } else {
+                chart = new Chart(refs.chartCanvas, {
+                    type: "line",
+                    data,
+                    options
+                });
+            }
+        }
+
+        function calcRange(values, pad) {
+            const nums = values.filter(x => Number.isFinite(x));
+            if (!nums.length) return null;
+            const min = Math.min(...nums);
+            const max = Math.max(...nums);
+            if (min === max) return { min: Number((min - pad).toFixed(1)), max: Number((max + pad).toFixed(1)) };
+            const dynamicPad = Math.max(pad, (max - min) * 0.12);
+            return {
+                min: Number((min - dynamicPad).toFixed(1)),
+                max: Number((max + dynamicPad).toFixed(1))
+            };
+        }
+
+        function renderTable() {
+            if (!refs.tbody) return;
+
+            refs.tbody.innerHTML = lastRows.map(x => `
+                <tr>
+                    <td>${escapeHtml(formatTime(x.monitorTime ?? x.MonitorTime))}</td>
+                    <td>${escapeHtml(x.tmp1 ?? "")}</td>
+                    <td>${escapeHtml(x.tmp2 ?? "")}</td>
+                    <td>${escapeHtml(x.tmp3 ?? "")}</td>
+                    <td>${escapeHtml(x.tmp4 ?? "")}</td>
+                    <td>${escapeHtml(x.hum1 ?? "")}</td>
+                    <td>${escapeHtml(x.hum2 ?? "")}</td>
+                    <td>${escapeHtml(x.signal ?? "")}</td>
+                    <td>${escapeHtml(x.power ?? "")}</td>
+                    <td>${escapeHtml(x.address ?? "")}</td>
+                </tr>
+            `).join("");
+        }
+
+        function renderStats() {
+            const tempKey = getTempKey();
+            const humKey = getHumKey();
+            const temps = lastRows.map(x => parseNumber(x[tempKey])).filter(x => Number.isFinite(x));
+            const hums = lastRows.map(x => parseNumber(x[humKey])).filter(x => Number.isFinite(x));
+
+            if (refs.pointCount) refs.pointCount.textContent = `${lastRows.length} điểm`;
+            if (refs.deviceText) refs.deviceText.textContent = refs.deviceGuid?.value || "—";
+
+            if (refs.avgTemp) refs.avgTemp.textContent = temps.length ? `${avg(temps).toFixed(1)} °C` : "—";
+            if (refs.maxTemp) refs.maxTemp.textContent = temps.length ? `${Math.max(...temps).toFixed(1)} °C` : "—";
+            if (refs.minTemp) refs.minTemp.textContent = temps.length ? `${Math.min(...temps).toFixed(1)} °C` : "—";
+            if (refs.lastHum) refs.lastHum.textContent = hums.length ? `${hums[hums.length - 1].toFixed(1)} %RH` : "—";
+
+            if (refs.rangeText) {
+                const first = lastRows[0]?.monitorTime ?? lastRows[0]?.MonitorTime;
+                const last = lastRows[lastRows.length - 1]?.monitorTime ?? lastRows[lastRows.length - 1]?.MonitorTime;
+                refs.rangeText.textContent = first && last ? `${formatTime(first)} → ${formatTime(last)}` : "—";
+            }
+        }
+
+        function avg(values) {
+            return values.reduce((a, b) => a + b, 0) / values.length;
+        }
+
+        function clearData() {
+            lastRows = [];
+            if (refs.tbody) refs.tbody.innerHTML = "";
+            if (chart) {
+                chart.data.datasets.forEach(ds => ds.data = []);
+                chart.update();
+            }
+            renderStats();
+            setStatus("Đã xoá dữ liệu trên màn hình.", "info");
+        }
+
+        function exportCsv() {
+            if (!lastRows.length) {
+                toast("Chưa có dữ liệu để xuất CSV.", "error");
+                return;
+            }
+
+            const headers = ["Time (UTC+7)", "tmp1", "tmp2", "tmp3", "tmp4", "hum1", "hum2", "signal", "power", "address"];
+            const lines = [headers.join(",")];
+
+            lastRows.forEach(x => {
+                const row = [
+                    formatTime(x.monitorTime ?? x.MonitorTime),
+                    x.tmp1, x.tmp2, x.tmp3, x.tmp4,
+                    x.hum1, x.hum2,
+                    x.signal, x.power,
+                    x.address
+                ].map(csvCell);
+                lines.push(row.join(","));
+            });
+
+            const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${cfg.scope || "elitech"}-history-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function csvCell(value) {
+            const s = String(value ?? "");
+            return `"${s.replaceAll('"', '""')}"`;
+        }
+
+        async function exportPdf() {
+            const canvas = refs.chartCanvas;
+            const table = $("tbl");
+
+            if (!canvas || !table) {
+                toast("Không tìm thấy biểu đồ hoặc bảng để xuất PDF.", "error");
+                return;
+            }
+
+            try {
+                setStatus("Đang chuẩn bị xuất PDF...", "info");
+                await new Promise(r => setTimeout(r, 300));
+
+                const res = await fetch(cfg.exportPdfUrl || '@Url.Content("~/export/pdf")', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        chartImage: canvas.toDataURL("image/png"),
+                        tableHtml: table.outerHTML,
+                        from: refs.from?.value || null,
+                        to: refs.to?.value || null,
+                        scope: cfg.scope
+                    })
+                });
+
+                if (!res.ok) throw new Error(`Export PDF lỗi HTTP ${res.status}`);
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${cfg.scope || "Elitech"} History Report.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                setStatus("Xuất PDF thành công.", "success");
+                toast("Xuất PDF thành công.", "success");
+            } catch (err) {
+                console.error(err);
+                setStatus("Xuất PDF thất bại.", "error");
+                toast(err.message || "Xuất PDF thất bại.", "error");
+            }
+        }
+
+        function startAuto() {
+            stopAuto();
+
+            const seconds = Number(refs.autoInterval?.value || 0);
+            if (!refs.autoToggle?.checked || seconds <= 0) {
+                if (refs.autoCountdown) refs.autoCountdown.textContent = "—";
+                return;
+            }
+
+            autoRemain = seconds;
+            if (refs.autoCountdown) refs.autoCountdown.textContent = `${autoRemain}s`;
+
+            autoTimer = setInterval(() => {
+                autoRemain -= 1;
+                if (refs.autoCountdown) refs.autoCountdown.textContent = `${Math.max(0, autoRemain)}s`;
+
+                if (autoRemain <= 0) {
+                    autoRemain = seconds;
+                    fetchHistory();
+                }
+            }, 1000);
+        }
+
+        function stopAuto() {
+            if (autoTimer) clearInterval(autoTimer);
+            autoTimer = null;
+        }
+
+        refs.devicePick?.addEventListener("change", () => {
+            if (refs.deviceGuid) refs.deviceGuid.value = refs.devicePick.value || "";
+            const label = refs.devicePick.options[refs.devicePick.selectedIndex]?.textContent || refs.deviceGuid?.value || "—";
+            if (refs.deviceText) refs.deviceText.textContent = label;
+        });
+
+        refs.quick?.addEventListener("change", applyQuickRange);
+        refs.tempChan?.addEventListener("change", renderAll);
+        refs.humChan?.addEventListener("change", renderAll);
+        refs.zoomTempToggle?.addEventListener("change", renderChart);
+        refs.zoomRhToggle?.addEventListener("change", renderChart);
+        refs.btnClear?.addEventListener("click", clearData);
+        refs.btnExport?.addEventListener("click", exportCsv);
+        refs.btnExportPdf?.addEventListener("click", exportPdf);
+        refs.autoToggle?.addEventListener("change", startAuto);
+        refs.autoInterval?.addEventListener("change", startAuto);
+
+        refs.form?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            fetchHistory();
+        });
+
+        updateNow();
+        setInterval(updateNow, 1000);
+        applyQuickRange();
+        loadDeviceList();
+    });
+</script>

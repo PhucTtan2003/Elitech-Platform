@@ -1,0 +1,2913 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+    var adminName = User.Identity?.Name ?? "Admin";
+}
+
+<style>
+    :root {
+        --aa-black: #000000;
+        --aa-ink: #1d1d1f;
+        --aa-ink-2: #2b2b2f;
+        --aa-muted: #6e6e73;
+        --aa-soft: #f5f5f7;
+        --aa-card: #ffffff;
+        --aa-line: rgba(0,0,0,.10);
+        --aa-line-dark: rgba(255,255,255,.16);
+        --aa-blue: #0071e3;
+        --aa-blue-2: #2997ff;
+        --aa-orange: #f58220;
+        --aa-orange-2: #ffb25b;
+        --aa-green: #34c759;
+        --aa-red: #ff3b30;
+        --aa-yellow: #ffcc00;
+        --aa-radius-xl: 34px;
+        --aa-radius-lg: 26px;
+        --aa-radius-md: 18px;
+        --aa-shadow: 0 30px 80px rgba(0,0,0,.14);
+        --aa-shadow-soft: 0 16px 44px rgba(0,0,0,.08);
+        --aa-max: 1200px;
+    }
+
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        background: var(--aa-soft) !important;
+        color: var(--aa-ink);
+    }
+
+    .aa-admin {
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        min-height: 100vh;
+        background: var(--aa-soft);
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+        color: var(--aa-ink);
+    }
+
+    .aa-wrap {
+        max-width: var(--aa-max);
+        margin: 0 auto;
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .aa-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 80;
+        min-height: 52px;
+        background: rgba(22,22,23,.86);
+        color: rgba(245,245,247,.92);
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+    }
+
+    .aa-topbar-inner {
+        max-width: var(--aa-max);
+        min-height: 52px;
+        margin: 0 auto;
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .aa-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #f5f5f7;
+        text-decoration: none;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        white-space: nowrap;
+    }
+
+    .aa-brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        color: #111;
+        background: linear-gradient(135deg, #fff, var(--aa-orange-2));
+        box-shadow: 0 8px 22px rgba(245,130,32,.22);
+    }
+
+    .aa-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        flex: 1;
+    }
+
+    .aa-nav a {
+        color: rgba(245,245,247,.75);
+        text-decoration: none;
+        font-size: .82rem;
+        font-weight: 650;
+        padding: 10px 12px;
+        border-radius: 999px;
+        transition: .18s ease;
+    }
+
+    .aa-nav a:hover,
+    .aa-nav a.is-active {
+        color: #fff;
+        background: rgba(255,255,255,.10);
+    }
+
+    .aa-top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .aa-top-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border-radius: 999px;
+        color: rgba(245,245,247,.90);
+        font-size: .78rem;
+        font-weight: 750;
+        text-decoration: none;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.10);
+        white-space: nowrap;
+    }
+
+    .aa-dot-live {
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: var(--aa-green);
+        box-shadow: 0 0 0 5px rgba(52,199,89,.18);
+    }
+
+    .aa-hero {
+        position: relative;
+        min-height: 680px;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        color: #f5f5f7;
+        background: #000;
+        isolation: isolate;
+    }
+
+    .aa-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -3;
+        background:
+            radial-gradient(980px 620px at 70% 35%, rgba(0,113,227,.46), transparent 62%),
+            radial-gradient(760px 520px at 30% 30%, rgba(245,130,32,.34), transparent 58%),
+            radial-gradient(540px 380px at 50% 92%, rgba(255,255,255,.16), transparent 68%),
+            linear-gradient(180deg, #030303 0%, #08080b 56%, #000 100%);
+    }
+
+    .aa-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        opacity: .28;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,.10) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(255,255,255,.10) 1px, transparent 1px);
+        background-size: 74px 74px;
+        mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 70%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 70%, transparent 100%);
+    }
+
+    .aa-hero-inner {
+        width: 100%;
+        max-width: var(--aa-max);
+        margin: 0 auto;
+        padding: 86px 22px 70px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr);
+        gap: 34px;
+        align-items: center;
+    }
+
+    .aa-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 999px;
+        color: rgba(245,245,247,.88);
+        background: rgba(255,255,255,.07);
+        font-size: .78rem;
+        font-weight: 900;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+
+    .aa-eyebrow i {
+        color: var(--aa-orange-2);
+    }
+
+    .aa-hero h1 {
+        margin: 18px 0 0;
+        max-width: 820px;
+        font-size: clamp(3.55rem, 7vw, 6.75rem);
+        line-height: .88;
+        letter-spacing: -.078em;
+        font-weight: 900;
+    }
+
+    .aa-hero h1 span {
+        display: inline-block;
+        color: transparent;
+        background: linear-gradient(90deg, #fff 0%, #d8ecff 34%, #ffb25b 75%, #f58220 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    .aa-hero-copy {
+        position: relative;
+        z-index: 2;
+    }
+
+    .aa-hero-copy p {
+        margin: 22px 0 0;
+        max-width: 720px;
+        color: rgba(245,245,247,.76);
+        font-size: clamp(1.02rem, 1.5vw, 1.24rem);
+        line-height: 1.62;
+        font-weight: 560;
+        letter-spacing: -.018em;
+    }
+
+    .aa-actions {
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .aa-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 44px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: .95rem;
+        font-weight: 780;
+        transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .aa-btn:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .aa-btn-primary {
+        color: #fff;
+        background: var(--aa-blue);
+        box-shadow: 0 18px 42px rgba(0,113,227,.30);
+    }
+
+    .aa-btn-primary:hover {
+        color: #fff;
+        background: #0878eb;
+    }
+
+    .aa-btn-light {
+        color: #1d1d1f;
+        background: rgba(245,245,247,.96);
+        box-shadow: 0 18px 42px rgba(255,255,255,.10);
+    }
+
+    .aa-btn-light:hover {
+        color: #1d1d1f;
+        background: #fff;
+    }
+
+    .aa-btn-ghost {
+        color: #f5f5f7;
+        background: rgba(255,255,255,.09);
+        border-color: rgba(255,255,255,.16);
+    }
+
+    .aa-btn-ghost:hover {
+        color: #fff;
+        background: rgba(255,255,255,.13);
+    }
+
+    .aa-device-stage {
+        position: relative;
+        min-height: 520px;
+        display: grid;
+        place-items: center;
+    }
+
+    .aa-device-stage::before {
+        content: "";
+        position: absolute;
+        width: 560px;
+        height: 560px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(41,151,255,.30), transparent 62%);
+        filter: blur(10px);
+    }
+
+    .aa-phone {
+        position: relative;
+        width: min(380px, 90vw);
+        min-height: 530px;
+        border-radius: 56px;
+        padding: 13px;
+        background: linear-gradient(135deg, rgba(255,255,255,.55), rgba(255,255,255,.08));
+        box-shadow:
+            inset 0 0 0 1px rgba(255,255,255,.20),
+            0 40px 110px rgba(0,0,0,.45);
+        transform: rotate(-4deg);
+    }
+
+    .aa-phone-screen {
+        position: relative;
+        min-height: 504px;
+        overflow: hidden;
+        border-radius: 45px;
+        background:
+            radial-gradient(360px 220px at 70% 16%, rgba(245,130,32,.30), transparent 58%),
+            radial-gradient(300px 240px at 20% 28%, rgba(41,151,255,.34), transparent 58%),
+            linear-gradient(180deg, #111318, #050506);
+        border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .aa-phone-notch {
+        position: absolute;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 118px;
+        height: 34px;
+        border-radius: 999px;
+        background: #000;
+        z-index: 4;
+    }
+
+    .aa-screen-content {
+        position: relative;
+        z-index: 2;
+        padding: 70px 22px 22px;
+    }
+
+    .aa-screen-title {
+        color: #fff;
+        font-size: 1.8rem;
+        line-height: 1.02;
+        letter-spacing: -.055em;
+        font-weight: 900;
+    }
+
+    .aa-screen-sub {
+        margin-top: 8px;
+        color: rgba(245,245,247,.64);
+        font-size: .86rem;
+        line-height: 1.45;
+        font-weight: 560;
+    }
+
+    .aa-signal-card {
+        margin-top: 20px;
+        border-radius: 28px;
+        padding: 16px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.14);
+    }
+
+    .aa-signal-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: .9rem;
+    }
+
+    .aa-bars {
+        height: 104px;
+        display: flex;
+        align-items: end;
+        gap: 8px;
+        margin-top: 18px;
+    }
+
+    .aa-bars span {
+        flex: 1;
+        border-radius: 999px 999px 12px 12px;
+        background: linear-gradient(180deg, #fff, rgba(41,151,255,.40));
+        opacity: .88;
+    }
+
+    .aa-bars span:nth-child(3),
+    .aa-bars span:nth-child(6) {
+        background: linear-gradient(180deg, #ffb25b, rgba(245,130,32,.48));
+    }
+
+    .aa-temp-card {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .aa-temp-mini {
+        padding: 14px;
+        border-radius: 22px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.13);
+    }
+
+    .aa-temp-mini b {
+        display: block;
+        color: #fff;
+        font-size: 1.25rem;
+        line-height: 1;
+        letter-spacing: -.04em;
+    }
+
+    .aa-temp-mini span {
+        display: block;
+        margin-top: 7px;
+        color: rgba(245,245,247,.58);
+        font-size: .74rem;
+        font-weight: 650;
+    }
+
+
+
+    /* ===== HERO VISUAL V2 - COMMAND CENTER (không dùng mockup iPhone) ===== */
+    .aa-device-stage {
+        position: relative;
+        min-height: 520px;
+        display: grid;
+        place-items: center;
+        perspective: 1200px;
+    }
+
+    .aa-device-stage::before {
+        content: "";
+        position: absolute;
+        width: 620px;
+        height: 420px;
+        border-radius: 999px;
+        background:
+            radial-gradient(circle at 50% 50%, rgba(41,151,255,.34), transparent 62%),
+            radial-gradient(circle at 76% 28%, rgba(245,130,32,.25), transparent 54%);
+        filter: blur(14px);
+        opacity: .9;
+    }
+
+    .aa-command-deck {
+        position: relative;
+        width: min(560px, 92vw);
+        min-height: 420px;
+        border-radius: 36px;
+        padding: 18px;
+        overflow: hidden;
+        background:
+            linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.055)),
+            linear-gradient(145deg, rgba(22,22,23,.96), rgba(4,8,16,.96));
+        border: 1px solid rgba(255,255,255,.18);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.16),
+            0 38px 100px rgba(0,0,0,.42);
+        transform: rotateY(-9deg) rotateX(4deg) rotateZ(1deg);
+    }
+
+    .aa-command-deck::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: .32;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,.11) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(255,255,255,.10) 1px, transparent 1px);
+        background-size: 34px 34px;
+        mask-image: linear-gradient(135deg, #000, transparent 85%);
+        pointer-events: none;
+    }
+
+    .aa-command-glow {
+        position: absolute;
+        right: -120px;
+        top: -150px;
+        width: 340px;
+        height: 340px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(245,130,32,.42), transparent 66%);
+        pointer-events: none;
+    }
+
+    .aa-deck-top {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 8px 8px 16px;
+        border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+
+    .aa-deck-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .aa-deck-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        color: #111827;
+        background: linear-gradient(135deg, #f58220, #ffcb8a);
+        box-shadow: 0 16px 34px rgba(245,130,32,.26);
+        flex: 0 0 auto;
+        font-size: 1.24rem;
+    }
+
+    .aa-deck-title {
+        color: #fff;
+        font-size: 1.12rem;
+        line-height: 1.05;
+        letter-spacing: -.035em;
+        font-weight: 900;
+    }
+
+    .aa-deck-subtitle {
+        margin-top: 4px;
+        color: rgba(245,245,247,.56);
+        font-size: .78rem;
+        font-weight: 650;
+    }
+
+    .aa-deck-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 999px;
+        color: rgba(245,245,247,.88);
+        background: rgba(255,255,255,.09);
+        border: 1px solid rgba(255,255,255,.13);
+        font-size: .8rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .aa-deck-main {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1.18fr .82fr;
+        gap: 14px;
+        padding-top: 16px;
+    }
+
+    .aa-deck-panel,
+    .aa-deck-sidepanel,
+    .aa-deck-mini {
+        border: 1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.075);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .aa-deck-panel {
+        min-height: 258px;
+        border-radius: 28px;
+        padding: 17px;
+        overflow: hidden;
+    }
+
+    .aa-deck-panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .aa-deck-label {
+        color: rgba(245,245,247,.54);
+        font-size: .74rem;
+        font-weight: 850;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+
+    .aa-deck-number {
+        margin-top: 7px;
+        color: #fff;
+        font-size: 2.6rem;
+        line-height: .9;
+        letter-spacing: -.07em;
+        font-weight: 900;
+    }
+
+    .aa-deck-number small {
+        font-size: 1.05rem;
+        color: rgba(245,245,247,.58);
+        letter-spacing: -.03em;
+    }
+
+    .aa-deck-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        color: #d1fae5;
+        background: rgba(52,199,89,.13);
+        border: 1px solid rgba(52,199,89,.20);
+        font-size: .74rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .aa-deck-chart {
+        position: relative;
+        height: 122px;
+        margin-top: 20px;
+        border-radius: 22px;
+        overflow: hidden;
+        background:
+            linear-gradient(180deg, rgba(41,151,255,.10), transparent),
+            linear-gradient(90deg, rgba(255,255,255,.075) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(255,255,255,.075) 1px, transparent 1px);
+        background-size: auto, 28px 28px, 28px 28px;
+    }
+
+    .aa-deck-chart svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .aa-deck-bars {
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        bottom: 12px;
+        display: flex;
+        align-items: end;
+        gap: 8px;
+        height: 70px;
+        opacity: .88;
+    }
+
+    .aa-deck-bars span {
+        flex: 1;
+        border-radius: 999px 999px 9px 9px;
+        background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(41,151,255,.40));
+    }
+
+    .aa-deck-bars span:nth-child(3),
+    .aa-deck-bars span:nth-child(7) {
+        background: linear-gradient(180deg, #ffb25b, rgba(245,130,32,.46));
+    }
+
+    .aa-deck-sidepanel {
+        border-radius: 28px;
+        padding: 15px;
+        display: grid;
+        gap: 11px;
+    }
+
+    .aa-deck-mini {
+        border-radius: 22px;
+        padding: 14px;
+    }
+
+    .aa-deck-mini b {
+        display: block;
+        color: #fff;
+        font-size: 1.35rem;
+        line-height: 1;
+        letter-spacing: -.05em;
+    }
+
+    .aa-deck-mini span {
+        display: block;
+        margin-top: 6px;
+        color: rgba(245,245,247,.58);
+        font-size: .75rem;
+        font-weight: 700;
+    }
+
+    .aa-deck-mini.orange {
+        background: linear-gradient(135deg, rgba(245,130,32,.30), rgba(255,255,255,.075));
+    }
+
+    .aa-deck-footer {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 11px;
+        margin-top: 14px;
+    }
+
+    .aa-deck-footitem {
+        min-height: 76px;
+        border-radius: 22px;
+        padding: 13px;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.11);
+    }
+
+    .aa-deck-footitem i {
+        color: #ffb25b;
+        font-size: 1.05rem;
+    }
+
+    .aa-deck-footitem b {
+        display: block;
+        margin-top: 8px;
+        color: #fff;
+        font-size: .86rem;
+        font-weight: 850;
+    }
+
+    .aa-deck-footitem span {
+        display: block;
+        margin-top: 4px;
+        color: rgba(245,245,247,.52);
+        font-size: .7rem;
+        line-height: 1.25;
+        font-weight: 650;
+    }
+
+    .aa-floating-orb {
+        position: absolute;
+        z-index: 3;
+        width: 88px;
+        height: 88px;
+        border-radius: 26px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.14);
+        box-shadow: 0 20px 54px rgba(0,0,0,.26);
+    }
+
+    .aa-floating-orb.one {
+        right: -18px;
+        top: 62px;
+        color: #111827;
+        background: linear-gradient(135deg, #f58220, #ffcb8a);
+    }
+
+    .aa-floating-orb.two {
+        left: -20px;
+        bottom: 54px;
+        background: linear-gradient(135deg, rgba(0,113,227,.95), rgba(41,151,255,.75));
+    }
+
+    .aa-section {
+        padding: 56px 0;
+    }
+
+    .aa-section-tight {
+        padding-top: 34px;
+    }
+
+    .aa-section-head {
+        margin-bottom: 22px;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .aa-kicker-dark {
+        color: #86868b;
+        font-size: .78rem;
+        font-weight: 850;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+
+    .aa-section-title {
+        margin: 5px 0 0;
+        font-size: clamp(2rem, 4vw, 3.8rem);
+        line-height: .96;
+        letter-spacing: -.068em;
+        font-weight: 900;
+        color: var(--aa-ink);
+    }
+
+    .aa-section-note {
+        max-width: 420px;
+        color: var(--aa-muted);
+        font-size: .95rem;
+        line-height: 1.55;
+        font-weight: 560;
+    }
+
+    .aa-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 13px;
+        border-radius: 999px;
+        color: var(--aa-ink);
+        background: #fff;
+        border: 1px solid var(--aa-line);
+        font-size: .82rem;
+        font-weight: 800;
+        box-shadow: 0 8px 24px rgba(0,0,0,.06);
+        white-space: nowrap;
+    }
+
+    .aa-metrics {
+        margin-top: -52px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .aa-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0,1fr));
+        gap: 14px;
+    }
+
+    .aa-metric {
+        min-height: 176px;
+        border-radius: var(--aa-radius-lg);
+        padding: 22px;
+        background: rgba(255,255,255,.92);
+        border: 1px solid rgba(0,0,0,.07);
+        box-shadow: var(--aa-shadow-soft);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .aa-metric::after {
+        content: "";
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 99px;
+        right: -78px;
+        bottom: -78px;
+        background: radial-gradient(circle, rgba(0,113,227,.18), transparent 68%);
+    }
+
+    .aa-metric.orange::after { background: radial-gradient(circle, rgba(245,130,32,.22), transparent 68%); }
+    .aa-metric.green::after { background: radial-gradient(circle, rgba(52,199,89,.22), transparent 68%); }
+    .aa-metric.dark::after { background: radial-gradient(circle, rgba(0,0,0,.16), transparent 68%); }
+
+    .aa-metric-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .aa-metric-label {
+        color: var(--aa-muted);
+        font-size: .78rem;
+        font-weight: 850;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .aa-metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, var(--aa-blue), var(--aa-blue-2));
+        box-shadow: 0 12px 28px rgba(0,113,227,.22);
+    }
+
+    .aa-metric.orange .aa-metric-icon {
+        color: #1d1d1f;
+        background: linear-gradient(135deg, var(--aa-orange), var(--aa-orange-2));
+        box-shadow: 0 12px 28px rgba(245,130,32,.22);
+    }
+
+    .aa-metric.green .aa-metric-icon {
+        background: linear-gradient(135deg, #248a3d, var(--aa-green));
+        box-shadow: 0 12px 28px rgba(52,199,89,.20);
+    }
+
+    .aa-metric.dark .aa-metric-icon {
+        background: linear-gradient(135deg, #1d1d1f, #4a4a4e);
+        box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    }
+
+    .aa-metric-number {
+        position: relative;
+        z-index: 2;
+        margin-top: 22px;
+        color: var(--aa-ink);
+        font-size: 2.35rem;
+        line-height: 1;
+        letter-spacing: -.06em;
+        font-weight: 900;
+    }
+
+    .aa-metric-foot {
+        position: relative;
+        z-index: 2;
+        margin-top: 9px;
+        color: var(--aa-muted);
+        font-size: .86rem;
+        line-height: 1.4;
+        font-weight: 620;
+    }
+
+    .aa-tile-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .aa-tile {
+        grid-column: span 4;
+        min-height: 340px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-radius: var(--aa-radius-xl);
+        padding: 28px;
+        text-decoration: none;
+        color: var(--aa-ink);
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.06);
+        box-shadow: var(--aa-shadow-soft);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .aa-tile:hover {
+        color: var(--aa-ink);
+        transform: translateY(-5px);
+        box-shadow: 0 24px 68px rgba(0,0,0,.13);
+        text-decoration: none;
+    }
+
+    .aa-tile.large {
+        grid-column: span 6;
+        min-height: 420px;
+    }
+
+    .aa-tile.black {
+        color: #f5f5f7;
+        background:
+            radial-gradient(420px 260px at 80% 70%, rgba(41,151,255,.34), transparent 62%),
+            radial-gradient(420px 260px at 18% 18%, rgba(245,130,32,.32), transparent 62%),
+            linear-gradient(135deg, #050505, #161617);
+        border-color: rgba(255,255,255,.10);
+    }
+
+    .aa-tile.orange {
+        color: #1d1d1f;
+        background:
+            radial-gradient(520px 300px at 90% 20%, rgba(255,255,255,.52), transparent 60%),
+            linear-gradient(135deg, #ffedd5, #ffb25b);
+    }
+
+    .aa-tile.blue {
+        color: #f5f5f7;
+        background:
+            radial-gradient(520px 300px at 80% 16%, rgba(255,255,255,.20), transparent 62%),
+            linear-gradient(135deg, #003d80, #0071e3);
+    }
+
+    .aa-tile.green {
+        color: #f5f5f7;
+        background:
+            radial-gradient(520px 300px at 82% 16%, rgba(255,255,255,.20), transparent 62%),
+            linear-gradient(135deg, #0d4f25, #34c759);
+    }
+
+    .aa-tile-head {
+        position: relative;
+        z-index: 2;
+    }
+
+    .aa-tile-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: inherit;
+        background: rgba(255,255,255,.38);
+        border: 1px solid rgba(0,0,0,.06);
+        font-size: .76rem;
+        font-weight: 850;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .aa-tile.black .aa-tile-badge,
+    .aa-tile.blue .aa-tile-badge,
+    .aa-tile.green .aa-tile-badge {
+        background: rgba(255,255,255,.12);
+        border-color: rgba(255,255,255,.14);
+        color: rgba(245,245,247,.86);
+    }
+
+    .aa-tile-title {
+        margin-top: 18px;
+        max-width: 430px;
+        font-size: clamp(1.85rem, 3.5vw, 3.3rem);
+        line-height: .98;
+        letter-spacing: -.06em;
+        font-weight: 900;
+    }
+
+    .aa-tile.small .aa-tile-title {
+        font-size: 2rem;
+    }
+
+    .aa-tile-desc {
+        margin-top: 12px;
+        max-width: 440px;
+        color: rgba(110,110,115,.92);
+        font-size: .96rem;
+        line-height: 1.55;
+        font-weight: 560;
+    }
+
+    .aa-tile.black .aa-tile-desc,
+    .aa-tile.blue .aa-tile-desc,
+    .aa-tile.green .aa-tile-desc {
+        color: rgba(245,245,247,.70);
+    }
+
+    .aa-tile-go {
+        position: relative;
+        z-index: 2;
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 24px;
+        color: var(--aa-blue);
+        font-weight: 780;
+    }
+
+    .aa-tile.black .aa-tile-go,
+    .aa-tile.blue .aa-tile-go,
+    .aa-tile.green .aa-tile-go {
+        color: #2997ff;
+    }
+
+    .aa-tile.orange .aa-tile-go {
+        color: #a54f10;
+    }
+
+    .aa-device-lines {
+        position: absolute;
+        right: -56px;
+        bottom: -60px;
+        width: 330px;
+        height: 330px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.16);
+        box-shadow:
+            inset 0 0 0 28px rgba(255,255,255,.05),
+            inset 0 0 0 68px rgba(255,255,255,.035),
+            inset 0 0 0 110px rgba(255,255,255,.022);
+        opacity: .9;
+    }
+
+    .aa-work-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(320px, .85fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .aa-panel {
+        border-radius: var(--aa-radius-xl);
+        overflow: hidden;
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(0,0,0,.07);
+        box-shadow: var(--aa-shadow-soft);
+    }
+
+    .aa-panel-head {
+        padding: 24px 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        background:
+            radial-gradient(520px 220px at 100% 0%, rgba(0,113,227,.10), transparent 62%),
+            #fff;
+        border-bottom: 1px solid rgba(0,0,0,.07);
+    }
+
+    .aa-panel-title {
+        margin: 0;
+        font-size: 1.35rem;
+        line-height: 1.1;
+        letter-spacing: -.045em;
+        font-weight: 900;
+        color: var(--aa-ink);
+    }
+
+    .aa-panel-body {
+        padding: 18px;
+    }
+
+    .aa-module {
+        border-radius: 28px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.07);
+        box-shadow: 0 12px 30px rgba(0,0,0,.05);
+    }
+
+    .aa-module + .aa-module {
+        margin-top: 12px;
+    }
+
+    .aa-module-toggle {
+        width: 100%;
+        min-height: 86px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border: 0;
+        background: linear-gradient(180deg, #fff, #fafafa);
+        text-align: left;
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    a.aa-module-toggle:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .aa-module-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 19px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        color: #fff;
+        background: linear-gradient(135deg, var(--aa-blue), var(--aa-blue-2));
+        box-shadow: 0 12px 26px rgba(0,113,227,.18);
+        font-size: 1.2rem;
+    }
+
+    .aa-module:nth-child(2n) .aa-module-icon {
+        color: #1d1d1f;
+        background: linear-gradient(135deg, var(--aa-orange), var(--aa-orange-2));
+        box-shadow: 0 12px 26px rgba(245,130,32,.18);
+    }
+
+    .aa-module-txt {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .aa-module-title {
+        color: var(--aa-ink);
+        font-size: 1rem;
+        line-height: 1.2;
+        font-weight: 900;
+        letter-spacing: -.02em;
+    }
+
+    .aa-module-sub {
+        margin-top: 5px;
+        color: var(--aa-muted);
+        font-size: .82rem;
+        line-height: 1.35;
+        font-weight: 610;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .aa-module-arrow {
+        color: #86868b;
+        transition: transform .18s ease;
+    }
+
+    .aa-module-body {
+        display: none;
+        padding: 20px;
+        border-top: 1px solid rgba(0,0,0,.07);
+        background: #fff;
+    }
+
+    .aa-module.is-open .aa-module-body {
+        display: block;
+    }
+
+    .aa-module.is-open .aa-module-arrow {
+        transform: rotate(180deg);
+    }
+
+    .aa-help {
+        color: var(--aa-muted);
+        font-size: .88rem;
+        line-height: 1.55;
+        font-weight: 560;
+    }
+
+    .aa-form-grid {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 13px;
+    }
+
+    .aa-field {
+        grid-column: span 12;
+    }
+
+    .aa-label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--aa-ink);
+        font-size: .86rem;
+        font-weight: 850;
+    }
+
+    .aa-input {
+        width: 100%;
+        min-height: 46px;
+        padding: 12px 14px;
+        color: var(--aa-ink);
+        background: #fbfbfd;
+        border: 1px solid rgba(0,0,0,.12);
+        border-radius: 16px;
+        outline: none;
+        font-size: .93rem;
+        font-weight: 650;
+        transition: box-shadow .16s ease, border-color .16s ease, background .16s ease;
+    }
+
+    .aa-input:focus {
+        background: #fff;
+        border-color: rgba(0,113,227,.58);
+        box-shadow: 0 0 0 4px rgba(0,113,227,.14);
+    }
+
+    .aa-inline-actions {
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .aa-mini-btn {
+        min-height: 40px;
+        padding: 10px 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 14px;
+        border: 1px solid rgba(0,0,0,.10);
+        color: var(--aa-ink);
+        background: #fff;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: .86rem;
+        font-weight: 820;
+        transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    .aa-mini-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(0,0,0,.08);
+        color: var(--aa-ink);
+        text-decoration: none;
+    }
+
+    .aa-mini-btn.primary {
+        color: #fff;
+        border-color: transparent;
+        background: var(--aa-blue);
+    }
+
+    .aa-mini-btn.primary:hover {
+        color: #fff;
+        background: #0878eb;
+    }
+
+    .aa-mini-btn.orange {
+        color: #1d1d1f;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--aa-orange), var(--aa-orange-2));
+    }
+
+    .aa-mini-btn:disabled {
+        opacity: .62;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .aa-kv {
+        display: none;
+        grid-template-columns: 130px minmax(0,1fr);
+        gap: 8px 13px;
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 20px;
+        background: #f5f5f7;
+        border: 1px dashed rgba(0,0,0,.16);
+        font-size: .88rem;
+    }
+
+    .aa-kv b {
+        color: var(--aa-ink);
+        font-weight: 900;
+    }
+
+    .aa-kv span {
+        color: #424245;
+        font-weight: 630;
+        word-break: break-word;
+    }
+
+    .aa-table-wrap {
+        display: none;
+        overflow: auto;
+        max-height: 390px;
+        margin-top: 16px;
+        border-radius: 22px;
+        border: 1px solid rgba(0,0,0,.08);
+        background: #fff;
+    }
+
+    .aa-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 620px;
+        font-size: .88rem;
+    }
+
+    .aa-table th,
+    .aa-table td {
+        padding: 13px 13px;
+        text-align: left;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0,0,0,.07);
+        background: #fff;
+    }
+
+    .aa-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        color: #6e6e73;
+        background: #f5f5f7;
+        font-size: .78rem;
+        font-weight: 880;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .aa-table tbody tr:hover td {
+        background: #fafafa;
+    }
+
+    .aa-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: .76rem;
+        font-weight: 850;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+    .aa-status.ok {
+        color: #1b7f38;
+        background: rgba(52,199,89,.14);
+        border-color: rgba(52,199,89,.22);
+    }
+
+    .aa-status.warn {
+        color: #9a4b10;
+        background: rgba(245,130,32,.14);
+        border-color: rgba(245,130,32,.22);
+    }
+
+    .aa-status.info {
+        color: #0057b8;
+        background: rgba(0,113,227,.12);
+        border-color: rgba(0,113,227,.20);
+    }
+
+    .aa-status.crit {
+        color: #b42318;
+        background: rgba(255,59,48,.12);
+        border-color: rgba(255,59,48,.20);
+    }
+
+    .aa-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        color: #86868b;
+        background: #f5f5f7;
+        border: 1px solid rgba(0,0,0,.08);
+    }
+
+    .aa-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .aa-link-grid {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 10px;
+    }
+
+    .aa-linkpill {
+        min-height: 78px;
+        display: grid;
+        grid-template-columns: 46px minmax(0,1fr) 24px;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 22px;
+        background: #fbfbfd;
+        border: 1px solid rgba(0,0,0,.08);
+        color: inherit;
+        text-decoration: none;
+        transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+    }
+
+    .aa-linkpill:hover {
+        color: inherit;
+        text-decoration: none;
+        transform: translateY(-2px);
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(0,0,0,.07);
+    }
+
+    .aa-linkpill > i {
+        width: 46px;
+        height: 46px;
+        border-radius: 17px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, var(--aa-blue), var(--aa-blue-2));
+    }
+
+    .aa-linkpill:nth-child(2n) > i {
+        color: #1d1d1f;
+        background: linear-gradient(135deg, var(--aa-orange), var(--aa-orange-2));
+    }
+
+    .aa-link-t {
+        color: var(--aa-ink);
+        font-weight: 900;
+        line-height: 1.15;
+    }
+
+    .aa-link-s {
+        margin-top: 4px;
+        color: var(--aa-muted);
+        font-size: .77rem;
+        font-weight: 620;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .aa-link-go {
+        justify-self: end;
+        color: #86868b;
+        font-weight: 900;
+    }
+
+    .aa-side {
+        position: sticky;
+        top: 74px;
+    }
+
+    .aa-side-card {
+        border-radius: var(--aa-radius-xl);
+        overflow: hidden;
+        color: #f5f5f7;
+        background:
+            radial-gradient(440px 280px at 84% 4%, rgba(245,130,32,.38), transparent 62%),
+            radial-gradient(420px 280px at 12% 20%, rgba(41,151,255,.38), transparent 64%),
+            linear-gradient(145deg, #050505, #1d1d1f);
+        border: 1px solid rgba(255,255,255,.12);
+        box-shadow: var(--aa-shadow-soft);
+    }
+
+    .aa-side-inner {
+        padding: 26px;
+    }
+
+    .aa-side-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: rgba(245,245,247,.86);
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.13);
+        font-size: .74rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+    }
+
+    .aa-side-title {
+        margin: 18px 0 0;
+        font-size: 2.05rem;
+        line-height: .98;
+        letter-spacing: -.06em;
+        font-weight: 900;
+    }
+
+    .aa-side-desc {
+        margin-top: 12px;
+        color: rgba(245,245,247,.68);
+        font-size: .92rem;
+        line-height: 1.55;
+        font-weight: 560;
+    }
+
+    .aa-flow {
+        margin-top: 20px;
+        display: grid;
+        gap: 10px;
+    }
+
+    .aa-flow-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 22px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .aa-flow-num {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        color: #1d1d1f;
+        background: #fff;
+        font-weight: 900;
+    }
+
+    .aa-flow-t {
+        color: #fff;
+        font-weight: 860;
+        line-height: 1.2;
+    }
+
+    .aa-flow-s {
+        margin-top: 4px;
+        color: rgba(245,245,247,.62);
+        font-size: .8rem;
+        line-height: 1.45;
+        font-weight: 560;
+    }
+
+    .aa-side-cta {
+        margin: 18px 26px 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 13px;
+        padding: 16px;
+        border-radius: 24px;
+        color: #1d1d1f;
+        background: rgba(255,255,255,.92);
+        text-decoration: none;
+    }
+
+    .aa-side-cta:hover {
+        color: #1d1d1f;
+        text-decoration: none;
+    }
+
+    .aa-side-cta b {
+        display: block;
+        font-weight: 900;
+        letter-spacing: -.02em;
+    }
+
+    .aa-side-cta span {
+        display: block;
+        margin-top: 3px;
+        color: var(--aa-muted);
+        font-size: .78rem;
+        font-weight: 620;
+    }
+
+    .aa-side-cta i {
+        width: 42px;
+        height: 42px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        color: #fff;
+        background: var(--aa-blue);
+    }
+
+    .aa-toast {
+        position: fixed;
+        right: 18px;
+        top: 70px;
+        z-index: 9999;
+        display: none;
+        width: min(420px, calc(100vw - 36px));
+        padding: 15px 16px;
+        border-radius: 20px;
+        color: var(--aa-ink);
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(0,0,0,.08);
+        box-shadow: 0 24px 70px rgba(0,0,0,.18);
+    }
+
+    .aa-toast.show {
+        display: block;
+        animation: aaToastIn .18s ease-out;
+    }
+
+    .aa-toast-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 900;
+    }
+
+    .aa-toast-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--aa-green);
+    }
+
+    .aa-toast-dot.err { background: var(--aa-red); }
+    .aa-toast-dot.warn { background: var(--aa-yellow); }
+
+    .aa-toast-msg {
+        margin-top: 5px;
+        color: var(--aa-muted);
+        font-size: .86rem;
+        line-height: 1.45;
+        font-weight: 560;
+    }
+
+    @@keyframes aaToastIn {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .aa-floating {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .aa-floating a {
+        width: 54px;
+        height: 54px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: rgba(29,29,31,.92);
+        border: 1px solid rgba(255,255,255,.12);
+        box-shadow: 0 16px 44px rgba(0,0,0,.24);
+        text-decoration: none;
+        transition: transform .16s ease, background .16s ease;
+    }
+
+    .aa-floating a:first-child {
+        color: #1d1d1f;
+        background: linear-gradient(135deg, var(--aa-orange), var(--aa-orange-2));
+    }
+
+    .aa-floating a:hover {
+        transform: translateY(-3px);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .aa-floating a:first-child:hover {
+        color: #1d1d1f;
+    }
+
+    @@media (max-width: 1199.98px) {
+        .aa-hero-inner {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .aa-hero-copy p,
+        .aa-hero h1 {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .aa-actions {
+            justify-content: center;
+        }
+
+        .aa-device-stage {
+            min-height: 450px;
+        }
+
+        .aa-phone {
+            transform: none;
+        }
+
+        .aa-work-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .aa-side {
+            position: relative;
+            top: auto;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .aa-nav {
+            display: none;
+        }
+
+        .aa-metric-grid {
+            grid-template-columns: repeat(2, minmax(0,1fr));
+        }
+
+        .aa-tile,
+        .aa-tile.large {
+            grid-column: span 6;
+        }
+
+        .aa-section-head {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .aa-wrap,
+        .aa-topbar-inner,
+        .aa-hero-inner {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .aa-top-pill {
+            display: none;
+        }
+
+        .aa-hero {
+            min-height: auto;
+        }
+
+        .aa-hero-inner {
+            padding-top: 62px;
+            padding-bottom: 46px;
+        }
+
+        .aa-hero h1 {
+            font-size: 3.25rem;
+        }
+
+        .aa-device-stage {
+            min-height: auto;
+            padding-top: 14px;
+        }
+
+        .aa-phone {
+            min-height: 430px;
+            border-radius: 42px;
+        }
+
+        .aa-phone-screen {
+            min-height: 404px;
+            border-radius: 34px;
+        }
+
+        .aa-metrics {
+            margin-top: 0;
+            padding-top: 18px;
+        }
+
+        .aa-metric-grid,
+        .aa-link-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .aa-tile,
+        .aa-tile.large {
+            grid-column: span 12;
+            min-height: 320px;
+            border-radius: 28px;
+            padding: 24px;
+        }
+
+        .aa-panel-head {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .aa-module-sub {
+            white-space: normal;
+        }
+
+        .aa-floating {
+            right: 14px;
+            bottom: 14px;
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .aa-metric-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .aa-actions .aa-btn {
+            width: 100%;
+        }
+
+        .aa-temp-card {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        * {
+            transition: none !important;
+            animation: none !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+
+    @@media (max-width: 1199.98px) {
+        .aa-command-deck {
+            transform: none !important;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .aa-command-deck {
+            width: 100%;
+            min-height: auto;
+            border-radius: 28px;
+            padding: 14px;
+        }
+
+        .aa-deck-main {
+            grid-template-columns: 1fr;
+        }
+
+        .aa-deck-footer {
+            grid-template-columns: 1fr;
+        }
+
+        .aa-floating-orb {
+            display: none;
+        }
+    }
+
+
+    /* ===== APPLE STYLE VIDEO HERO - ELITECH ADMIN ===== */
+    .aa-hero-video-section {
+        position: relative;
+        width: 100%;
+        min-height: calc(100vh - 52px);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f5f5f7;
+        background:
+            radial-gradient(920px 620px at 72% 34%, rgba(0,113,227,.34), transparent 64%),
+            radial-gradient(760px 520px at 30% 28%, rgba(245,130,32,.25), transparent 58%),
+            #000;
+        isolation: isolate;
+    }
+
+    .aa-hero-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: -4;
+        transform: scale(1.015);
+        filter: saturate(1.08) contrast(1.03);
+    }
+
+    .aa-hero-video-noise {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        opacity: .18;
+        pointer-events: none;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,.10) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(255,255,255,.10) 1px, transparent 1px);
+        background-size: 72px 72px;
+        mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
+    }
+
+    .aa-hero-video-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: -3;
+        background:
+            radial-gradient(840px 560px at 50% 56%, rgba(0,0,0,.08), rgba(0,0,0,.60)),
+            linear-gradient(90deg, rgba(0,0,0,.68) 0%, rgba(0,0,0,.30) 46%, rgba(0,0,0,.62) 100%),
+            linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.32) 48%, rgba(0,0,0,.82) 100%);
+    }
+
+    .aa-hero-video-section::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 190px;
+        z-index: -1;
+        background: linear-gradient(180deg, transparent 0%, rgba(245,245,247,.78) 78%, var(--aa-soft) 100%);
+        pointer-events: none;
+    }
+
+    .aa-hero-video-content {
+        width: min(1040px, calc(100% - 36px));
+        margin: 0 auto;
+        padding: 92px 18px 126px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .aa-hero-video-content .aa-eyebrow {
+        background: rgba(255,255,255,.10);
+        border-color: rgba(255,255,255,.18);
+        box-shadow: 0 16px 48px rgba(0,0,0,.20);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    .aa-hero-video-content h1 {
+        margin: 22px 0 0;
+        max-width: 980px;
+        font-size: clamp(3.15rem, 7.8vw, 7.15rem);
+        line-height: .88;
+        letter-spacing: -.078em;
+        font-weight: 900;
+        text-shadow: 0 22px 72px rgba(0,0,0,.45);
+    }
+
+    .aa-hero-video-content h1 span {
+        display: inline-block;
+        color: transparent;
+        background: linear-gradient(90deg, #fff 0%, #d8ecff 34%, #ffb25b 76%, #f58220 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    .aa-hero-video-content p {
+        margin: 24px 0 0;
+        max-width: 790px;
+        color: rgba(245,245,247,.84);
+        font-size: clamp(1.02rem, 1.55vw, 1.28rem);
+        line-height: 1.62;
+        font-weight: 560;
+        letter-spacing: -.018em;
+        text-shadow: 0 12px 36px rgba(0,0,0,.48);
+    }
+
+    .aa-hero-video-content .aa-actions {
+        justify-content: center;
+    }
+
+    .aa-video-hint {
+        margin-top: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(245,245,247,.70);
+        font-size: .82rem;
+        font-weight: 760;
+        text-shadow: 0 8px 26px rgba(0,0,0,.42);
+    }
+
+    .aa-video-hint span {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--aa-green);
+        box-shadow: 0 0 0 6px rgba(52,199,89,.16);
+    }
+
+    @@media (max-width: 767.98px) {
+        .aa-hero-video-section {
+            min-height: 720px;
+            align-items: flex-end;
+        }
+
+        .aa-hero-video {
+            object-position: center;
+        }
+
+        .aa-hero-video-overlay {
+            background:
+                radial-gradient(660px 460px at 50% 64%, rgba(0,0,0,.06), rgba(0,0,0,.70)),
+                linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.42) 45%, rgba(0,0,0,.88) 100%);
+        }
+
+        .aa-hero-video-content {
+            width: min(100%, calc(100% - 28px));
+            padding: 82px 12px 82px;
+        }
+
+        .aa-hero-video-content h1 {
+            font-size: 3.35rem;
+        }
+
+        .aa-hero-video-content p {
+            font-size: 1rem;
+        }
+
+        .aa-hero-video-content .aa-actions {
+            width: 100%;
+        }
+
+        .aa-hero-video-content .aa-actions .aa-btn {
+            width: 100%;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .aa-hero-video {
+            display: none;
+        }
+
+        .aa-hero-video-section {
+            background:
+                radial-gradient(900px 520px at 50% 40%, rgba(0,113,227,.34), transparent 62%),
+                radial-gradient(700px 460px at 35% 35%, rgba(245,130,32,.26), transparent 58%),
+                #000;
+        }
+    }
+
+</style>
+
+<div class="aa-toast" id="aaToast">
+    <div class="aa-toast-title">
+        <span class="aa-toast-dot" id="aaToastDot"></span>
+        <span id="aaToastTitle">Thông báo</span>
+    </div>
+    <div class="aa-toast-msg" id="aaToastMsg"></div>
+</div>
+
+<div class="aa-admin">
+    <main>
+        <!-- HERO VIDEO -->
+        <section class="aa-hero-video-section" id="overview">
+            <video class="aa-hero-video"
+                   autoplay
+                   muted
+                   loop
+                   playsinline
+                   preload="metadata"
+                   poster="/videos/admin-hero-poster.jpg">
+                <source src="/videos/admin-hero.mp4" type="video/mp4" />
+            </video>
+
+            <div class="aa-hero-video-overlay"></div>
+            <div class="aa-hero-video-noise"></div>
+
+            <div class="aa-hero-video-content">
+                <div class="aa-eyebrow">
+                    <i class="bi bi-stars"></i>
+                    Elitech Vietnam – The Future of Smart Temperature Monitoring.
+                </div>
+
+                <h1>
+                    Command Center<br />
+                    <span>cho Elitech.</span>
+                </h1>
+
+                <p>
+                    <p>
+                        Xin chào <b>@adminName</b>. Elitech Vietnam Command Center được thiết kế để biến dữ liệu thiết bị thành sự an tâm:
+                        realtime rõ ràng, cảnh báo chủ động, SMS tức thời và bảo mật phiên đăng nhập trong một trải nghiệm hiện đại, mượt mà.
+                    </p>
+                </p>
+
+                <div class="aa-actions">
+                    <a href="/ElitechRealtime" class="aa-btn aa-btn-primary">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        Mở Realtime
+                    </a>
+                    <a href="/Admin/AssignDevices" class="aa-btn aa-btn-light">
+                        <i class="bi bi-diagram-3-fill"></i>
+                        Gán thiết bị
+                    </a>
+                    <a href="#workbench" class="aa-btn aa-btn-ghost">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        Mở Workbench
+                    </a>
+                </div>
+
+                <div class="aa-video-hint">
+                    <span></span>
+                    Live video hero • Elitech Admin Suite
+                </div>
+            </div>
+        </section>
+
+        <!-- METRICS -->
+        <section class="aa-metrics">
+            <div class="aa-wrap">
+                <div class="aa-metric-grid">
+                    <div class="aa-metric">
+                        <div class="aa-metric-top">
+                            <div class="aa-metric-label">Cloud Status</div>
+                            <div class="aa-metric-icon"><i class="bi bi-cloud-check-fill"></i></div>
+                        </div>
+                        <div class="aa-metric-number">Live</div>
+                        <div class="aa-metric-foot">API / thiết bị / monitoring đang sẵn sàng.</div>
+                    </div>
+
+                    <div class="aa-metric orange">
+                        <div class="aa-metric-top">
+                            <div class="aa-metric-label">Device Bind</div>
+                            <div class="aa-metric-icon"><i class="bi bi-plus-circle-fill"></i></div>
+                        </div>
+                        <div class="aa-metric-number">#8</div>
+                        <div class="aa-metric-foot">Thêm thiết bị bằng Elitech addDevice.</div>
+                    </div>
+
+                    <div class="aa-metric green">
+                        <div class="aa-metric-top">
+                            <div class="aa-metric-label">Accounts</div>
+                            <div class="aa-metric-icon"><i class="bi bi-people-fill"></i></div>
+                        </div>
+                        <div class="aa-metric-number">Role</div>
+                        <div class="aa-metric-foot">Admin / Staff / User / quyền truy cập.</div>
+                    </div>
+
+                    <div class="aa-metric dark">
+                        <div class="aa-metric-top">
+                            <div class="aa-metric-label">Security</div>
+                            <div class="aa-metric-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                        </div>
+                        <div class="aa-metric-number">Auth</div>
+                        <div class="aa-metric-foot">Session tracking và revoke đăng nhập.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- APPS / QUICK ACCESS -->
+        <section class="aa-section" id="apps">
+            <div class="aa-wrap">
+                <div class="aa-section-head">
+                    <div>
+                        <div class="aa-kicker-dark">Admin Suite</div>
+                        <h2 class="aa-section-title">Mọi thao tác quan trọng. Một màn hình.</h2>
+                    </div>
+                    @* <div class="aa-section-note">
+                        Card lớn kiểu Apple, ít chữ hơn, focus vào hành động chính để Admin thao tác nhanh hơn.
+                    </div> *@
+                </div>
+
+                <div class="aa-tile-grid">
+                    <a href="/ElitechRealtime" class="aa-tile large black">
+                        <div class="aa-tile-head">
+                            <div class="aa-tile-badge"><i class="bi bi-broadcast-pin"></i> Realtime</div>
+                            <div class="aa-tile-title">Theo dõi nhiệt độ theo thời gian thực.</div>
+                            <div class="aa-tile-desc">Mở dashboard realtime để xem thiết bị, nhiệt độ, độ ẩm, trạng thái online và cảnh báo mới.</div>
+                        </div>
+                        <div class="aa-tile-go">Mở Realtime <i class="bi bi-arrow-right"></i></div>
+                        <div class="aa-device-lines"></div>
+                    </a>
+
+                    <a href="/Admin/AssignDevices" class="aa-tile large orange">
+                        <div class="aa-tile-head">
+                            <div class="aa-tile-badge"><i class="bi bi-diagram-3-fill"></i> Device Binding</div>
+                            <div class="aa-tile-title">Gán thiết bị cho người dùng nhanh hơn.</div>
+                            <div class="aa-tile-desc">Điều phối thiết bị theo tài khoản, nhóm người dùng và quyền xem dữ liệu.</div>
+                        </div>
+                        <div class="aa-tile-go">Gán thiết bị <i class="bi bi-arrow-right"></i></div>
+                        <div class="aa-device-lines"></div>
+                    </a>
+
+                    <a asp-controller="ElitechSetParam" asp-action="Index" class="aa-tile small blue">
+                        <div class="aa-tile-head">
+                            <div class="aa-tile-badge"><i class="bi bi-sliders2-vertical"></i> SetParam</div>
+                            <div class="aa-tile-title">Cấu hình thiết bị.</div>
+                            <div class="aa-tile-desc">Interval, thông số logger, waybill và cấu hình vận hành.</div>
+                        </div>
+                        <div class="aa-tile-go">Mở SetParam <i class="bi bi-arrow-right"></i></div>
+                    </a>
+
+                    <a href="/ElitechAlertRulesPage" class="aa-tile small">
+                        <div class="aa-tile-head">
+                            <div class="aa-tile-badge"><i class="bi bi-bell-fill"></i> Alert Rules</div>
+                            <div class="aa-tile-title">Ngưỡng cảnh báo.</div>
+                            <div class="aa-tile-desc">Cài đặt min/max nhiệt độ, cảnh báo và quy tắc giám sát.</div>
+                        </div>
+                        <div class="aa-tile-go">Cài ngưỡng <i class="bi bi-arrow-right"></i></div>
+                    </a>
+
+                    <a asp-controller="Admin" asp-action="Accounts" class="aa-tile small green">
+                        <div class="aa-tile-head">
+                            <div class="aa-tile-badge"><i class="bi bi-person-gear"></i> Accounts</div>
+                            <div class="aa-tile-title">Quản lý tài khoản.</div>
+                            <div class="aa-tile-desc">Admin, Staff, User, trạng thái active và phân quyền truy cập.</div>
+                        </div>
+                        <div class="aa-tile-go">Mở Accounts <i class="bi bi-arrow-right"></i></div>
+                    </a>
+
+                    <a asp-controller="Admin" asp-action="Sessions" class="aa-tile small">
+                        <div class="aa-tile-head">
+                            <div class="aa-tile-badge"><i class="bi bi-shield-check"></i> Security</div>
+                            <div class="aa-tile-title">Login Sessions.</div>
+                            <div class="aa-tile-desc">Theo dõi phiên đăng nhập, IP, thiết bị và revoke khi cần.</div>
+                        </div>
+                        <div class="aa-tile-go">Kiểm tra Sessions <i class="bi bi-arrow-right"></i></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- WORKBENCH -->
+        <section class="aa-section aa-section-tight" id="workbench">
+            <div class="aa-wrap">
+                <div class="aa-section-head">
+                    <div>
+                        <div class="aa-kicker-dark">Operations Workbench</div>
+                        <h2 class="aa-section-title">Khu thao tác Admin.</h2>
+                    </div>
+                    <div class="aa-chip"><i class="bi bi-grid-3x3-gap-fill"></i> API tools giữ nguyên logic cũ</div>
+                </div>
+
+                <div class="aa-work-grid">
+                    <div class="aa-panel">
+                        <div class="aa-panel-head">
+                            <div>
+                                <div class="aa-kicker-dark">Admin Modules</div>
+                                <h3 class="aa-panel-title">Bind thiết bị, kiểm tra GUID, account và link nhanh.</h3>
+                            </div>
+                            <div class="aa-chip"><i class="bi bi-command"></i> Workbench</div>
+                        </div>
+
+                        <div class="aa-panel-body">
+                            <!-- Add Device -->
+                            <div class="aa-module is-open">
+                                <button type="button" class="aa-module-toggle" data-aa-toggle>
+                                    <div class="aa-module-icon"><i class="bi bi-plus-circle"></i></div>
+                                    <div class="aa-module-txt">
+                                        <div class="aa-module-title">Thêm thiết bị / Bind Elitech</div>
+                                        <div class="aa-module-sub">API #8 • /api/admin/elitech/add-device</div>
+                                    </div>
+                                    <i class="bi bi-chevron-down aa-module-arrow"></i>
+                                </button>
+
+                                <div class="aa-module-body">
+                                    <div class="aa-help">
+                                        Nhập <b>Device GUID</b> và <b>Device Name</b>. Backend sẽ gọi Elitech <b>addDevice</b>
+                                        để bind thiết bị vào tài khoản API.
+                                    </div>
+
+                                    <div class="aa-form-grid">
+                                        <div class="aa-field">
+                                            <label class="aa-label" for="devGuid">Device GUID</label>
+                                            <input class="aa-input" id="devGuid" placeholder="VD: 90319774496194524687" />
+                                            <div class="aa-help" style="margin-top:7px;">GUID đúng như Elitech cấp. Nếu chưa bind thì realtime/history sẽ không thấy.</div>
+                                        </div>
+
+                                        <div class="aa-field">
+                                            <label class="aa-label" for="devName">Device Name</label>
+                                            <input class="aa-input" id="devName" placeholder="VD: Kho A - RCW-360P" />
+                                            <div class="aa-help" style="margin-top:7px;">Nên đặt theo kho / xe / chuyến để dễ vận hành.</div>
+                                        </div>
+
+                                        <div class="aa-field aa-inline-actions">
+                                            <button type="button" class="aa-mini-btn primary" id="btnAddDevice">
+                                                <i class="bi bi-plus-circle"></i> Add Device
+                                            </button>
+                                            <button type="button" class="aa-mini-btn orange" id="btnFillDemo">
+                                                <i class="bi bi-magic"></i> Điền mẫu
+                                            </button>
+                                            <span class="aa-help" id="addDeviceHint">Nếu bị 401/403: kiểm tra cookie/role Admin.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="aa-kv" id="addDeviceResult">
+                                        <b>HTTP</b><span id="rHttp">-</span>
+                                        <b>code</b><span id="rCode">-</span>
+                                        <b>message</b><span id="rMsg">-</span>
+                                        <b>added</b><span id="rAdded">-</span>
+                                        <b>deviceGuid</b><span id="rGuid">-</span>
+                                        <b>deviceName</b><span id="rName">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GUIDs -->
+                            <div class="aa-module">
+                                <button type="button" class="aa-module-toggle" data-aa-toggle>
+                                    <div class="aa-module-icon"><i class="bi bi-list-ul"></i></div>
+                                    <div class="aa-module-txt">
+                                        <div class="aa-module-title">Danh sách thiết bị / GUIDs</div>
+                                        <div class="aa-module-sub">API #7 • /api/elitech/device-guids</div>
+                                    </div>
+                                    <i class="bi bi-chevron-down aa-module-arrow"></i>
+                                </button>
+
+                                <div class="aa-module-body">
+                                    <div class="aa-help">Lấy danh sách GUID các thiết bị mà API account đang nhìn thấy.</div>
+
+                                    <div class="aa-inline-actions" style="margin-top:14px;">
+                                        <button type="button" class="aa-mini-btn primary" id="btnLoadGuids">
+                                            <i class="bi bi-arrow-repeat"></i> Load GUIDs
+                                        </button>
+                                        <span class="aa-help" id="guidsHint">Nếu rỗng: có thể chưa bind thiết bị hoặc account không thấy thiết bị.</span>
+                                    </div>
+
+                                    <div class="aa-table-wrap" id="guidsTableWrap">
+                                        <table class="aa-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:70px;">#</th>
+                                                    <th>deviceGuid</th>
+                                                    <th style="width:130px;">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="guidsTbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accounts -->
+                            <div class="aa-module">
+                                <button type="button" class="aa-module-toggle" data-aa-toggle>
+                                    <div class="aa-module-icon"><i class="bi bi-people"></i></div>
+                                    <div class="aa-module-txt">
+                                        <div class="aa-module-title">Accounts / Users / Staff / Admins</div>
+                                        <div class="aa-module-sub">API • /api/admin/accounts • role • isActive</div>
+                                    </div>
+                                    <i class="bi bi-chevron-down aa-module-arrow"></i>
+                                </button>
+
+                                <div class="aa-module-body">
+                                    <div class="aa-help">Load danh sách tài khoản từ MongoDB để kiểm tra nhanh role và trạng thái active.</div>
+
+                                    <div class="aa-inline-actions" style="margin-top:14px;">
+                                        <button type="button" class="aa-mini-btn primary" id="btnLoadAccounts">
+                                            <i class="bi bi-arrow-repeat"></i> Load Accounts
+                                        </button>
+                                        <span class="aa-help" id="accountsHint">Nhấn để tải. Nếu lỗi: kiểm tra role Admin + route /api/admin/accounts.</span>
+                                    </div>
+
+                                    <div class="aa-table-wrap" id="accountsTableWrap">
+                                        <table class="aa-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:60px;">#</th>
+                                                    <th style="width:70px;">Avatar</th>
+                                                    <th>Username</th>
+                                                    <th style="width:120px;">Role</th>
+                                                    <th style="width:130px;">Status</th>
+                                                    <th style="min-width:200px;">Created</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="accountsTbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Links -->
+                            <div class="aa-module">
+                                <button type="button" class="aa-module-toggle" data-aa-toggle>
+                                    <div class="aa-module-icon"><i class="bi bi-link-45deg"></i></div>
+                                    <div class="aa-module-txt">
+                                        <div class="aa-module-title">Quick Links / Admin Pages</div>
+                                        <div class="aa-module-sub">Đi nhanh tới các trang quản trị và monitoring</div>
+                                    </div>
+                                    <i class="bi bi-chevron-down aa-module-arrow"></i>
+                                </button>
+
+                                <div class="aa-module-body">
+                                    <div class="aa-help">Click để mở nhanh các trang quản trị / theo dõi.</div>
+
+                                    <div class="aa-link-grid">
+                                        <a class="aa-linkpill" href="/Admin/SmsSubscriptions">
+                                            <i class="bi bi-chat-dots"></i>
+                                            <div>
+                                                <div class="aa-link-t">SMS Subscriptions</div>
+                                                <div class="aa-link-s">Quản lý SMS cảnh báo</div>
+                                            </div>
+                                            <span class="aa-link-go">↗</span>
+                                        </a>
+
+                                        <a class="aa-linkpill" href="/ElitechAlarmPage">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            <div>
+                                                <div class="aa-link-t">Elitech Alarm</div>
+                                                <div class="aa-link-s">Theo dõi cảnh báo</div>
+                                            </div>
+                                            <span class="aa-link-go">↗</span>
+                                        </a>
+
+                                        <a class="aa-linkpill" href="/ElitechAlertRulesPage">
+                                            <i class="bi bi-sliders"></i>
+                                            <div>
+                                                <div class="aa-link-t">Alert Rules</div>
+                                                <div class="aa-link-s">Cấu hình ngưỡng</div>
+                                            </div>
+                                            <span class="aa-link-go">↗</span>
+                                        </a>
+
+                                        <a class="aa-linkpill" href="/ElitechDevicePage">
+                                            <i class="bi bi-cpu"></i>
+                                            <div>
+                                                <div class="aa-link-t">Device Page</div>
+                                                <div class="aa-link-s">Danh sách logger</div>
+                                            </div>
+                                            <span class="aa-link-go">↗</span>
+                                        </a>
+
+                                        <a class="aa-linkpill" href="/ElitechRealtime">
+                                            <i class="bi bi-broadcast-pin"></i>
+                                            <div>
+                                                <div class="aa-link-t">Realtime</div>
+                                                <div class="aa-link-s">Theo dõi realtime</div>
+                                            </div>
+                                            <span class="aa-link-go">↗</span>
+                                        </a>
+
+                                        <a class="aa-linkpill" href="/ElitechHistoryPage">
+                                            <i class="bi bi-graph-up-arrow"></i>
+                                            <div>
+                                                <div class="aa-link-t">History Chart</div>
+                                                <div class="aa-link-s">Biểu đồ lịch sử</div>
+                                            </div>
+                                            <span class="aa-link-go">↗</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Direct link -->
+                            <div class="aa-module">
+                                <a asp-controller="Admin" asp-action="Accounts" class="aa-module-toggle">
+                                    <div class="aa-module-icon"><i class="bi bi-person-gear"></i></div>
+                                    <div class="aa-module-txt">
+                                        <div class="aa-module-title">Mở trang Accounts đầy đủ</div>
+                                        <div class="aa-module-sub">CRUD accounts • reset password • toggle active</div>
+                                    </div>
+                                    <i class="bi bi-arrow-right aa-module-arrow"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside class="aa-side">
+                        <div class="aa-side-card">
+                            <div class="aa-side-inner">
+                                <div class="aa-side-badge"><i class="bi bi-stars"></i> Elitech Flow</div>
+                                <div class="aa-side-title">Vận hành rõ ràng hơn.</div>
+                                <div class="aa-side-desc">
+                                    Flow gợi ý để Admin xử lý từ thiết bị mới đến giám sát realtime và báo cáo.
+                                </div>
+
+                                <div class="aa-flow">
+                                    <div class="aa-flow-item">
+                                        <div class="aa-flow-num">1</div>
+                                        <div>
+                                            <div class="aa-flow-t">Bind thiết bị</div>
+                                            <div class="aa-flow-s">Add Device bằng GUID và tên thiết bị.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="aa-flow-item">
+                                        <div class="aa-flow-num">2</div>
+                                        <div>
+                                            <div class="aa-flow-t">Gán người dùng</div>
+                                            <div class="aa-flow-s">Assign thiết bị cho account cần theo dõi.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="aa-flow-item">
+                                        <div class="aa-flow-num">3</div>
+                                        <div>
+                                            <div class="aa-flow-t">Set ngưỡng</div>
+                                            <div class="aa-flow-s">Cấu hình cảnh báo nhiệt độ / độ ẩm.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="aa-flow-item">
+                                        <div class="aa-flow-num">4</div>
+                                        <div>
+                                            <div class="aa-flow-t">Monitor & Export</div>
+                                            <div class="aa-flow-s">Theo dõi realtime, lịch sử và xuất báo cáo PDF.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a class="aa-side-cta" href="/ElitechRealtime">
+                                <div>
+                                    <b>Ready for operation</b>
+                                    <span>Đi tới màn hình realtime ngay.</span>
+                                </div>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="aa-floating" aria-label="Floating quick actions">
+        <a href="/Admin/AssignDevices" title="Assign Devices"><i class="bi bi-diagram-3-fill"></i></a>
+        <a href="/ElitechRealtime" title="Realtime"><i class="bi bi-lightning-charge-fill"></i></a>
+        <a href="/Admin/Accounts" title="Accounts"><i class="bi bi-person-gear"></i></a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const toastEl = document.getElementById('aaToast');
+            const toastDot = document.getElementById('aaToastDot');
+            const toastTitle = document.getElementById('aaToastTitle');
+            const toastMsg = document.getElementById('aaToastMsg');
+
+            function showToast(type, title, msg) {
+                if (!toastEl || !toastDot || !toastTitle || !toastMsg) return;
+
+                toastEl.classList.add('show');
+                toastDot.classList.remove('err', 'warn');
+
+                if (type === 'err') toastDot.classList.add('err');
+                if (type === 'warn') toastDot.classList.add('warn');
+
+                toastTitle.textContent = title || 'Thông báo';
+                toastMsg.textContent = msg || '';
+
+                clearTimeout(window.__aaToastTimer);
+                window.__aaToastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[ch]));
+            }
+
+            function fmtDate(value) {
+                if (!value) return '-';
+                try {
+                    return new Date(value).toLocaleString();
+                } catch {
+                    return String(value);
+                }
+            }
+
+            function roleLabel(role) {
+                const raw = String(role ?? '').trim();
+                const lower = raw.toLowerCase();
+
+                if (role === 1 || raw === '1' || lower === 'admin') return 'Admin';
+                if (role === 2 || raw === '2' || lower === 'user') return 'User';
+                if (role === 3 || raw === '3' || lower === 'staff') return 'Staff';
+
+                return raw || '-';
+            }
+
+            function roleClass(role) {
+                const label = roleLabel(role).toLowerCase();
+                if (label === 'admin') return 'info';
+                if (label === 'staff') return 'ok';
+                if (label === 'user') return 'warn';
+                return 'warn';
+            }
+
+            // Smooth anchor scroll
+            document.querySelectorAll('.aa-nav a[href^="#"], .aa-btn[href^="#"]').forEach(a => {
+                a.addEventListener('click', e => {
+                    const id = a.getAttribute('href');
+                    const target = id ? document.querySelector(id) : null;
+                    if (!target) return;
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+
+            // Accordion
+            document.addEventListener('click', e => {
+                const target = e.target instanceof Element ? e.target : null;
+                const btn = target?.closest('[data-aa-toggle]');
+                if (!btn) return;
+
+                const card = btn.closest('.aa-module');
+                if (!card) return;
+
+                const willOpen = !card.classList.contains('is-open');
+                document.querySelectorAll('.aa-module.is-open').forEach(item => {
+                    if (item !== card) item.classList.remove('is-open');
+                });
+
+                card.classList.toggle('is-open', willOpen);
+            });
+
+            // Add Device
+            const guidInput = document.getElementById('devGuid');
+            const nameInput = document.getElementById('devName');
+            const btnAdd = document.getElementById('btnAddDevice');
+            const btnDemo = document.getElementById('btnFillDemo');
+            const resultBox = document.getElementById('addDeviceResult');
+            const rHttp = document.getElementById('rHttp');
+            const rCode = document.getElementById('rCode');
+            const rMsg = document.getElementById('rMsg');
+            const rAdded = document.getElementById('rAdded');
+            const rGuid = document.getElementById('rGuid');
+            const rName = document.getElementById('rName');
+
+            btnDemo?.addEventListener('click', () => {
+                if (guidInput) guidInput.value = '90319774496194524687';
+                if (nameInput) nameInput.value = 'Kho A - RCW-360P';
+                showToast('warn', 'Đã điền mẫu', 'Nhớ thay GUID thật trước khi Add Device.');
+            });
+
+            btnAdd?.addEventListener('click', async () => {
+                const deviceGuid = (guidInput?.value || '').trim();
+                const deviceName = (nameInput?.value || '').trim();
+
+                if (!deviceGuid) {
+                    showToast('err', 'Thiếu Device GUID', 'Vui lòng nhập deviceGuid.');
+                    guidInput?.focus();
+                    return;
+                }
+
+                btnAdd.disabled = true;
+                btnAdd.innerHTML = '<i class="bi bi-arrow-repeat"></i> Đang gửi...';
+                if (resultBox) resultBox.style.display = 'none';
+
+                try {
+                    const res = await fetch('/api/admin/elitech/add-device', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ deviceGuid, deviceName })
+                    });
+
+                    const json = await res.json().catch(() => null);
+                    const isOk = res.ok && (json?.code === 0 || json?.code === '0');
+                    const message = json?.message ?? json?.msg ?? (isOk ? 'OK' : 'Vui lòng thử lại');
+
+                    if (resultBox) resultBox.style.display = 'grid';
+                    if (rHttp) rHttp.textContent = String(res.status);
+                    if (rCode) rCode.textContent = String(json?.code ?? '-');
+                    if (rMsg) rMsg.textContent = String(message);
+                    if (rAdded) rAdded.textContent = String(json?.added ?? json?.data ?? '-');
+                    if (rGuid) rGuid.textContent = String(json?.deviceGuid ?? deviceGuid);
+                    if (rName) rName.textContent = String(json?.deviceName ?? deviceName);
+
+                    if (isOk) showToast('ok', 'Add Device thành công', `GUID: ${deviceGuid}`);
+                    else showToast('err', 'Add Device thất bại', String(message));
+                } catch {
+                    if (resultBox) resultBox.style.display = 'grid';
+                    if (rHttp) rHttp.textContent = '-';
+                    if (rCode) rCode.textContent = '-';
+                    if (rMsg) rMsg.textContent = 'Không gọi được server';
+                    if (rAdded) rAdded.textContent = '-';
+                    if (rGuid) rGuid.textContent = deviceGuid;
+                    if (rName) rName.textContent = deviceName;
+
+                    showToast('err', 'Lỗi mạng / server', 'Không gọi được /api/admin/elitech/add-device');
+                } finally {
+                    btnAdd.disabled = false;
+                    btnAdd.innerHTML = '<i class="bi bi-plus-circle"></i> Add Device';
+                }
+            });
+
+            // Device GUIDs
+            const btnLoadGuids = document.getElementById('btnLoadGuids');
+            const guidsHint = document.getElementById('guidsHint');
+            const guidsTableWrap = document.getElementById('guidsTableWrap');
+            const guidsTbody = document.getElementById('guidsTbody');
+
+            btnLoadGuids?.addEventListener('click', async () => {
+                btnLoadGuids.disabled = true;
+                btnLoadGuids.innerHTML = '<i class="bi bi-arrow-repeat"></i> Đang tải...';
+                if (guidsTableWrap) guidsTableWrap.style.display = 'none';
+                if (guidsTbody) guidsTbody.innerHTML = '';
+
+                try {
+                    const res = await fetch('/api/elitech/device-guids', { method: 'GET' });
+                    const json = await res.json().catch(() => null);
+
+                    if (!res.ok || !json || json.code !== 0) {
+                        const msg = json?.message ?? 'Không tải được danh sách GUID.';
+                        if (guidsHint) guidsHint.textContent = msg;
+                        showToast('err', 'Load GUIDs thất bại', msg);
+                        return;
+                    }
+
+                    const arr = Array.isArray(json.data) ? json.data : [];
+
+                    if (!arr.length) {
+                        if (guidsHint) guidsHint.textContent = 'Danh sách GUID rỗng.';
+                        showToast('warn', 'Không có thiết bị', 'API trả về danh sách rỗng.');
+                        return;
+                    }
+
+                    if (guidsTableWrap) guidsTableWrap.style.display = 'block';
+                    if (guidsTbody) {
+                        guidsTbody.innerHTML = arr.map((g, i) => `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td style="font-weight:850;">${escapeHtml(g)}</td>
+                                <td>
+                                    <button type="button" class="aa-mini-btn" data-copy-guid="${escapeHtml(g)}">
+                                        <i class="bi bi-clipboard"></i> Copy
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    if (guidsHint) guidsHint.textContent = `Đã tải ${arr.length} GUID.`;
+                    showToast('ok', 'Load GUIDs thành công', `Tổng: ${arr.length}`);
+                } catch {
+                    showToast('err', 'Lỗi mạng / server', 'Không gọi được /api/elitech/device-guids');
+                } finally {
+                    btnLoadGuids.disabled = false;
+                    btnLoadGuids.innerHTML = '<i class="bi bi-arrow-repeat"></i> Load GUIDs';
+                }
+            });
+
+            document.addEventListener('click', async e => {
+                const target = e.target instanceof Element ? e.target : null;
+                const btn = target?.closest('[data-copy-guid]');
+                if (!btn) return;
+
+                const guid = btn.getAttribute('data-copy-guid') || '';
+                try {
+                    await navigator.clipboard.writeText(guid);
+                    showToast('ok', 'Đã copy GUID', guid);
+                } catch {
+                    showToast('warn', 'Copy không được', 'Trình duyệt đang chặn clipboard.');
+                }
+            });
+
+            // Accounts
+            const btnLoadAccounts = document.getElementById('btnLoadAccounts');
+            const accountsHint = document.getElementById('accountsHint');
+            const accountsTableWrap = document.getElementById('accountsTableWrap');
+            const accountsTbody = document.getElementById('accountsTbody');
+
+            btnLoadAccounts?.addEventListener('click', async () => {
+                btnLoadAccounts.disabled = true;
+                btnLoadAccounts.innerHTML = '<i class="bi bi-arrow-repeat"></i> Đang tải...';
+                if (accountsTableWrap) accountsTableWrap.style.display = 'none';
+                if (accountsTbody) accountsTbody.innerHTML = '';
+
+                try {
+                    const res = await fetch('/api/admin/accounts', { method: 'GET' });
+                    const json = await res.json().catch(() => null);
+
+                    if (!res.ok || !json || json.code !== 0) {
+                        const msg = json?.message ?? 'Không tải được danh sách accounts.';
+                        if (accountsHint) accountsHint.textContent = msg;
+                        showToast('err', 'Load Accounts thất bại', msg);
+                        return;
+                    }
+
+                    const arr = Array.isArray(json.data) ? json.data : [];
+
+                    if (!arr.length) {
+                        if (accountsHint) accountsHint.textContent = 'Danh sách account rỗng.';
+                        showToast('warn', 'Không có account', 'Collection Accounts đang rỗng.');
+                        return;
+                    }
+
+                    if (accountsTableWrap) accountsTableWrap.style.display = 'block';
+                    if (accountsTbody) {
+                        accountsTbody.innerHTML = arr.map((a, i) => {
+                            const active = a.isActive === true;
+                            const statusChip = active
+                                ? '<span class="aa-status ok">Active</span>'
+                                : '<span class="aa-status crit">Disabled</span>';
+
+                            const roleName = roleLabel(a.role);
+                            const roleChip = `<span class="aa-status ${roleClass(a.role)}">${escapeHtml(roleName)}</span>`;
+
+                            const avatar = a.avatarUrl
+                                ? `<img src="${escapeHtml(a.avatarUrl)}" alt="avatar" onerror="this.outerHTML='<i class=\'bi bi-person-fill\'></i>'" />`
+                                : '<i class="bi bi-person-fill"></i>';
+
+                            return `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td><span class="aa-avatar">${avatar}</span></td>
+                                    <td style="font-weight:850;">${escapeHtml(a.username)}</td>
+                                    <td>${roleChip}</td>
+                                    <td>${statusChip}</td>
+                                    <td>${escapeHtml(fmtDate(a.createdAtUtc))}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+
+                    if (accountsHint) accountsHint.textContent = `Đã tải ${arr.length} accounts.`;
+                    showToast('ok', 'Load Accounts thành công', `Tổng: ${arr.length}`);
+                } catch {
+                    showToast('err', 'Lỗi mạng / server', 'Không gọi được /api/admin/accounts');
+                } finally {
+                    btnLoadAccounts.disabled = false;
+                    btnLoadAccounts.innerHTML = '<i class="bi bi-arrow-repeat"></i> Load Accounts';
+                }
+            });
+        })();
+    </script>
+
+    <script type="module" src="/app/entry-admin.js"></script>
+}

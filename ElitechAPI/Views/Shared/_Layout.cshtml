@@ -1,0 +1,2853 @@
+﻿@* Views/Shared/_Layout.cshtml *@
+@{
+    var currentPath = (Context.Request.Path.Value ?? "/")
+        .TrimEnd('/')
+        .ToLowerInvariant();
+
+    if (string.IsNullOrWhiteSpace(currentPath))
+    {
+        currentPath = "/";
+    }
+
+    string Active(params string[] paths)
+    {
+        foreach (var raw in paths)
+        {
+            var path = (raw ?? "")
+                .TrimEnd('/')
+                .ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(path))
+                continue;
+
+            if (currentPath == path)
+                return "active";
+
+            if (currentPath.StartsWith(path + "/"))
+                return "active";
+        }
+
+        return "";
+    }
+
+    string ActiveMobile(params string[] paths)
+    {
+        return Active(paths) == "active" ? "active" : "";
+    }
+
+    var isAuthenticated = User?.Identity?.IsAuthenticated == true;
+    var isAdmin = isAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    var roleName = User.IsInRole("Admin") ? "Admin" : (User.IsInRole("Staff") ? "Staff" : "User");
+    var brandTitle = isAuthenticated
+        ? (User.IsInRole("Admin") ? "Elitech Admin" : (User.IsInRole("Staff") ? "Elitech Staff" : "Elitech User"))
+        : "Elitech System";
+
+    var brandController = isAuthenticated
+        ? (isAdmin ? "Admin" : "User")
+        : "Home";
+
+    var brandAction = "Index";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(string.IsNullOrWhiteSpace(ViewData["Title"]?.ToString()) ? "Elitech" : $"{ViewData["Title"]} - Elitech")</title>
+
+    <link rel="icon" type="image/png" href="~/Pictures/logoelitech.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Elitech.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/app/asset-admin.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+            :root {
+                --elx-orange: #f58220;
+                --elx-orange-2: #ffb25b;
+                --elx-blue: #0a84ff;
+                --elx-sky: #38bdf8;
+                --elx-green: #22c55e;
+                --elx-red: #ef4444;
+                --elx-ink: #0f172a;
+                --elx-muted: #64748b;
+                --elx-bg: #eef3fb;
+                --elx-border: rgba(226,232,240,.92);
+                --elx-border-dark: rgba(255,255,255,.14);
+                --elx-shadow: 0 18px 48px rgba(15,23,42,.14);
+                --elx-shadow-dark: 0 22px 70px rgba(2,6,23,.38);
+                --elx-topbar-h: 78px;
+            }
+
+            html,
+            body {
+                min-height: 100%;
+            }
+
+            body {
+                margin: 0;
+                font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+                color: var(--elx-ink);
+                background: radial-gradient(900px 460px at 6% -8%, rgba(10,132,255,.13), transparent 60%), radial-gradient(900px 480px at 100% -12%, rgba(245,130,32,.14), transparent 62%), linear-gradient(180deg, #f8fafc 0%, #eef3fb 100%);
+                overflow-x: hidden;
+            }
+
+            a {
+                text-decoration-thickness: 1px;
+                text-underline-offset: 3px;
+            }
+
+            .elx-shell {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* ===================== TOPBAR ===================== */
+            .elx-topbar-wrap {
+                position: sticky;
+                top: 0;
+                z-index: 3000;
+                padding: 10px 14px 0;
+                pointer-events: none;
+            }
+
+            .elx-topbar-shell {
+                pointer-events: auto;
+                max-width: 1680px;
+                margin: 0 auto;
+                border-radius: 26px;
+                background: radial-gradient(800px 260px at 0% 0%, rgba(255,255,255,.16), transparent 62%), radial-gradient(720px 240px at 100% 0%, rgba(245,130,32,.14), transparent 58%), linear-gradient(180deg, rgba(16,26,49,.94), rgba(8,16,32,.91));
+                border: 1px solid rgba(255,255,255,.13);
+                box-shadow: 0 18px 60px rgba(2,6,23,.32);
+                overflow: visible;
+            }
+
+            .elx-topbar {
+                min-height: 68px;
+                display: grid;
+                grid-template-columns: minmax(220px, .9fr) auto minmax(260px, .9fr);
+                align-items: center;
+                gap: 18px;
+                padding: 10px 16px;
+            }
+
+            .elx-brand-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                color: #fff !important;
+                text-decoration: none !important;
+                min-width: 0;
+            }
+
+            .elx-brand-logo-wrap {
+                width: 50px;
+                height: 50px;
+                border-radius: 17px;
+                display: grid;
+                place-items: center;
+                background: #fff;
+                box-shadow: 0 14px 32px rgba(2,6,23,.28);
+                overflow: hidden;
+                flex: 0 0 auto;
+            }
+
+            .elx-brand-logo {
+                width: 42px;
+                height: 42px;
+                object-fit: contain;
+                display: block;
+            }
+
+            .elx-brand-text {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                line-height: 1.04;
+            }
+
+            .elx-brand-main {
+                font-size: 1.05rem;
+                font-weight: 1000;
+                letter-spacing: -.035em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .elx-brand-sub {
+                margin-top: 6px;
+                color: rgba(226,232,240,.74);
+                font-size: .68rem;
+                font-weight: 1000;
+                letter-spacing: .18em;
+                text-transform: uppercase;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .elx-nav {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                padding: 5px;
+                border-radius: 999px;
+                background: rgba(255,255,255,.07);
+                border: 1px solid rgba(255,255,255,.08);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+                max-width: 100%;
+            }
+
+            .elx-nav-link {
+                min-height: 42px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                padding: 0 14px !important;
+                border-radius: 999px !important;
+                color: rgba(226,232,240,.78) !important;
+                font-size: .84rem;
+                font-weight: 900;
+                white-space: nowrap;
+                text-decoration: none !important;
+                transition: .16s ease;
+            }
+
+                .elx-nav-link:hover {
+                    color: #fff !important;
+                    background: rgba(255,255,255,.08);
+                }
+
+                .elx-nav-link.active {
+                    color: #07111f !important;
+                    background: linear-gradient(135deg, #fff, #dbeafe);
+                    box-shadow: 0 16px 38px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.9);
+                }
+
+                    .elx-nav-link.active i {
+                        color: #0f172a;
+                    }
+
+            .elx-top-actions {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 12px;
+                min-width: 0;
+            }
+
+            .elx-search {
+                width: min(100%, 300px);
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                padding: 0 12px 0 14px;
+                border-radius: 999px;
+                color: rgba(226,232,240,.82);
+                background: rgba(2,6,23,.36);
+                border: 1px solid rgba(148,163,184,.32);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+            }
+
+                .elx-search input {
+                    width: 100%;
+                    border: 0;
+                    outline: none;
+                    color: #e5edff;
+                    background: transparent;
+                    font-size: .88rem;
+                    font-weight: 760;
+                }
+
+                    .elx-search input::placeholder {
+                        color: rgba(203,213,225,.62);
+                    }
+
+            .elx-shortcut {
+                color: rgba(203,213,225,.68);
+                font-size: .64rem;
+                font-weight: 1000;
+                letter-spacing: .06em;
+                white-space: nowrap;
+            }
+
+            .elx-icon-btn {
+                width: 44px;
+                height: 44px;
+                border-radius: 16px;
+                display: grid;
+                place-items: center;
+                color: #e5edff !important;
+                background: rgba(255,255,255,.07);
+                border: 1px solid rgba(255,255,255,.09);
+                transition: .16s ease;
+            }
+
+                .elx-icon-btn:hover {
+                    color: #fff !important;
+                    background: rgba(255,255,255,.13);
+                    transform: translateY(-1px);
+                }
+
+            .elx-user-toggle {
+                min-height: 54px;
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                padding: 7px 10px 7px 7px;
+                border-radius: 20px;
+                color: #fff;
+                background: rgba(255,255,255,.09);
+                border: 1px solid rgba(255,255,255,.12);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+            }
+
+                .elx-user-toggle:hover,
+                .elx-user-toggle:focus,
+                .elx-user-toggle.show {
+                    color: #fff;
+                    background: rgba(255,255,255,.14);
+                    border-color: rgba(56,189,248,.42);
+                    box-shadow: 0 0 0 4px rgba(10,132,255,.13), inset 0 1px 0 rgba(255,255,255,.06);
+                }
+
+            .elx-avatar {
+                width: 38px;
+                height: 38px;
+                border-radius: 15px;
+                display: grid;
+                place-items: center;
+                color: #fff;
+                background: linear-gradient(135deg, var(--elx-orange), var(--elx-sky));
+                box-shadow: 0 12px 28px rgba(2,6,23,.26);
+                flex: 0 0 auto;
+            }
+
+            .elx-user-copy {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                line-height: 1.12;
+                min-width: 0;
+            }
+
+            .elx-user-name {
+                max-width: 128px;
+                color: #fff;
+                font-size: .86rem;
+                font-weight: 1000;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .elx-user-role {
+                margin-top: 4px;
+                color: rgba(226,232,240,.62);
+                font-size: .72rem;
+                font-weight: 820;
+            }
+
+            .elx-login-btn {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 0 17px;
+                border-radius: 999px;
+                color: #06111f !important;
+                background: linear-gradient(135deg, #fff, #dbeafe);
+                font-weight: 1000;
+                text-decoration: none !important;
+                box-shadow: 0 14px 34px rgba(255,255,255,.12);
+            }
+
+            .elx-menu-toggle {
+                display: none;
+                width: 44px;
+                height: 44px;
+                border-radius: 16px;
+                border: 1px solid rgba(255,255,255,.13);
+                background: rgba(255,255,255,.08);
+                color: #fff;
+            }
+
+            .elx-dropdown-menu {
+                min-width: 265px;
+                padding: 10px !important;
+                margin-top: 12px !important;
+                border-radius: 24px !important;
+                border: 1px solid rgba(226,232,240,.92) !important;
+                background: rgba(248,250,252,.96) !important;
+                box-shadow: 0 28px 70px rgba(2,6,23,.24) !important;
+                z-index: 5000 !important;
+                overflow: hidden;
+            }
+
+            .elx-dropdown-head {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px;
+                border-radius: 18px;
+                background: linear-gradient(135deg, #fff, #f1f5f9);
+                border: 1px solid rgba(226,232,240,.92);
+                margin-bottom: 8px;
+            }
+
+                .elx-dropdown-head .elx-avatar {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 16px;
+                }
+
+            .elx-dropdown-title {
+                color: #0f172a;
+                font-weight: 1000;
+                line-height: 1.1;
+            }
+
+            .elx-dropdown-sub {
+                margin-top: 3px;
+                color: #64748b;
+                font-size: .78rem;
+                font-weight: 780;
+            }
+
+            .elx-dropdown-menu .dropdown-item {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 15px;
+                padding: 0 12px !important;
+                color: #0f172a !important;
+                font-weight: 900;
+                font-size: .9rem;
+                transition: .14s ease;
+            }
+
+                .elx-dropdown-menu .dropdown-item i {
+                    width: 20px;
+                    text-align: center;
+                    color: #475569;
+                }
+
+                .elx-dropdown-menu .dropdown-item:hover {
+                    background: #eaf2ff !important;
+                    color: #0f172a !important;
+                }
+
+            .elx-dropdown-menu .dropdown-divider {
+                margin: 8px 0;
+                border-color: rgba(203,213,225,.92);
+            }
+
+            .elx-logout-btn {
+                width: 100%;
+                border: 0;
+                background: transparent;
+                color: #b91c1c !important;
+            }
+
+                .elx-logout-btn i {
+                    color: #b91c1c !important;
+                }
+
+            .elx-mobile-nav {
+                padding: 0 14px 14px;
+            }
+
+            .elx-mobile-panel {
+                display: grid;
+                gap: 8px;
+                padding: 12px;
+                border-radius: 22px;
+                background: rgba(255,255,255,.07);
+                border: 1px solid rgba(255,255,255,.10);
+            }
+
+            .elx-mobile-link {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 0 13px;
+                border-radius: 16px;
+                color: rgba(226,232,240,.82) !important;
+                text-decoration: none !important;
+                font-weight: 900;
+            }
+
+                .elx-mobile-link.active {
+                    color: #06111f !important;
+                    background: linear-gradient(135deg, #fff, #dbeafe);
+                }
+
+            /* ===================== MAIN ===================== */
+            .elx-main {
+                flex: 1 0 auto;
+                width: 100%;
+                min-height: calc(100vh - var(--elx-topbar-h));
+                padding: 0;
+            }
+
+            /* ===================== FOOTER — ELITECH COMPACT PREMIUM 2026 ===================== */
+            .elx-footer {
+                flex-shrink: 0;
+                position: relative;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+                color: #f8fafc;
+                background: radial-gradient(640px 260px at 8% 0%, rgba(245,130,32,.18), transparent 62%), radial-gradient(640px 260px at 92% 0%, rgba(10,132,255,.18), transparent 62%), linear-gradient(180deg, #07111f 0%, #020617 100%);
+                border-top: 1px solid rgba(255,255,255,.10);
+                overflow: hidden;
+            }
+
+                .elx-footer::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(90deg, rgba(255,255,255,.032) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.028) 1px, transparent 1px);
+                    background-size: 62px 62px;
+                    mask-image: linear-gradient(180deg, rgba(0,0,0,.86), transparent 92%);
+                    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.86), transparent 92%);
+                    pointer-events: none;
+                }
+
+            .elx-footer-inner {
+                position: relative;
+                z-index: 2;
+                max-width: 1680px;
+                margin: 0 auto;
+                padding: 34px 24px 22px;
+            }
+
+            .elx-footer-compact {
+                display: grid;
+                grid-template-columns: minmax(0, 1.05fr) minmax(260px, .55fr) minmax(190px, .38fr) minmax(250px, .48fr);
+                gap: clamp(16px, 2.4vw, 34px);
+                align-items: center;
+            }
+
+            .elx-footer-brand-row {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                min-width: 0;
+            }
+
+            .elx-footer-logo {
+                width: 64px;
+                height: 64px;
+                border-radius: 22px;
+                display: grid;
+                place-items: center;
+                background: #fff;
+                overflow: hidden;
+                flex: 0 0 auto;
+                box-shadow: 0 18px 42px rgba(0,0,0,.30);
+            }
+
+                .elx-footer-logo img {
+                    width: 54px;
+                    height: 54px;
+                    object-fit: contain;
+                    display: block;
+                }
+
+            .elx-footer-title {
+                color: #fff;
+                font-size: clamp(1.35rem, 2vw, 2.15rem);
+                line-height: 1;
+                letter-spacing: -.055em;
+                font-weight: 1000;
+            }
+
+                .elx-footer-title span {
+                    color: transparent;
+                    background: linear-gradient(90deg, #fff 0%, #dbeafe 42%, #ffb25b 76%, #f58220 100%);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                }
+
+            .elx-footer-sub {
+                margin-top: 8px;
+                max-width: 760px;
+                color: rgba(226,232,240,.66);
+                font-size: .92rem;
+                line-height: 1.55;
+                font-weight: 740;
+            }
+
+            .elx-footer-mini-pills {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 14px;
+            }
+
+            .elx-footer-mini-pill {
+                min-height: 32px;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                padding: 0 11px;
+                border-radius: 999px;
+                color: rgba(226,232,240,.78) !important;
+                background: rgba(255,255,255,.075);
+                border: 1px solid rgba(255,255,255,.105);
+                font-size: .74rem !important;
+                font-weight: 900 !important;
+                white-space: nowrap;
+            }
+
+                .elx-footer-mini-pill i {
+                    color: var(--elx-orange-2);
+                }
+
+            .elx-footer-video-card {
+                width: 100%;
+                max-width: 330px;
+                justify-self: center;
+            }
+
+            .elx-footer-video-label {
+                margin-bottom: 9px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                color: rgba(226,232,240,.70);
+                font-size: .74rem;
+                font-weight: 950;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .elx-footer-live-dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 999px;
+                background: var(--elx-green);
+                box-shadow: 0 0 0 6px rgba(34,197,94,.12);
+                display: inline-block;
+                flex: 0 0 auto;
+            }
+
+            .elx-footer-video {
+                overflow: hidden;
+                border-radius: 20px;
+                border: 1px solid rgba(255,255,255,.12);
+                background: rgba(255,255,255,.065);
+                box-shadow: 0 18px 42px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.06);
+            }
+
+                .elx-footer-video iframe {
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+
+            .elx-footer-video-note {
+                margin-top: 9px;
+                color: rgba(226,232,240,.58) !important;
+                font-size: .76rem !important;
+                font-weight: 760 !important;
+                line-height: 1.35 !important;
+            }
+
+            .elx-footer-menu,
+            .elx-footer-contact-box {
+                display: grid;
+                gap: 9px;
+            }
+
+            .elx-footer-col-title {
+                margin: 0 0 6px;
+                color: rgba(255,255,255,.92);
+                font-size: .74rem;
+                line-height: 1;
+                font-weight: 1000;
+                letter-spacing: .15em;
+                text-transform: uppercase;
+            }
+
+            .elx-footer-link,
+            .elx-footer-contact {
+                min-height: 40px;
+                width: fit-content;
+                max-width: 100%;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                color: rgba(226,232,240,.68) !important;
+                text-decoration: none !important;
+                font-size: .86rem !important;
+                font-weight: 850 !important;
+                transition: transform .14s ease, color .14s ease;
+            }
+
+                .elx-footer-link:hover,
+                .elx-footer-contact:hover {
+                    transform: translateX(3px);
+                    color: #fff !important;
+                }
+
+                .elx-footer-link i,
+                .elx-footer-contact i {
+                    width: 30px;
+                    height: 30px;
+                    display: grid;
+                    place-items: center;
+                    border-radius: 12px;
+                    color: #fff;
+                    background: rgba(255,255,255,.075);
+                    border: 1px solid rgba(255,255,255,.105);
+                    flex: 0 0 auto;
+                }
+
+                .elx-footer-contact strong {
+                    color: #fff;
+                    font-weight: 1000;
+                }
+
+            .elx-footer-primary-cta {
+                min-height: 46px;
+                width: fit-content;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                padding: 0 16px;
+                border-radius: 999px;
+                color: #06111f !important;
+                background: linear-gradient(135deg, #fff, #dbeafe);
+                border: 1px solid rgba(255,255,255,.62);
+                text-decoration: none !important;
+                font-size: .86rem !important;
+                font-weight: 1000 !important;
+                box-shadow: 0 16px 40px rgba(255,255,255,.10);
+                transition: transform .14s ease, box-shadow .14s ease;
+            }
+
+                .elx-footer-primary-cta:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 22px 52px rgba(255,255,255,.14);
+                }
+
+            .elx-footer-bottom {
+                position: relative;
+                z-index: 2;
+                border-top: 1px solid rgba(255,255,255,.08);
+                background: rgba(2,6,23,.54);
+            }
+
+            .elx-footer-bottom-inner {
+                max-width: 1680px;
+                margin: 0 auto;
+                padding: 12px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 10px;
+                color: rgba(203,213,225,.66);
+                font-size: .82rem;
+                font-weight: 760;
+            }
+
+            .elx-footer-bottom a {
+                color: rgba(226,232,240,.72) !important;
+                text-decoration: none !important;
+                font-weight: 850;
+            }
+
+                .elx-footer-bottom a:hover {
+                    color: #fff !important;
+                }
+
+            .elx-auth-footer .elx-footer-inner {
+                padding: 20px 22px;
+            }
+
+            .elx-auth-footer .elx-footer-grid {
+                grid-template-columns: 1fr auto;
+                align-items: center;
+            }
+
+            .elx-auth-footer .elx-footer-links {
+                display: flex;
+                gap: 14px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            @@media (max-width: 1100px) {
+                .elx-footer-compact {
+                    grid-template-columns: 1fr 1fr;
+                }
+
+                .elx-footer-brand-block {
+                    grid-column: 1 / -1;
+                }
+
+                .elx-footer-video-card {
+                    justify-self: stretch;
+                    max-width: none;
+                }
+            }
+
+            @@media (max-width: 767.98px) {
+                .elx-footer-inner {
+                    padding: 28px 14px 18px;
+                }
+
+                .elx-footer-compact {
+                    grid-template-columns: 1fr;
+                    gap: 22px;
+                }
+
+                .elx-footer-logo {
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 20px;
+                }
+
+                    .elx-footer-logo img {
+                        width: 48px;
+                        height: 48px;
+                    }
+
+                .elx-footer-title {
+                    font-size: 1.55rem;
+                }
+
+                .elx-footer-primary-cta {
+                    width: 100%;
+                }
+
+                .elx-footer-video-card {
+                    max-width: none;
+                }
+
+                .elx-footer-bottom-inner {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                    justify-content: flex-start;
+                }
+            }
+
+            /* ===================== SMS MODAL BOX ===================== */
+            #smsBox .sms-card {
+                background: rgba(255,255,255,.96);
+                border: 1px solid rgba(226,232,240,.95);
+                border-radius: 24px;
+                box-shadow: 0 28px 80px rgba(2,6,23,.22);
+                overflow: hidden;
+            }
+
+            #smsBox .sms-head {
+                padding: 14px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                color: #fff;
+                background: linear-gradient(135deg, #07111f, #0f2e6e);
+            }
+
+            #smsBox .sms-title {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                font-weight: 1000;
+            }
+
+            #smsBox .sms-close {
+                width: 34px;
+                height: 34px;
+                border-radius: 12px;
+                border: 1px solid rgba(255,255,255,.13);
+                background: rgba(255,255,255,.08);
+                color: #fff;
+                font-size: 20px;
+                line-height: 1;
+            }
+
+            #smsBox .sms-body {
+                padding: 16px;
+            }
+
+            #smsBox .sms-label {
+                color: #0f172a;
+                font-weight: 1000;
+                margin-bottom: 8px;
+            }
+
+            #smsBox .sms-input {
+                width: 100%;
+                min-height: 44px;
+                padding: 0 13px;
+                border-radius: 16px;
+                border: 1px solid rgba(148,163,184,.45);
+                outline: none;
+                color: #0f172a;
+                font-weight: 850;
+            }
+
+                #smsBox .sms-input:focus {
+                    border-color: rgba(245,130,32,.60);
+                    box-shadow: 0 0 0 4px rgba(245,130,32,.12);
+                }
+
+            #smsBox .sms-btn {
+                min-height: 44px;
+                border-radius: 16px;
+                border: 1px solid rgba(226,232,240,.95);
+                font-weight: 1000;
+                cursor: pointer;
+            }
+
+                #smsBox .sms-btn.dark {
+                    background: #0f172a;
+                    color: #fff;
+                }
+
+                #smsBox .sms-btn.light {
+                    background: #fff;
+                    color: #0f172a;
+                }
+
+                #smsBox .sms-btn.ok {
+                    background: #16a34a;
+                    color: #fff;
+                }
+
+            #smsBox .sms-msg {
+                margin-top: 10px;
+                color: #64748b;
+                font-weight: 850;
+                line-height: 1.4;
+            }
+
+            /* ===================== RESPONSIVE ===================== */
+            @@media (max-width: 1399.98px) {
+                .elx-topbar {
+                    grid-template-columns: minmax(210px, .8fr) auto auto;
+                    gap: 12px;
+                }
+
+                .elx-nav-link {
+                    padding: 0 11px !important;
+                }
+
+                .elx-search {
+                    width: 245px;
+                }
+            }
+
+            @@media (max-width: 1199.98px) {
+                .elx-topbar {
+                    grid-template-columns: 1fr auto;
+                }
+
+                .elx-nav {
+                    display: none;
+                }
+
+                .elx-menu-toggle {
+                    display: grid;
+                }
+
+                .elx-search {
+                    display: none;
+                }
+
+                .elx-footer-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            @@media (max-width: 767.98px) {
+                .elx-topbar-wrap {
+                    padding: 8px 8px 0;
+                }
+
+                .elx-topbar-shell {
+                    border-radius: 22px;
+                }
+
+                .elx-topbar {
+                    min-height: 62px;
+                    padding: 8px 10px;
+                    gap: 8px;
+                }
+
+                .elx-brand-logo-wrap {
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 15px;
+                }
+
+                .elx-brand-logo {
+                    width: 37px;
+                    height: 37px;
+                }
+
+                .elx-brand-main {
+                    font-size: .95rem;
+                }
+
+                .elx-brand-sub {
+                    display: none;
+                }
+
+                .elx-icon-btn,
+                .elx-user-copy,
+                .elx-user-toggle .bi-chevron-down {
+                    display: none !important;
+                }
+
+                .elx-user-toggle {
+                    min-height: 44px;
+                    padding: 4px;
+                    border-radius: 16px;
+                }
+
+                .elx-avatar {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 14px;
+                }
+
+                .elx-footer-grid,
+                .elx-auth-footer .elx-footer-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .elx-auth-footer .elx-footer-links,
+                .elx-footer-bottom-inner {
+                    justify-content: flex-start;
+                }
+            }
+
+            @@media (max-width: 420px) {
+                .elx-brand-main {
+                    max-width: 128px;
+                }
+            }
+
+            @@media (prefers-reduced-motion: reduce) {
+                *, *::before, *::after {
+                    transition: none !important;
+                    animation: none !important;
+                    scroll-behavior: auto !important;
+                }
+            }
+
+
+            /* =========================================================
+                                                   FIX 2026: Topbar không che sidebar/content trang User
+                                                   Vấn đề: Layout topbar sticky + trang User có .ud-side sticky top:0
+                                                   => Khi scroll, sidebar/content chui dưới thanh topbar.
+                                                   Patch này giữ giao diện hiện tại, chỉ chỉnh khoảng an toàn.
+                                                   ========================================================= */
+            :root {
+                --elx-topbar-safe: 112px;
+            }
+
+            html {
+                scroll-padding-top: var(--elx-topbar-safe);
+            }
+
+            .elx-topbar-wrap {
+                padding: 10px 14px 14px !important;
+                margin-bottom: 8px !important;
+                background: linear-gradient( 180deg, rgba(238,243,251,.99) 0%, rgba(238,243,251,.96) 72%, rgba(238,243,251,0) 100% ) !important;
+                backdrop-filter: blur(10px) saturate(135%);
+                -webkit-backdrop-filter: blur(10px) saturate(135%);
+            }
+
+            .elx-topbar-shell {
+                background: radial-gradient(800px 260px at 0% 0%, rgba(255,255,255,.16), transparent 62%), radial-gradient(720px 240px at 100% 0%, rgba(245,130,32,.14), transparent 58%), linear-gradient(180deg, rgba(16,26,49,.992), rgba(8,16,32,.982)) !important;
+                box-shadow: 0 22px 64px rgba(2,6,23,.36) !important;
+            }
+
+            .elx-main {
+                position: relative;
+                z-index: 1;
+                padding-bottom: 18px !important;
+            }
+
+                /* Quan trọng: chỉ tác động sidebar nội bộ của trang User/Device Dashboard */
+                .elx-main .ud-side {
+                    top: calc(var(--elx-topbar-safe) + 4px) !important;
+                    height: calc(100vh - var(--elx-topbar-safe) - 20px) !important;
+                }
+
+                .elx-main .ud-shell {
+                    min-height: calc(100vh - var(--elx-topbar-safe)) !important;
+                }
+
+            /* Toast layout không đè lên topbar */
+            #elitechToastHost {
+                top: calc(var(--elx-topbar-safe) + 10px) !important;
+            }
+
+            .toast-wrap {
+                top: calc(var(--elx-topbar-safe) + 10px) !important;
+            }
+
+            @@media (max-width: 1399.98px) {
+                :root {
+                    --elx-topbar-safe: 108px;
+                }
+            }
+
+            @@media (max-width: 1199.98px) {
+                :root {
+                    --elx-topbar-safe: 102px;
+                }
+            }
+
+            @@media (max-width: 840px) {
+                .elx-main .ud-side {
+                    top: auto !important;
+                    height: auto !important;
+                }
+
+                .elx-main .ud-shell {
+                    min-height: auto !important;
+                }
+            }
+
+            @@media (max-width: 767.98px) {
+                :root {
+                    --elx-topbar-safe: 92px;
+                }
+
+                .elx-topbar-wrap {
+                    padding: 8px 8px 10px !important;
+                    margin-bottom: 6px !important;
+                }
+            }
+
+
+
+            /* =========================================================
+                                                   FINAL V2: Sticky header chạy theo scroll nhưng KHÔNG che nội dung
+                                                   Lý do: dùng sticky (không phải fixed) để header vẫn chiếm chỗ.
+                                                   Thêm khoảng thở cho RenderBody và fix sidebar/mobile.
+                                                   ========================================================= */
+            :root {
+                --elx-topbar-safe: 112px;
+                --elx-page-gap: 18px;
+            }
+
+            html {
+                scroll-padding-top: calc(var(--elx-topbar-safe) + 16px) !important;
+            }
+
+            body {
+                padding-top: 0 !important;
+            }
+
+            .elx-topbar-wrap {
+                position: sticky !important;
+                top: 0 !important;
+                left: auto !important;
+                right: auto !important;
+                z-index: 8000 !important;
+                padding: 10px 14px 12px !important;
+                margin: 0 !important;
+                pointer-events: none;
+                background: linear-gradient( 180deg, rgba(238,243,251,.99) 0%, rgba(238,243,251,.97) 72%, rgba(238,243,251,0) 100% ) !important;
+                backdrop-filter: blur(12px) saturate(135%);
+                -webkit-backdrop-filter: blur(12px) saturate(135%);
+            }
+
+            .elx-topbar-shell {
+                pointer-events: auto;
+                background: radial-gradient(800px 260px at 0% 0%, rgba(255,255,255,.16), transparent 62%), radial-gradient(720px 240px at 100% 0%, rgba(245,130,32,.14), transparent 58%), linear-gradient(180deg, rgba(16,26,49,.992), rgba(8,16,32,.982)) !important;
+                box-shadow: 0 20px 62px rgba(2,6,23,.34) !important;
+            }
+
+            .elx-main {
+                position: relative !important;
+                z-index: 1 !important;
+                padding-top: var(--elx-page-gap) !important;
+                padding-bottom: 18px !important;
+                overflow: visible !important;
+            }
+
+                /* Khi page có container sát đầu, ép có khoảng thở dưới header */
+                .elx-main > .ud-shell,
+                .elx-main > .admin-shell,
+                .elx-main > .aa-page,
+                .elx-main > .rt-page,
+                .elx-main > .ah-page,
+                .elx-main > .di-page {
+                    margin-top: 0 !important;
+                }
+
+                /* Fix riêng trang User: sidebar sticky không được chui lên dưới header */
+                .elx-main .ud-side {
+                    top: calc(var(--elx-topbar-safe) + 10px) !important;
+                    height: calc(100vh - var(--elx-topbar-safe) - 30px) !important;
+                    z-index: 1200 !important;
+                }
+
+                .elx-main .ud-shell {
+                    min-height: calc(100vh - var(--elx-topbar-safe)) !important;
+                }
+
+            #elitechToastHost,
+            .toast-wrap {
+                top: calc(var(--elx-topbar-safe) + 12px) !important;
+            }
+
+            .elx-dropdown-menu,
+            .dropdown-menu {
+                z-index: 9000 !important;
+            }
+
+            @@media (max-width: 1399.98px) {
+                :root {
+                    --elx-topbar-safe: 108px;
+                }
+            }
+
+            @@media (max-width: 1199.98px) {
+                :root {
+                    --elx-topbar-safe: 102px;
+                    --elx-page-gap: 14px;
+                }
+
+                .elx-topbar {
+                    grid-template-columns: minmax(0, 1fr) auto !important;
+                }
+
+                .elx-top-actions {
+                    gap: 8px !important;
+                }
+            }
+
+            @@media (max-width: 840px) {
+                .elx-main .ud-side {
+                    position: static !important;
+                    top: auto !important;
+                    height: auto !important;
+                    z-index: auto !important;
+                }
+
+                .elx-main .ud-shell {
+                    min-height: auto !important;
+                }
+            }
+
+            @@media (max-width: 767.98px) {
+                :root {
+                    --elx-topbar-safe: 88px;
+                    --elx-page-gap: 10px;
+                }
+
+                .elx-topbar-wrap {
+                    padding: 8px 8px 10px !important;
+                    background: linear-gradient( 180deg, rgba(238,243,251,.99) 0%, rgba(238,243,251,.98) 76%, rgba(238,243,251,0) 100% ) !important;
+                }
+
+                .elx-topbar-shell {
+                    border-radius: 22px !important;
+                }
+
+                .elx-topbar {
+                    min-height: 60px !important;
+                    padding: 8px 10px !important;
+                    gap: 8px !important;
+                    grid-template-columns: minmax(0, 1fr) auto !important;
+                }
+
+                .elx-brand-link {
+                    gap: 9px !important;
+                    min-width: 0 !important;
+                }
+
+                .elx-brand-main {
+                    max-width: 150px !important;
+                }
+
+                .elx-menu-toggle {
+                    display: grid !important;
+                    flex: 0 0 auto !important;
+                }
+
+                .elx-user-toggle {
+                    flex: 0 0 auto !important;
+                }
+
+                .elx-mobile-nav {
+                    padding: 0 10px 10px !important;
+                }
+
+                .elx-mobile-panel {
+                    max-height: calc(100vh - 94px) !important;
+                    overflow: auto !important;
+                }
+            }
+
+            @@media (max-width: 420px) {
+                .elx-brand-main {
+                    max-width: 118px !important;
+                }
+
+                .elx-top-actions {
+                    gap: 6px !important;
+                }
+            }
+
+
+            /* ===================== GLOBAL COMMAND SEARCH / CTRL+K ===================== */
+            .elx-command-search-btn {
+                appearance: none;
+                cursor: pointer;
+                text-align: left;
+            }
+
+            .elx-search-placeholder {
+                flex: 1;
+                min-width: 0;
+                color: rgba(226,232,240,.80);
+                font-size: .88rem;
+                font-weight: 860;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .elx-cmdk-backdrop {
+                position: fixed;
+                inset: 0;
+                z-index: 99999;
+                display: grid;
+                place-items: start center;
+                padding: 94px 16px 24px;
+                background: rgba(2,6,23,.58);
+                backdrop-filter: blur(18px) saturate(130%);
+                -webkit-backdrop-filter: blur(18px) saturate(130%);
+            }
+
+                .elx-cmdk-backdrop[hidden] {
+                    display: none !important;
+                }
+
+            .elx-cmdk-modal {
+                width: min(780px, 100%);
+                overflow: hidden;
+                border-radius: 30px;
+                color: #f8fafc;
+                background: radial-gradient(560px 280px at 100% 0%, rgba(245,130,32,.22), transparent 62%), radial-gradient(560px 280px at 0% 0%, rgba(37,99,235,.26), transparent 62%), linear-gradient(180deg, rgba(15,23,42,.97), rgba(2,6,23,.96));
+                border: 1px solid rgba(255,255,255,.14);
+                box-shadow: 0 34px 110px rgba(0,0,0,.46);
+            }
+
+            .elx-cmdk-head {
+                height: 72px;
+                display: grid;
+                grid-template-columns: 54px minmax(0,1fr) 48px;
+                align-items: center;
+                border-bottom: 1px solid rgba(255,255,255,.10);
+                background: rgba(255,255,255,.055);
+            }
+
+                .elx-cmdk-head > i {
+                    display: grid;
+                    place-items: center;
+                    color: rgba(255,255,255,.72);
+                    font-size: 1.24rem;
+                }
+
+                .elx-cmdk-head input {
+                    width: 100%;
+                    height: 100%;
+                    border: 0;
+                    outline: 0;
+                    color: #fff;
+                    background: transparent;
+                    font-size: 1.08rem;
+                    font-weight: 850;
+                }
+
+                    .elx-cmdk-head input::placeholder {
+                        color: rgba(255,255,255,.46);
+                    }
+
+                .elx-cmdk-head button {
+                    width: 38px;
+                    height: 38px;
+                    border: 1px solid rgba(255,255,255,.12);
+                    border-radius: 14px;
+                    color: rgba(255,255,255,.76);
+                    background: rgba(255,255,255,.08);
+                    cursor: pointer;
+                    transition: .14s ease;
+                }
+
+                    .elx-cmdk-head button:hover {
+                        color: #fff;
+                        background: rgba(255,255,255,.13);
+                    }
+
+            .elx-cmdk-hint {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 12px 16px;
+                color: rgba(226,232,240,.62);
+                border-bottom: 1px solid rgba(255,255,255,.08);
+                font-size: .78rem;
+                font-weight: 820;
+            }
+
+                .elx-cmdk-hint span {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                .elx-cmdk-hint kbd {
+                    min-width: 24px;
+                    display: inline-grid;
+                    place-items: center;
+                    padding: 3px 7px;
+                    border-radius: 8px;
+                    color: rgba(255,255,255,.78);
+                    background: rgba(255,255,255,.08);
+                    border: 1px solid rgba(255,255,255,.13);
+                    font-size: .68rem;
+                    font-weight: 1000;
+                    box-shadow: none;
+                }
+
+            .elx-cmdk-body {
+                max-height: min(62vh, 560px);
+                overflow: auto;
+                padding: 12px;
+            }
+
+                .elx-cmdk-body::-webkit-scrollbar {
+                    width: 9px;
+                }
+
+                .elx-cmdk-body::-webkit-scrollbar-thumb {
+                    background: rgba(148,163,184,.35);
+                    border-radius: 999px;
+                }
+
+            .elx-cmdk-group {
+                padding: 8px 0;
+            }
+
+            .elx-cmdk-group-title {
+                padding: 7px 12px;
+                color: rgba(226,232,240,.52);
+                font-size: .72rem;
+                font-weight: 1000;
+                letter-spacing: .12em;
+                text-transform: uppercase;
+            }
+
+            .elx-cmdk-item {
+                width: 100%;
+                min-height: 64px;
+                display: grid;
+                grid-template-columns: 46px minmax(0,1fr) auto;
+                gap: 12px;
+                align-items: center;
+                padding: 10px 12px;
+                border: 1px solid transparent;
+                border-radius: 18px;
+                color: #f8fafc;
+                background: transparent;
+                cursor: pointer;
+                text-align: left;
+                transition: .14s ease;
+            }
+
+                .elx-cmdk-item:hover,
+                .elx-cmdk-item.is-active {
+                    background: rgba(255,255,255,.10);
+                    border-color: rgba(255,255,255,.12);
+                }
+
+            .elx-cmdk-icon {
+                width: 46px;
+                height: 46px;
+                border-radius: 16px;
+                display: grid;
+                place-items: center;
+                color: #fff;
+                background: linear-gradient(135deg, #2563eb, #38bdf8);
+                box-shadow: 0 12px 28px rgba(37,99,235,.18);
+            }
+
+            .elx-cmdk-item.orange .elx-cmdk-icon {
+                color: #111827;
+                background: linear-gradient(135deg, #f58220, #ffb25b);
+                box-shadow: 0 12px 28px rgba(245,130,32,.18);
+            }
+
+            .elx-cmdk-item.green .elx-cmdk-icon {
+                background: linear-gradient(135deg, #16a34a, #22c55e);
+                box-shadow: 0 12px 28px rgba(22,163,74,.16);
+            }
+
+            .elx-cmdk-item.red .elx-cmdk-icon {
+                background: linear-gradient(135deg, #dc2626, #fb7185);
+                box-shadow: 0 12px 28px rgba(220,38,38,.16);
+            }
+
+            .elx-cmdk-main {
+                min-width: 0;
+            }
+
+                .elx-cmdk-main b {
+                    display: block;
+                    font-size: .95rem;
+                    font-weight: 1000;
+                    color: #fff;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .elx-cmdk-main span {
+                    display: block;
+                    margin-top: 4px;
+                    color: rgba(226,232,240,.58);
+                    font-size: .78rem;
+                    font-weight: 760;
+                    overflow-wrap: anywhere;
+                }
+
+            .elx-cmdk-tag {
+                padding: 6px 10px;
+                border-radius: 999px;
+                color: rgba(226,232,240,.72);
+                background: rgba(255,255,255,.08);
+                border: 1px solid rgba(255,255,255,.10);
+                font-size: .72rem;
+                font-weight: 900;
+                white-space: nowrap;
+            }
+
+            .elx-cmdk-empty,
+            .elx-cmdk-loading {
+                padding: 34px 18px;
+                text-align: center;
+                color: rgba(226,232,240,.62);
+                font-weight: 850;
+                line-height: 1.55;
+            }
+
+                .elx-cmdk-loading i {
+                    margin-right: 8px;
+                    color: var(--elx-orange-2);
+                }
+
+            @@media (max-width: 768px) {
+                .elx-cmdk-backdrop {
+                    padding: 70px 10px 18px;
+                }
+
+                .elx-cmdk-modal {
+                    border-radius: 24px;
+                }
+
+                .elx-cmdk-head {
+                    height: 64px;
+                    grid-template-columns: 46px minmax(0,1fr) 44px;
+                }
+
+                    .elx-cmdk-head input {
+                        font-size: .98rem;
+                    }
+
+                .elx-cmdk-item {
+                    grid-template-columns: 42px minmax(0,1fr);
+                    min-height: 60px;
+                }
+
+                .elx-cmdk-icon {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 15px;
+                }
+
+                .elx-cmdk-tag {
+                    display: none;
+                }
+            }
+
+    </style>
+</head>
+
+<body>
+    <div class="elx-shell">
+        <!-- ===== Topbar ===== -->
+        <header class="elx-topbar-wrap">
+            <div class="elx-topbar-shell">
+                <div class="elx-topbar">
+                    <a class="elx-brand-link" asp-controller="@brandController" asp-action="@brandAction">
+                        <span class="elx-brand-logo-wrap">
+                            <img src="~/Pictures/logoelitech.png"
+                                 asp-append-version="true"
+                                 alt="Elitech Logo"
+                                 class="elx-brand-logo" />
+                        </span>
+
+                        <span class="elx-brand-text">
+                            <span class="elx-brand-main">@brandTitle</span>
+                            <span class="elx-brand-sub">Device • Monitoring • Suite</span>
+                        </span>
+                    </a>
+
+                    @if (isAuthenticated)
+                    {
+                        <nav class="elx-nav" aria-label="Main navigation">
+                            @if (isAdmin)
+                            {
+                                <a class="elx-nav-link @Active("/admin", "/admin/index")" asp-controller="Admin" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i>Dashboard
+                                </a>
+                                <a class="elx-nav-link @Active("/elitechdevicepage", "/elitechdevicepage/index")" asp-controller="ElitechDevicePage" asp-action="Index">
+                                    <i class="bi bi-cpu"></i>Devices
+                                </a>
+                                <a class="elx-nav-link @Active("/elitechrealtime", "/elitechrealtime/index")" asp-controller="ElitechRealtime" asp-action="Index">
+                                    <i class="bi bi-broadcast-pin"></i>Realtime
+                                </a>
+                                <a class="elx-nav-link @Active("/admin/assigndevices")" asp-controller="Admin" asp-action="AssignDevices">
+                                    <i class="bi bi-diagram-3"></i>Assign
+                                </a>
+                                <a class="elx-nav-link @Active("/elitechhistoryadminpage", "/elitechhistoryadminpage/index")" asp-controller="ElitechHistoryAdminPage" asp-action="Index">
+                                    <i class="bi bi-activity"></i>History
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="elx-nav-link @Active("/user", "/user/index")" asp-controller="User" asp-action="Index">
+                                    <i class="bi bi-house-door"></i>Dashboard
+                                </a>
+                                <a class="elx-nav-link @Active("/elitechhistoryuserpage", "/elitechhistoryuserpage/index")" asp-controller="ElitechHistoryUserPage" asp-action="Index">
+                                    <i class="bi bi-activity"></i>Biểu đồ
+                                </a>
+                                <a class="elx-nav-link @Active("/user/mydevices")" asp-controller="User" asp-action="MyDevices">
+                                    <i class="bi bi-cpu"></i>Thiết bị
+                                </a>
+                            }
+                        </nav>
+
+                        <div class="elx-top-actions">
+                            <button class="elx-menu-toggle"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#elxNavMobile"
+                                    aria-controls="elxNavMobile"
+                                    aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                <i class="bi bi-list"></i>
+                            </button>
+
+                            <button class="elx-search elx-command-search-btn" id="elxCommandOpen" type="button" title="Search / Ctrl + K" aria-label="Open Elitech command search">
+                                <i class="bi bi-search"></i>
+                                <span class="elx-search-placeholder">Search</span>
+                                <span class="elx-shortcut">CTRL+K</span>
+                            </button>
+
+                            <a class="elx-icon-btn d-none d-sm-grid" href="/ElitechAlertHistoryPage/Index" title="Cảnh báo">
+                                <i class="bi bi-bell-fill"></i>
+                            </a>
+
+                            <div class="dropdown">
+                                <button class="elx-user-toggle dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-display="static"
+                                        aria-expanded="false">
+                                    <span class="elx-avatar"><i class="bi bi-person-fill"></i></span>
+                                    <span class="elx-user-copy">
+                                        <span class="elx-user-name">@User.Identity?.Name</span>
+                                        <span class="elx-user-role">Elitech @roleName</span>
+                                    </span>
+                                    <i class="bi bi-chevron-down small"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end elx-dropdown-menu">
+                                    <li>
+                                        <div class="elx-dropdown-head">
+                                            <span class="elx-avatar"><i class="bi bi-person-fill"></i></span>
+                                            <div>
+                                                <div class="elx-dropdown-title">@User.Identity?.Name</div>
+                                                <div class="elx-dropdown-sub">Elitech @roleName</div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Profile">
+                                            <i class="bi bi-person"></i>Hồ sơ cá nhân
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="ElitechAlertRulesPage" asp-action="Index">
+                                            <i class="bi bi-sliders2-vertical"></i>Cài ngưỡng
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/ElitechAlertHistoryPage/Index">
+                                            <i class="bi bi-bell"></i>Lịch sử cảnh báo
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-controller="Login" asp-action="Logout" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item elx-logout-btn">
+                                                <i class="bi bi-box-arrow-right"></i>Thoát
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div></div>
+                        <div class="elx-top-actions">
+                            <a asp-controller="Login" asp-action="Index" class="elx-login-btn">
+                                <i class="bi bi-box-arrow-in-right"></i>Đăng nhập
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                @if (isAuthenticated)
+                {
+                    <div class="collapse elx-mobile-nav" id="elxNavMobile">
+                        <nav class="elx-mobile-panel" aria-label="Mobile navigation">
+                            @if (isAdmin)
+                            {
+                                <a class="elx-mobile-link @ActiveMobile("/admin", "/admin/index")" asp-controller="Admin" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i>Dashboard
+                                </a>
+                                <a class="elx-mobile-link @ActiveMobile("/elitechdevicepage", "/elitechdevicepage/index")" asp-controller="ElitechDevicePage" asp-action="Index">
+                                    <i class="bi bi-cpu"></i>Devices
+                                </a>
+                                <a class="elx-mobile-link @ActiveMobile("/elitechrealtime", "/elitechrealtime/index")" asp-controller="ElitechRealtime" asp-action="Index">
+                                    <i class="bi bi-broadcast-pin"></i>Realtime
+                                </a>
+                                <a class="elx-mobile-link @ActiveMobile("/admin/assigndevices")" asp-controller="Admin" asp-action="AssignDevices">
+                                    <i class="bi bi-diagram-3"></i>AssignDevices
+                                </a>
+                                <a class="elx-mobile-link @ActiveMobile("/elitechhistoryadminpage", "/elitechhistoryadminpage/index")" asp-controller="ElitechHistoryAdminPage" asp-action="Index">
+                                    <i class="bi bi-activity"></i>History Chart
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="elx-mobile-link @ActiveMobile("/user", "/user/index")" asp-controller="User" asp-action="Index">
+                                    <i class="bi bi-house-door"></i>Dashboard
+                                </a>
+                                <a class="elx-mobile-link @ActiveMobile("/elitechhistoryuserpage", "/elitechhistoryuserpage/index")" asp-controller="ElitechHistoryUserPage" asp-action="Index">
+                                    <i class="bi bi-activity"></i>Biểu đồ
+                                </a>
+                                <a class="elx-mobile-link @ActiveMobile("/user/mydevices")" asp-controller="User" asp-action="MyDevices">
+                                    <i class="bi bi-cpu"></i>Thiết bị của tôi
+                                </a>
+                            }
+                        </nav>
+                    </div>
+                }
+            </div>
+        </header>
+
+        <!-- ===== Main ===== -->
+        <main class="elx-main">
+            @RenderBody()
+        </main>
+
+        <!-- ===== Footer ===== -->
+        <footer class="elx-footer mt-auto">
+            <div class="elx-footer-inner">
+                <section class="elx-footer-compact">
+                    <div class="elx-footer-brand-block">
+                        <div class="elx-footer-brand-row">
+                            <span class="elx-footer-logo">
+                                <img src="~/Pictures/elitechlogo2.png" asp-append-version="true" alt="Elitech Vietnam logo" />
+                            </span>
+
+                            <div>
+                                <div class="elx-footer-title">Precision <span>in every degree.</span></div>
+                                <div class="elx-footer-sub">
+                                    Elitech Vietnam cung cấp giải pháp giám sát nhiệt độ, cảnh báo realtime, SMS và báo cáo vận hành cho kho lạnh và chuỗi cung ứng lạnh.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="elx-footer-mini-pills" aria-label="Elitech highlights">
+                            <span class="elx-footer-mini-pill"><i class="bi bi-broadcast-pin"></i> Realtime</span>
+                            <span class="elx-footer-mini-pill"><i class="bi bi-bell-fill"></i> Alert & SMS</span>
+                            <span class="elx-footer-mini-pill"><i class="bi bi-file-earmark-bar-graph-fill"></i> PDF report</span>
+                            <span class="elx-footer-mini-pill"><i class="bi bi-shield-lock-fill"></i> Secure access</span>
+                        </div>
+                    </div>
+
+                    <div class="elx-footer-video-card">
+                        <div class="elx-footer-video-label">
+                            <span>Product view</span>
+                            <span class="elx-footer-live-dot"></span>
+                        </div>
+
+                        <div class="ratio ratio-16x9 elx-footer-video">
+                            <iframe src="https://www.youtube.com/embed/V2Fp_RAgz_k?start=3"
+                                    title="Elitech Vietnam Video"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+
+                        <div class="elx-footer-video-note">RCW instruction video • Elitech ecosystem</div>
+                    </div>
+
+                    <div class="elx-footer-menu">
+                        <h6 class="elx-footer-col-title">Điều hướng</h6>
+                        <a class="elx-footer-link" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house-door"></i>
+                            <span>Trang chủ</span>
+                        </a>
+                        <a class="elx-footer-link" href="https://elitechus.com.vn/san-pham" target="_blank" rel="noopener">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Sản phẩm</span>
+                        </a>
+                        <a class="elx-footer-link" asp-controller="Home" asp-action="Privacy">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Privacy</span>
+                        </a>
+                    </div>
+
+                    <div class="elx-footer-contact-box">
+                        <h6 class="elx-footer-col-title">Liên hệ</h6>
+                        <a class="elx-footer-primary-cta" href="tel:02873003603">
+                            <i class="bi bi-telephone-fill"></i>
+                            Gọi tư vấn
+                        </a>
+                        <a class="elx-footer-contact" href="mailto:sales@smarttechco.com.vn">
+                            <i class="bi bi-envelope-fill"></i>
+                            <span>sales@smarttechco.com.vn</span>
+                        </a>
+                        <a class="elx-footer-contact" href="tel:0938733596">
+                            <i class="bi bi-phone-fill"></i>
+                            <span><strong>0938 733 596</strong></span>
+                        </a>
+                    </div>
+                </section>
+            </div>
+
+            <div class="elx-footer-bottom">
+                <div class="elx-footer-bottom-inner">
+                    <div>© @DateTime.UtcNow.Year Elitech Vietnam • Device Monitoring Suite</div>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <a href="https://www.elitechus.com/" target="_blank" rel="noopener">Elitech Website</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+
+        <!-- ===== SMS Subscribe Box ===== -->
+        <div id="smsBox" style="position:fixed;right:18px;bottom:18px;width:360px;max-width:calc(100vw - 36px);display:none;z-index:9999;">
+            <div class="sms-card">
+                <div class="sms-head">
+                    <div class="sms-title"><i class="bi bi-chat-dots-fill"></i>Đăng ký SMS cảnh báo</div>
+                    <button type="button" id="smsClose" class="sms-close">×</button>
+                </div>
+
+                <div id="smsStepPhone" class="sms-body">
+                    <div class="sms-label">Nhập số điện thoại</div>
+                    <input id="smsPhone" placeholder="VD: 0836093757" class="sms-input">
+                    <div id="smsMsg1" class="sms-msg"></div>
+                    <div style="display:flex;gap:10px;margin-top:12px;">
+                        <button type="button" id="smsNext" class="sms-btn dark" style="flex:1;">Tiếp tục</button>
+                    </div>
+                </div>
+
+                <div id="smsStepOtp" class="sms-body" style="display:none;">
+                    <div class="sms-label">Xác thực OTP</div>
+                    <button type="button" id="smsSendOtp" class="sms-btn light" style="width:100%;">Gửi mã OTP</button>
+
+                    <div style="margin-top:10px;">
+                        <input id="smsOtp" placeholder="Nhập 6 số OTP" class="sms-input">
+                    </div>
+
+                    <div id="smsMsg2" class="sms-msg"></div>
+
+                    <div style="display:flex;gap:10px;margin-top:12px;">
+                        <button type="button" id="smsBack" class="sms-btn light" style="flex:1;">Quay lại</button>
+                        <button type="button" id="smsVerify" class="sms-btn ok" style="flex:1;">Xác thực</button>
+                    </div>
+                </div>
+            </div>
+
+            <form id="smsAntiForgeryForm" method="post" style="display:none;">
+                @Html.AntiForgeryToken()
+            </form>
+        </div>
+
+
+
+        <!-- ===== Global Command Search / Ctrl + K ===== -->
+        @if (isAuthenticated)
+        {
+            <div class="elx-cmdk-backdrop" id="elxCmdkBackdrop" hidden>
+                <div class="elx-cmdk-modal" role="dialog" aria-modal="true" aria-label="Elitech Command Search">
+                    <div class="elx-cmdk-head">
+                        <i class="bi bi-search"></i>
+                        <input id="elxCmdkInput"
+                               type="search"
+                               autocomplete="off"
+                               placeholder="Search pages, devices, accounts, alerts..." />
+                        <button type="button" id="elxCmdkClose" title="Đóng">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="elx-cmdk-hint">
+                        <span><kbd>↑</kbd><kbd>↓</kbd> Di chuyển</span>
+                        <span><kbd>Enter</kbd> Mở</span>
+                        <span><kbd>Esc</kbd> Đóng</span>
+                        <span><kbd>Ctrl</kbd><kbd>K</kbd> Tìm nhanh</span>
+                    </div>
+
+                    <div class="elx-cmdk-body" id="elxCmdkResults">
+                        <div class="elx-cmdk-empty">Gõ từ khóa để tìm nhanh trong Elitech Command Center.</div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div id="elitechToastHost" style="position:fixed;right:18px;top:18px;z-index:4000;max-width:420px"></div>
+        <audio id="alarmAudio" preload="auto">
+            <source src="/sounds/alarm.mp3" type="audio/mpeg" />
+        </audio>
+    </div>
+
+    <script>
+            window.__ELX_CAN_ADMIN_AREA__ = @(isAdmin.ToString().ToLowerInvariant());
+            window.__ELX_IS_REAL_ADMIN__ = @(User.IsInRole("Admin").ToString().ToLowerInvariant());
+            window.__ELX_ROLE_NAME__ = "@roleName";
+
+            (function() {
+                const openBtn = document.getElementById('elxCommandOpen');
+                const backdrop = document.getElementById('elxCmdkBackdrop');
+                const input = document.getElementById('elxCmdkInput');
+                const closeBtn = document.getElementById('elxCmdkClose');
+                const results = document.getElementById('elxCmdkResults');
+
+                if (!backdrop || !input || !results) return;
+
+                let activeIndex = 0;
+                let flatResults = [];
+                let searchTimer = null;
+                let requestSeq = 0;
+
+                const canAdminArea = window.__ELX_CAN_ADMIN_AREA__ === true;
+                const isRealAdmin = window.__ELX_IS_REAL_ADMIN__ === true;
+
+                const pages = [
+                    {
+                        group: 'Pages',
+                        title: 'Dashboard',
+                        desc: 'Mở trang tổng quan theo đúng vai trò hiện tại',
+                        url: '/Home/Router',
+                        icon: 'bi-speedometer2',
+                        tone: 'orange',
+                        tag: 'Page',
+                        keys: 'dashboard home router tổng quan admin user staff'
+                    },
+                    {
+                        group: 'Pages',
+                        title: 'Realtime Monitoring',
+                        desc: 'Theo dõi nhiệt độ, độ ẩm và trạng thái live',
+                        url: '/ElitechRealtime/Index',
+                        icon: 'bi-broadcast-pin',
+                        tone: 'blue',
+                        tag: 'Live',
+                        keys: 'realtime live monitoring nhiệt độ độ ẩm signalr'
+                    },
+                    {
+                        group: 'Pages',
+                        title: 'Devices',
+                        desc: 'Danh sách thiết bị / Device Page',
+                        url: '/ElitechDevicePage/Index',
+                        icon: 'bi-cpu',
+                        tone: 'blue',
+                        tag: 'Device',
+                        keys: 'device devices thiết bị logger guid serial'
+                    },
+                    {
+                        group: 'Pages',
+                        title: canAdminArea ? 'History Admin Chart' : 'History Chart',
+                        desc: 'Biểu đồ lịch sử và dữ liệu đo',
+                        url: canAdminArea ? '/ElitechHistoryAdminPage/Index' : '/ElitechHistoryUserPage/Index',
+                        icon: 'bi-graph-up-arrow',
+                        tone: 'green',
+                        tag: 'Chart',
+                        keys: 'history chart biểu đồ lịch sử report pdf csv excel'
+                    },
+                    {
+                        group: 'Alerts',
+                        title: 'Alert Rules',
+                        desc: 'Cài ngưỡng cảnh báo nhiệt độ / độ ẩm',
+                        url: '/ElitechAlertRulesPage/Index',
+                        icon: 'bi-sliders',
+                        tone: 'orange',
+                        tag: 'Rules',
+                        keys: 'alert rules alarm ngưỡng cảnh báo nhiệt độ độ ẩm threshold'
+                    },
+                    {
+                        group: 'Alerts',
+                        title: 'Alert History',
+                        desc: 'Xem lịch sử cảnh báo thiết bị',
+                        url: '/ElitechAlertHistoryPage/Index',
+                        icon: 'bi-bell-fill',
+                        tone: 'red',
+                        tag: 'Alert',
+                        keys: 'alert history alarm cảnh báo vượt ngưỡng mất nguồn pin yếu'
+                    },
+                    {
+                        group: 'Alerts',
+                        title: 'SMS Periodic',
+                        desc: 'SMS định kỳ nhiệt độ',
+                        url: '/SmsPeriodic',
+                        icon: 'bi-alarm',
+                        tone: 'orange',
+                        tag: 'SMS',
+                        keys: 'sms periodic định kỳ tin nhắn nhiệt độ'
+                    }
+                ];
+
+                if (canAdminArea) {
+                    pages.push(
+                        {
+                            group: 'Pages',
+                            title: 'Admin Dashboard',
+                            desc: 'Mở command center dành cho Admin / Staff',
+                            url: '/Admin/Index',
+                            icon: 'bi-command',
+                            tone: 'orange',
+                            tag: 'Admin',
+                            keys: 'admin dashboard command center'
+                        },
+                        {
+                            group: 'Devices',
+                            title: 'Assign Devices',
+                            desc: 'Gán thiết bị cho tài khoản user',
+                            url: '/Admin/AssignDevices',
+                            icon: 'bi-diagram-3-fill',
+                            tone: 'orange',
+                            tag: 'Assign',
+                            keys: 'assign bind gán thiết bị user account'
+                        }
+                    );
+                }
+
+                if (isRealAdmin) {
+                    pages.push(
+                        {
+                            group: 'Accounts',
+                            title: 'Accounts Management',
+                            desc: 'Quản lý Admin / Staff / User',
+                            url: '/Admin/Accounts',
+                            icon: 'bi-people-fill',
+                            tone: 'green',
+                            tag: 'Accounts',
+                            keys: 'account accounts user staff admin tài khoản quản lý'
+                        },
+                        {
+                            group: 'Accounts',
+                            title: 'Login Sessions',
+                            desc: 'Kiểm tra và revoke phiên đăng nhập',
+                            url: '/Admin/Sessions',
+                            icon: 'bi-shield-lock-fill',
+                            tone: 'blue',
+                            tag: 'Security',
+                            keys: 'session login bảo mật revoke đăng nhập security'
+                        },
+                        {
+                            group: 'Alerts',
+                            title: 'SMS Subscriptions',
+                            desc: 'Quản lý đăng ký SMS cảnh báo',
+                            url: '/Admin/SmsSubscriptions',
+                            icon: 'bi-chat-dots-fill',
+                            tone: 'orange',
+                            tag: 'SMS',
+                            keys: 'sms subscription activation đăng ký cảnh báo phone otp'
+                        }
+                    );
+                }
+
+                function normalize(value) {
+                    return String(value ?? '')
+                        .trim()
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[̀-ͯ]/g, '');
+                }
+
+                function escapeHtml(value) {
+                    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#039;'
+                    }[ch]));
+                }
+
+                function matchItem(item, q) {
+                    const blob = normalize(`${item.title} ${item.desc} ${item.keys || ''} ${item.tag || ''}`);
+                    return !q || blob.includes(q);
+                }
+
+                async function safeFetchJson(url) {
+                    try {
+                        const res = await fetch(url, {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            cache: 'no-store',
+                            headers: { 'Accept': 'application/json' }
+                        });
+
+                        if (!res.ok) return null;
+                        return await res.json();
+                    } catch {
+                        return null;
+                    }
+                }
+
+                function normalizeDeviceEntry(raw) {
+                    if (typeof raw === 'string') {
+                        const guid = raw.trim();
+                        return guid ? { guid, name: 'Device' } : null;
+                    }
+
+                    if (!raw || typeof raw !== 'object') return null;
+
+                    const guid = String(raw.deviceGuid ?? raw.DeviceGuid ?? raw.serialNumber ?? raw.SerialNumber ?? raw.serial ?? raw.Serial ?? raw.guid ?? raw.Guid ?? '').trim();
+                    const name = String(raw.deviceName ?? raw.DeviceName ?? raw.name ?? raw.Name ?? raw.notes ?? raw.Notes ?? raw.label ?? raw.Label ?? 'Device').trim();
+
+                    if (!guid) return null;
+                    return { guid, name: name || 'Device' };
+                }
+
+                async function searchDevices(q) {
+                    if (!q || q.length < 2) return [];
+
+                    const sources = await Promise.all([
+                        safeFetchJson('/api/elitech/device-guids'),
+                        safeFetchJson('/api/user/my-serials')
+                    ]);
+
+                    const rows = [];
+
+                    sources.forEach(json => {
+                        const data = Array.isArray(json?.data) ? json.data
+                            : Array.isArray(json?.Data) ? json.Data
+                                : Array.isArray(json) ? json
+                                    : [];
+
+                        data.forEach(item => {
+                            const d = normalizeDeviceEntry(item);
+                            if (d) rows.push(d);
+                        });
+                    });
+
+                    const seen = new Set();
+                    return rows
+                        .filter(d => {
+                            const key = d.guid.toUpperCase();
+                            if (seen.has(key)) return false;
+                            seen.add(key);
+
+                            const blob = normalize(`${d.guid} ${d.name}`);
+                            return blob.includes(q);
+                        })
+                        .slice(0, 8)
+                        .map(d => ({
+                            group: 'Devices',
+                            title: d.name && d.name !== 'Device' ? d.name : d.guid,
+                            desc: d.name && d.name !== 'Device' ? `GUID / Serial: ${d.guid}` : 'Device GUID / Serial',
+                            url: `/ElitechRealtime/Index?deviceGuids=${encodeURIComponent(d.guid)}`,
+                            icon: 'bi-cpu-fill',
+                            tone: 'blue',
+                            tag: 'Realtime',
+                            keys: d.guid
+                        }));
+                }
+
+                async function searchAccounts(q) {
+                    if (!isRealAdmin || !q || q.length < 2) return [];
+
+                    const json = await safeFetchJson('/api/admin/accounts');
+                    const arr = Array.isArray(json?.data) ? json.data : Array.isArray(json?.Data) ? json.Data : [];
+
+                    return arr
+                        .filter(a => {
+                            const blob = normalize(`${a.username || ''} ${a.email || ''} ${a.role || ''} ${a.name || ''}`);
+                            return blob.includes(q);
+                        })
+                        .slice(0, 8)
+                        .map(a => ({
+                            group: 'Accounts',
+                            title: a.username || a.email || 'Account',
+                            desc: `${a.email || 'No email'} • Role: ${a.role ?? '-'}`,
+                            url: '/Admin/Accounts',
+                            icon: 'bi-person-fill-gear',
+                            tone: 'green',
+                            tag: a.isActive === false ? 'Disabled' : 'Active',
+                            keys: `${a.username || ''} ${a.email || ''}`
+                        }));
+                }
+
+                function groupBy(items) {
+                    return items.reduce((acc, item) => {
+                        const g = item.group || 'Results';
+                        if (!acc[g]) acc[g] = [];
+                        acc[g].push(item);
+                        return acc;
+                    }, {});
+                }
+
+                function render(items) {
+                    flatResults = items || [];
+                    activeIndex = Math.min(activeIndex, Math.max(flatResults.length - 1, 0));
+
+                    if (!flatResults.length) {
+                        results.innerHTML = '<div class="elx-cmdk-empty">Không tìm thấy kết quả phù hợp.</div>';
+                        return;
+                    }
+
+                    const grouped = groupBy(flatResults);
+                    let html = '';
+
+                    Object.keys(grouped).forEach(group => {
+                        html += '<div class="elx-cmdk-group">';
+                        html += `<div class="elx-cmdk-group-title">${escapeHtml(group)}</div>`;
+
+                        grouped[group].forEach(item => {
+                            const index = flatResults.indexOf(item);
+                            html += `
+                                                        <button type="button"
+                                                                class="elx-cmdk-item ${escapeHtml(item.tone || 'blue')} ${index === activeIndex ? 'is-active' : ''}"
+                                                                data-index="${index}">
+                                                            <span class="elx-cmdk-icon"><i class="bi ${escapeHtml(item.icon || 'bi-search')}"></i></span>
+                                                            <span class="elx-cmdk-main">
+                                                                <b>${escapeHtml(item.title)}</b>
+                                                                <span>${escapeHtml(item.desc)}</span>
+                                                            </span>
+                                                            <span class="elx-cmdk-tag">${escapeHtml(item.tag || group)}</span>
+                                                        </button>
+                                                    `;
+                        });
+
+                        html += '</div>';
+                    });
+
+                    results.innerHTML = html;
+
+                    results.querySelectorAll('[data-index]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const idx = Number(btn.getAttribute('data-index'));
+                            openResult(idx);
+                        });
+                    });
+                }
+
+                function renderLoading(local) {
+                    render(local);
+                    if (!local.length) {
+                        results.innerHTML = '<div class="elx-cmdk-loading"><i class="bi bi-arrow-repeat"></i>Đang tìm trong thiết bị và tài khoản...</div>';
+                    }
+                }
+
+                async function doSearch() {
+                    const seq = ++requestSeq;
+                    const q = normalize(input.value);
+
+                    const local = pages
+                        .filter(x => matchItem(x, q))
+                        .slice(0, q ? 10 : 8);
+
+                    if (!q) {
+                        render(local);
+                        return;
+                    }
+
+                    renderLoading(local);
+
+                    const [devices, accounts] = await Promise.all([
+                        searchDevices(q),
+                        searchAccounts(q)
+                    ]);
+
+                    if (seq !== requestSeq) return;
+
+                    render([
+                        ...local,
+                        ...devices,
+                        ...accounts
+                    ]);
+                }
+
+                function scheduleSearch() {
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(doSearch, 160);
+                }
+
+                function openModal() {
+                    backdrop.hidden = false;
+                    document.body.style.overflow = 'hidden';
+                    input.value = '';
+                    activeIndex = 0;
+                    requestSeq++;
+                    render(pages.slice(0, 8));
+                    setTimeout(() => input.focus(), 30);
+                }
+
+                function closeModal() {
+                    backdrop.hidden = true;
+                    document.body.style.overflow = '';
+                }
+
+                function openResult(index) {
+                    const item = flatResults[index];
+                    if (!item?.url) return;
+                    window.location.href = item.url;
+                }
+
+                function moveActive(step) {
+                    if (!flatResults.length) return;
+
+                    activeIndex += step;
+                    if (activeIndex < 0) activeIndex = flatResults.length - 1;
+                    if (activeIndex >= flatResults.length) activeIndex = 0;
+
+                    render(flatResults);
+                    results.querySelector('.elx-cmdk-item.is-active')?.scrollIntoView({ block: 'nearest' });
+                }
+
+                openBtn?.addEventListener('click', openModal);
+                closeBtn?.addEventListener('click', closeModal);
+
+                backdrop.addEventListener('click', e => {
+                    if (e.target === backdrop) closeModal();
+                });
+
+                input.addEventListener('input', scheduleSearch);
+
+                document.addEventListener('keydown', e => {
+                    const key = (e.key || '').toLowerCase();
+
+                    if ((e.ctrlKey || e.metaKey) && key === 'k') {
+                        e.preventDefault();
+                        openModal();
+                        return;
+                    }
+
+                    if (backdrop.hidden) return;
+
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeModal();
+                        return;
+                    }
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        moveActive(1);
+                        return;
+                    }
+
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        moveActive(-1);
+                        return;
+                    }
+
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        openResult(activeIndex);
+                    }
+                });
+            })();
+    </script>
+
+    <script>
+            (function() {
+                const host = document.getElementById('elitechToastHost');
+                if (!host) return;
+
+                const LS_KEY = 'elitech_seen_alert_ids_v1';
+
+                function loadSeen() {
+                    try {
+                        const raw = localStorage.getItem(LS_KEY);
+                        const arr = raw ? JSON.parse(raw) : [];
+                        return new Set(Array.isArray(arr) ? arr.filter(x => typeof x === 'string') : []);
+                    } catch {
+                        return new Set();
+                    }
+                }
+
+                function saveSeen(set) {
+                    try {
+                        const arr = Array.from(set);
+                        const trimmed = arr.length > 300 ? arr.slice(arr.length - 300) : arr;
+                        localStorage.setItem(LS_KEY, JSON.stringify(trimmed));
+                    } catch { }
+                }
+
+                const seen = loadSeen();
+
+                const AUDIO_KEY = 'elitech_audio_unlocked_v2';
+                let audioUnlocked = false;
+
+                const audioHigh = new Audio('/sounds/alarm.mp3');
+                const audioWarn = new Audio('/sounds/alarm.mp3');
+
+                audioHigh.preload = 'auto';
+                audioWarn.preload = 'auto';
+                audioHigh.loop = true;
+                audioWarn.loop = true;
+                audioHigh.volume = 0.88;
+                audioWarn.volume = 0.62;
+
+                let activeHighCount = 0;
+                let activeWarnCount = 0;
+                let pendingLevel = null;
+
+                function normalizeLevel(level) {
+                    const lv = String(level || '').toLowerCase();
+                    if (lv === 'warn' || lv === 'warning') return 'warn';
+                    return 'high';
+                }
+
+            function ensureUnlockButton() {
+    let btn = document.getElementById('elitechAudioUnlockBtn');
+    if (btn) return btn;
+
+    btn = document.createElement('button');
+    btn.id = 'elitechAudioUnlockBtn';
+    btn.type = 'button';
+
+    btn.innerHTML =
+        '<i class="bi bi-volume-up-fill"></i>' +
+        '<span>Bấm để cho phép âm thanh cảnh báo</span>';
+
+    btn.style.cssText = `
+        position:fixed;
+        left:18px;
+        bottom:18px;
+        z-index:100000;
+        min-height:46px;
+        padding:0 16px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.20);
+        background:linear-gradient(135deg,#f58220,#ffb25b);
+        color:#111827;
+        font-weight:1000;
+        box-shadow:0 18px 44px rgba(15,23,42,.24);
+        display:none;
+        align-items:center;
+        gap:9px;
+        cursor:pointer;
+    `;
+
+    btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        await unlockAudio();
+    });
+
+    document.body.appendChild(btn);
+
+    return btn;
+}
+                function showUnlockButton() {
+                    const btn = ensureUnlockButton();
+                    btn.style.display = 'inline-flex';
+                }
+
+                function hideUnlockButton() {
+                    const btn = document.getElementById('elitechAudioUnlockBtn');
+                    if (btn) btn.style.display = 'none';
+                }
+
+                function stopAllAudio() {
+                    try { audioHigh.pause(); audioHigh.currentTime = 0; } catch { }
+                    try { audioWarn.pause(); audioWarn.currentTime = 0; } catch { }
+                }
+
+                function markAudioBlocked(err) {
+                    audioUnlocked = false;
+                    attachAudioUnlockEvents();
+                    showUnlockButton();
+                    console.warn('⛔ Alarm audio blocked, waiting for user gesture:', err);
+                }
+
+                function playAudio(audio, lv) {
+                    audio.currentTime = 0;
+                    const promise = audio.play();
+                    if (promise && typeof promise.catch === 'function') {
+                        promise.catch(err => {
+                            pendingLevel = lv;
+                            markAudioBlocked(err);
+                        });
+                    }
+                }
+
+                function syncAudio() {
+
+                    // Audio hệ thống đang OFF thì không phát.
+                    // Hiện tại mặc định audioEnabled = true.
+                    if (!audioEnabled) {
+                        stopAllAudio();
+                        return;
+                    }
+
+                    const needHigh = activeHighCount > 0;
+                    const needWarn = !needHigh && activeWarnCount > 0;
+
+                    if (!needHigh && !needWarn) {
+                        stopAllAudio();
+                        return;
+                    }
+
+                    // Browser chưa unlock audio.
+                    // Alert vẫn đang ON, chỉ đang chờ quyền browser.
+                    if (!audioUnlocked) {
+
+                        pendingLevel = needHigh
+                            ? 'high'
+                            : 'warn';
+
+                        attachAudioUnlockEvents();
+
+                        // Thử unlock luôn.
+                        unlockAudio().catch(() => {
+                            // Chỉ khi browser thực sự chặn mới hiện nút.
+                            showUnlockButton();
+                        });
+
+                        return;
+                    }
+
+                    if (needHigh) {
+
+                        if (!audioWarn.paused) {
+                            audioWarn.pause();
+                            audioWarn.currentTime = 0;
+                        }
+
+                        if (audioHigh.paused) {
+                            playAudio(
+                                audioHigh,
+                                'high'
+                            );
+                        }
+
+                        return;
+                    }
+
+                    if (!audioHigh.paused) {
+                        audioHigh.pause();
+                        audioHigh.currentTime = 0;
+                    }
+
+                    if (audioWarn.paused) {
+                        playAudio(
+                            audioWarn,
+                            'warn'
+                        );
+                    }
+                }
+                async function unlockAudio() {
+                    try {
+                        await audioHigh.play();
+                        audioHigh.pause(); audioHigh.currentTime = 0;
+
+                        await audioWarn.play();
+                        audioWarn.pause(); audioWarn.currentTime = 0;
+
+                        audioUnlocked = true;
+                        pendingLevel = pendingLevel || null;
+                        try { localStorage.setItem(AUDIO_KEY, '1'); } catch { }
+
+                        detachAudioUnlockEvents();
+                        hideUnlockButton();
+                        syncAudio();
+                        console.log('✅ Alarm audio unlocked');
+                    } catch (e) {
+                        markAudioBlocked(e);
+                    }
+                }
+
+                function attachAudioUnlockEvents() {
+                    window.addEventListener('pointerdown', unlockAudio, { passive: true });
+                    window.addEventListener('click', unlockAudio);
+                    window.addEventListener('keydown', unlockAudio);
+                    window.addEventListener('touchstart', unlockAudio, { passive: true });
+                }
+
+                function detachAudioUnlockEvents() {
+                    window.removeEventListener('pointerdown', unlockAudio);
+                    window.removeEventListener('click', unlockAudio);
+                    window.removeEventListener('keydown', unlockAudio);
+                    window.removeEventListener('touchstart', unlockAudio);
+                }
+
+                attachAudioUnlockEvents();
+
+                window.elitechUnlockAlarmAudio = unlockAudio;
+                window.elitechPlayAlarmSound = function(level, durationMs) {
+                    const lv = normalizeLevel(level || 'high');
+                    beginSound(lv);
+                    const ms = Number(durationMs || 0);
+                    if (Number.isFinite(ms) && ms > 0) {
+                        setTimeout(() => endSound(lv), ms);
+                    }
+                };
+                window.elitechStopAlarmSound = function(level) {
+                    endSound(level || 'high');
+                };
+                window.elitechStopAllAlarmSound = function() {
+                    activeHighCount = 0;
+                    activeWarnCount = 0;
+                    pendingLevel = null;
+                    stopAllAudio();
+                };
+
+                document.addEventListener('elitech:alarm', function(e) {
+                    window.elitechPlayAlarmSound(e?.detail?.level || 'high', e?.detail?.durationMs || 9000);
+                });
+
+                function beginSound(level) {
+                    const lv = normalizeLevel(level);
+
+                    if (lv === 'warn') activeWarnCount++;
+                    else activeHighCount++;
+
+                    syncAudio();
+                }
+
+                function endSound(level) {
+                    const lv = normalizeLevel(level);
+
+                    if (lv === 'warn') activeWarnCount = Math.max(0, activeWarnCount - 1);
+                    else activeHighCount = Math.max(0, activeHighCount - 1);
+
+                    syncAudio();
+                }
+
+                function stableKey(a) {
+                    const raw = a?.id ?? a?._id ?? a?.Id ?? a?.ID;
+                    if (typeof raw === 'string' && raw.trim()) return raw.trim();
+
+                    const dg = (a?.deviceGuid ?? a?.DeviceGuid ?? '').toString().trim();
+                    const ts = (a?.occurredAtUtc ?? a?.OccurredAtUtc ?? a?.ts ?? a?.alarmTimeStamp ?? '').toString().trim();
+                    return (dg && ts) ? (dg + '|' + ts) : (dg || ts || JSON.stringify(a));
+                }
+
+                function toastAlert(a) {
+                    const key = stableKey(a);
+
+                    if (seen.has(key)) return;
+                    seen.add(key);
+                    saveSeen(seen);
+
+                    const dev = (a?.deviceName ?? a?.DeviceName ?? 'Device').toString();
+                    const reasons = (a?.reasons ?? a?.Reasons ?? a?.message ?? a?.Message ?? 'ALARM').toString();
+                    const whenRaw = a?.occurredAtUtc ?? a?.OccurredAtUtc ?? a?.ts;
+                    const when = whenRaw ? new Date(whenRaw).toLocaleString() : '';
+                    const level = (a?.level ?? a?.Level ?? 'high');
+
+                    const el = document.createElement('div');
+                    el.setAttribute('data-level', normalizeLevel(level));
+                    el.setAttribute('data-alert-key', key);
+
+                    el.style.cssText = `
+                                                                    background:linear-gradient(135deg,#111827,#020617);color:#fff;border-radius:18px;padding:14px 15px;margin-bottom:10px;
+                                                                    box-shadow:0 22px 52px rgba(0,0,0,.22);cursor:pointer;border:1px solid rgba(255,255,255,.12)
+                                                                `;
+                    el.innerHTML = `
+                                                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                                                                        <div style="font-weight:1000">⚠️ ${dev}</div>
+                                                                        <div style="opacity:.7;font-size:12px;font-weight:800">${when}</div>
+                                                                    </div>
+                                                                    <div style="opacity:.9;margin-top:7px;font-size:13px;font-weight:760;line-height:1.4">${reasons}</div>
+                                                                    <a href="/ElitechAlertHistoryPage/Index"
+                                                                       style="opacity:.82;margin-top:8px;font-size:12px;display:inline-block;text-decoration:none;color:#93c5fd;font-weight:900;">
+                                                                        Bấm để xem chi tiết
+                                                                    </a>
+                                                                `;
+
+                    el.addEventListener('click', async () => {
+                        try {
+                            const oid = a?.id ?? a?._id ?? a?.Id ?? a?.ID;
+                            if (typeof oid === 'string' && oid.trim()) {
+                                await fetch('/api/elitech/alerts/mark-read?id=' + encodeURIComponent(oid.trim()), { method: 'POST' });
+                            }
+                        } catch { }
+
+                        window.location.href = '/realtime';
+                    });
+
+                    host.appendChild(el);
+                    beginSound(level);
+
+                    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .25s'; }, 9000);
+                    setTimeout(() => {
+                        endSound(level);
+                        el.remove();
+                    }, 9400);
+                }
+
+                async function pollUnread() {
+                    try {
+                        const res = await fetch('/api/elitech/alerts/unread?take=5', { cache: 'no-store' });
+                        if (!res.ok) return;
+                        const json = await res.json();
+                        const list = json?.data ?? [];
+                        list.reverse().forEach(toastAlert);
+                    } catch { }
+                }
+
+                pollUnread();
+                setInterval(pollUnread, 15000);
+            })();
+
+            (function() {
+                const box = document.getElementById('smsBox');
+                const closeBtn = document.getElementById('smsClose');
+
+                const stepPhone = document.getElementById('smsStepPhone');
+                const stepOtp = document.getElementById('smsStepOtp');
+
+                const phoneInput = document.getElementById('smsPhone');
+                const otpInput = document.getElementById('smsOtp');
+
+                const msg1 = document.getElementById('smsMsg1');
+                const msg2 = document.getElementById('smsMsg2');
+
+                const btnNext = document.getElementById('smsNext');
+                const btnBack = document.getElementById('smsBack');
+                const btnSend = document.getElementById('smsSendOtp');
+                const btnVerify = document.getElementById('smsVerify');
+
+                if (!box || !closeBtn || !stepPhone || !stepOtp || !phoneInput || !otpInput || !msg1 || !msg2 || !btnNext || !btnBack || !btnSend || !btnVerify) return;
+
+                function getToken() {
+                    const el = document.querySelector('#smsAntiForgeryForm input[name="__RequestVerificationToken"]');
+                    return el ? el.value : "";
+                }
+
+                window.openSmsSubscribe = function(prefillPhone) {
+                    box.style.display = 'block';
+                    stepPhone.style.display = '';
+                    stepOtp.style.display = 'none';
+                    msg1.textContent = '';
+                    msg2.textContent = '';
+                    otpInput.value = '';
+                    if (prefillPhone) phoneInput.value = prefillPhone;
+                    phoneInput.focus();
+                }
+
+                function showStepOtp() {
+                    stepPhone.style.display = 'none';
+                    stepOtp.style.display = '';
+                    msg2.textContent = 'Bấm "Gửi mã OTP" để nhận tin nhắn.';
+                }
+
+                closeBtn.addEventListener('click', () => box.style.display = 'none');
+
+                btnNext.addEventListener('click', () => {
+                    const p = (phoneInput.value || '').trim();
+                    if (!p) { msg1.textContent = 'Vui lòng nhập số điện thoại.'; return; }
+                    msg1.textContent = '';
+                    showStepOtp();
+                });
+
+                btnBack.addEventListener('click', () => {
+                    stepPhone.style.display = '';
+                    stepOtp.style.display = 'none';
+                    msg1.textContent = '';
+                });
+
+                btnSend.addEventListener('click', async () => {
+                    msg2.textContent = 'Đang gửi OTP...';
+                    const phone = (phoneInput.value || '').trim();
+
+                    const res = await fetch('/Sms/send-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': getToken()
+                        },
+                        body: new URLSearchParams({ phone })
+                    });
+
+                    const data = await res.json().catch(() => ({ ok: false, message: 'Lỗi parse' }));
+                    msg2.textContent = data.message || (data.ok ? 'Đã gửi OTP.' : 'Gửi OTP thất bại.');
+                });
+
+                btnVerify.addEventListener('click', async () => {
+                    msg2.textContent = 'Đang xác thực...';
+                    const code = (otpInput.value || '').trim();
+
+                    const res = await fetch('/Sms/verify', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': getToken()
+                        },
+                        body: new URLSearchParams({ code })
+                    });
+
+                    const data = await res.json().catch(() => ({ ok: false, message: 'Lỗi parse' }));
+                    if (!data.ok) {
+                        msg2.textContent = data.message || 'OTP sai.';
+                        return;
+                    }
+
+                    msg2.textContent = '✅ Xác thực thành công. Đã bật SMS cảnh báo.';
+                    setTimeout(() => location.href = '/Profile', 600);
+                });
+            })();
+    </script>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
