@@ -1,0 +1,35 @@
+# Visual Studio / ASP.NET MVC
+.vs/
+.vscode/
+bin/
+obj/
+Debug/
+Release/
+TestResults/
+packages/
+*.user
+*.suo
+*.cache
+
+# Logs
+logs/
+*.log
+*.tmp
+
+# Sensitive files
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Production.json
+secrets.json
+*.pfx
+*.p12
+
+# Publish
+publish/
+artifacts/
+
+# System
+.DS_Store
+Thumbs.db
